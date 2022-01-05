@@ -1,38 +1,19 @@
-#' List wrappers for p_delta prediction
-#'
-#' This function lists all prediction algorithms built into the \code{conSurv} package.
-#'
-#' @usage \code{p_delta_listWrappers()}
-#'
-#' @return Invisible character vector with the requested functions.
-#'
-#' @export
-
-p_delta_listWrappers <- function() {
-  everything <- sort(unclass(lsf.str(envir = asNamespace("conSurv"), all.names = T)))
-  message("All prediction algorithm wrappers in conSurv:\n")
-  funs <- everything[grepl(pattern = "^p_delta", everything)]
-  funs <- funs[!funs %in% c("p_delta_listWrappers")]
-  print(funs)
-  invisible(everything)
-}
-
 #' Nadaraya-Watson estimator
 #'
 #' @param event Event indicator
 #' @param X Covariates
-#' @param span Span
+#' @param bw bw
 #' @param kernel_type Kernel_type
 #' @param kernel_order Kernel_order
 #'
 #' @return An object of class \code{p_delta_nw}
 #' @noRd
-p_delta_nw <- function(event, X, span, kernel_type = "gaussian", kernel_order = 2){
+p_delta_nw <- function(event, X, bw, kernel_type = "gaussian", kernel_order = 2){
   fmla <- as.formula(paste("event ~ ", paste(colnames(X), collapse = "+")))
   dat <- data.frame(cbind(event = event, X))
   fit.nw <- np::npreg(fmla,
                    data = dat,
-                   bws = rep(span, ncol(X)),
+                   bws = rep(bw, ncol(X)),
                    regtype = "lc",
                    ckertype = kernel_type,
                    ckerorder = kernel_order)
@@ -109,4 +90,91 @@ p_delta_mean <- function(event, X){
 predict.p_delta_mean <- function(fit, newX){
   predictions <- predict(fit$reg.object, newdata = newX)
   return(predictions)
+}
+
+#' Ranger random forest
+#'
+#' @param event Event indicator
+#' @param X Covariates
+#' @param mtry Number of varaibles sampled as candidates as each split
+#' @param ntree Number of trees to grow
+#'
+#' @return An object of class \code{p_delta_ranger}
+#' @noRd
+p_delta_ranger <- function(event, X, mtry = floor(sqrt(ncol(X))), num.trees = 500){
+
+  event <- as.factor(event)
+
+  # Ranger does not seem to work with X as a matrix, so we explicitly convert to
+  # data.frame rather than cbind. newX can remain as-is though.
+  if (is.matrix(X)) {
+    X <- data.frame(X)
+  }
+
+  fit <- ranger::ranger(event ~ .,
+                        data = cbind(event = event, X),
+                        num.trees = num.trees,
+                        mtry = mtry,
+                        min.node.size = 1,
+                        replace = TRUE,
+                        sample.fraction = 1,
+                        write.forest = TRUE,
+                        probability = TRUE,
+                        #num.threads = num.threads,
+                        verbose = TRUE)
+
+  fit <- list(reg.object = fit)
+  class(fit) <- c("p_delta_ranger")
+  return(fit)
+}
+
+#' Prediction function for ranger
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.p_delta_ranger <- function(fit, newX){
+  pred <- predict(fit$reg.object, data = newX)$predictions
+  print(pred)
+  pred <- pred[, "1"]
+  return(pred)
+}
+
+#' Random forest
+#'
+#' @param event Event indicator
+#' @param X Covariates
+#' @param mtry Number of varaibles sampled as candidates as each split
+#' @param ntree Number of trees to grow
+#'
+#' @return An object of class \code{p_delta_rf}
+#' @noRd
+p_delta_rf <- function(event, X, mtry = floor(sqrt(ncol(X))), ntree = 500){
+
+  event <- as.factor(event)
+
+  fit.rf <- randomForest::randomForest(y = event,
+                                       x = X,
+                                       ntree = ntree,
+                                       keep.forest = TRUE,
+                                       mtry = mtry,
+                                       nodesize = 1,
+                                       importance = FALSE)
+  fit <- list(reg.object = fit.rf)
+  class(fit) <- c("p_delta_rf")
+  return(fit)
+}
+
+#' Prediction function for random forest
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.p_delta_rf <- function(fit, newX){
+  pred <- predict(fit$reg.object, newdata = newX, type = 'vote')[,2]
+  return(pred)
 }
