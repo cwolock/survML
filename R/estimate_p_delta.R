@@ -2,22 +2,36 @@
 #'
 #' @param event Numeric vector of status indicators of whether an event was observed
 #' @param X Data frame of observed covariate values on which to train the prediction algorithm
+#' @param test_event Event indicators to test against
+#' @param test_X Covariates corresponding to \code{test_event}
 #' @param rescale A logical value indicating whether or not to rescale covariates to have equal variance.
 #'        Scaling has an impact on some algorithms, such as LOESS.
 #'
-#' @return A return object
+#' @return Optimal fit for estimating p_delta
 #' @noRd
-#'
-#' @examples
-estimate_p_delta <- function(event, X, rescale = TRUE){
-  p_delta_fit <- p_delta_logit_reg(event = event, X = X)
-  print(p_delta_fit)
-  p_delta_pred <- predict(p_delta_fit, newX = data.frame(X[1,]))
-  p_delta_fit2 <- p_delta_nw(event = event, X = X, span = 0.5)
-  print(p_delta_fit2)
-  p_delta_pred2 <- predict(p_delta_fit2, newX = data.frame(X[1,]))
-  p_delta_fit3 <- p_delta_mean(event = event, X = X)
-  print(p_delta_fit3)
-  p_delta_pred3 <- predict(p_delta_fit3, newX = data.frame(X[1,]))
-  return(c(p_delta_pred, p_delta_pred2, p_delta_pred3))
+estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE){
+
+  bws <- seq(0.1, 1, by = 0.1)
+  MSEs <- rep(NA, length(bws))
+
+  for (i in 1:length(bws)){
+    fit <- p_delta_nw(event = event,
+                      X = X,
+                      bw = bws[i],
+                      kernel_type = "gaussian",
+                      kernel_order = 2)
+    MSEs[i] <- calculate_MSE(fit = fit,
+                             test_event = test_event,
+                             test_X = test_X)
+  }
+
+  opt_bw <- bws[which.min(MSEs)]
+
+  opt_fit <- p_delta_nw(event = event,
+                        X = X,
+                        bw = opt_bw,
+                        kernel_type = "gaussian",
+                        kernel_order = 2)
+
+  return(opt_fit)
 }

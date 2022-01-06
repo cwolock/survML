@@ -2,7 +2,7 @@
 #'
 #' @param fit Fitted estimator of the cdf
 #' @param test_event Event indicators to test against
-#' @param test_X Covariates corresponding to \code{test_times}
+#' @param test_X Covariates corresponding to \code{test_event}
 #' @param weights TBD, maybe want to weight different time points?
 #'
 #' @return A scalar estimate of MSE

@@ -1,14 +1,15 @@
 #' Compute the plug-in product-limit survival function estimator
 #'
-#' @param cdf_uncens Predictions of the cdf of the uncensored times (F_Y_1) on chosen time grid
+#' @param cdf_uncens Matrix of predictions of the cdf of the uncensored times (F_Y_1) on chosen time grid
 #' @param cdf_cens Predictions of the cdf of the censored times (F_Y_0) on chosen time grid
 #' @param p_uncens Prediction of the probability of being uncensored
+#' @param newtimes Times at which to make the prediction
 #' @param time_grid Grid of time points over which to discretize the product integral
 #'
 #' @return A vector of estimates of the survival function over \code{time_grid}
 #'
 #' @noRd
-compute_S_T <- function(cdf_uncens, cdf_cens, p_uncens, time_grid){
+compute_S_T <- function(cdf_uncens, cdf_cens, p_uncens, newtimes, time_grid){
 
   estimate_S_T <- function(t){
     curr_length <- sum(time_grid <= t)
@@ -31,7 +32,7 @@ compute_S_T <- function(cdf_uncens, cdf_cens, p_uncens, time_grid){
     return(S_T_est)
   }
 
-  S_T_ests <- apply(X = as.matrix(time_grid),
+  S_T_ests <- apply(X = as.matrix(newtimes),
                     MARGIN = 1,
                     FUN = estimate_S_T)
 

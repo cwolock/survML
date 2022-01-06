@@ -1,9 +1,76 @@
 #' Estimate a conditional survival function
 #'
-#' @return
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes Times at which to make the survival function prediction
+#' @param time_grid_approx Grid of time points on which to approximate PL integral
+#' @param time_grid_eval Grid of time points on which to evaluate (e.g. approximate a MISE integral)
+#' @param weights TBD, possible weighting of time when calculating MISE
+#' @param test_time Observed times to evaluate against
+#' @param test_event Event indicators to test against
+#' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
+#'
+#' @return An object of class \code{conSurv}
+#'
 #' @export
 #'
 #' @examples
-conSurv <- function(){
+conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
+                    time_grid_eval, weights = NULL, test_time, test_event, test_X){
+
+  # determine optimal models (currently using oracle tuning)
+  P_Delta_opt <- conSurv:::estimate_p_delta(event = event,
+                                            X = X,
+                                            test_event = test_event,
+                                            test_X = test_X)
+  S_Y_1_opt <- conSurv:::estimate_f_y(time = time,
+                                      event = event,
+                                      X = X,
+                                      test_time = test_time,
+                                      test_event = test_event,
+                                      test_X = test_X,
+                                      time_grid_eval = time_grid_eval,
+                                      censored = FALSE)
+  S_Y_0_opt <- conSurv:::estimate_f_y(time = time,
+                                      event = event,
+                                      X = X,
+                                      test_time = test_time,
+                                      test_event = test_event,
+                                      test_X = test_X,
+                                      time_grid_eval = time_grid_eval,
+                                      censored = TRUE)
+
+  # fit optimal models
+  P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX)
+  S_Y_1_opt_preds <- predict(S_Y_1_opt,
+                             newX = newX,
+                             newtimes = newtimes)
+  S_Y_0_opt_preds <- predict(S_Y_0_opt,
+                             newX = newX,
+                             newtimes = newtimes)
+
+  # estimate_S_T <- function(x1, x2){
+  #   # choose t
+  #   x_inds_pi <- which(est_df$X1 == x1 & est_df$X2 == x2)
+  #   x_ind_S <- which(x_df$X1 == x1 & x_df$X2 == x2)
+  #
+  #   # get S_Y estimates up to t
+  #   S_Y_1_curr <- S_Y_1_opt_preds[x_ind_S,]
+  #   S_Y_0_curr <- S_Y_0_opt_preds[x_ind_S,]
+  #   pi_curr <- P_Delta_opt_preds[x_inds_pi][1]
+  #
+  #   S_T_ests <- conSurv:::compute_S_T(cdf_uncens = S_Y_1_curr,
+  #                                     cdf_cens = S_Y_0_curr,
+  #                                     p_uncens = pi_curr,
+  #                                     newtimes = benchmark_times,
+  #                                     time_grid = benchmark_times)
+  #
+  #   return(S_T_ests)
+  # }
+  #
+  # S_T_ests <- c(mapply(FUN = estimate_S_T, x_df$X1, x_df$X2))
+
   return(NULL)
 }

@@ -4,10 +4,45 @@
 \alias{conSurv}
 \title{Estimate a conditional survival function}
 \usage{
-conSurv()
+conSurv(
+  time,
+  event,
+  X,
+  newX,
+  newtimes,
+  time_grid_approx,
+  time_grid_eval,
+  weights = NULL,
+  test_time,
+  test_event,
+  test_X
+)
+}
+\arguments{
+\item{time}{Observed time}
+
+\item{event}{Indicator of event (vs censoring)}
+
+\item{X}{Covariate matrix}
+
+\item{newX}{Values of covariates at which to make a prediction}
+
+\item{newtimes}{Times at which to make the survival function prediction}
+
+\item{time_grid_approx}{Grid of time points on which to approximate PL integral}
+
+\item{time_grid_eval}{Grid of time points on which to evaluate (e.g. approximate a MISE integral)}
+
+\item{weights}{TBD, possible weighting of time when calculating MISE}
+
+\item{test_time}{Observed times to evaluate against}
+
+\item{test_event}{Event indicators to test against}
+
+\item{test_X}{Covariates corresponding to \code{test_times} and \code{test_event}}
 }
 \value{
-
+An object of class \code{conSurv}
 }
 \description{
 Estimate a conditional survival function
