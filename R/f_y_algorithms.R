@@ -347,7 +347,7 @@ f_y_smoothllkern <- function(time, event, X, censored, bw, bwy, kernel_type = "g
                                     ckertype = kernel_type,
                                     ckerorder = kernel_order)))
 
-  fit <- list(reg.object = nw_fit)
+  fit <- list(reg.object = ll_fit)
   class(fit) <- c("f_y_smoothllkern")
   return(fit)
 }

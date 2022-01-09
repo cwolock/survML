@@ -51,26 +51,24 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
                              newX = newX,
                              newtimes = newtimes)
 
-  # estimate_S_T <- function(x1, x2){
-  #   # choose t
-  #   x_inds_pi <- which(est_df$X1 == x1 & est_df$X2 == x2)
-  #   x_ind_S <- which(x_df$X1 == x1 & x_df$X2 == x2)
-  #
-  #   # get S_Y estimates up to t
-  #   S_Y_1_curr <- S_Y_1_opt_preds[x_ind_S,]
-  #   S_Y_0_curr <- S_Y_0_opt_preds[x_ind_S,]
-  #   pi_curr <- P_Delta_opt_preds[x_inds_pi][1]
-  #
-  #   S_T_ests <- conSurv:::compute_S_T(cdf_uncens = S_Y_1_curr,
-  #                                     cdf_cens = S_Y_0_curr,
-  #                                     p_uncens = pi_curr,
-  #                                     newtimes = benchmark_times,
-  #                                     time_grid = benchmark_times)
-  #
-  #   return(S_T_ests)
-  # }
-  #
-  # S_T_ests <- c(mapply(FUN = estimate_S_T, x_df$X1, x_df$X2))
+  estimate_S_T <- function(i){
+    # get S_Y estimates up to t
+    S_Y_1_curr <- S_Y_1_opt_preds[i,]
+    S_Y_0_curr <- S_Y_0_opt_preds[i,]
+    pi_curr <- P_Delta_opt_preds[i]
 
-  return(NULL)
+    S_T_ests <- compute_S_T(cdf_uncens = S_Y_1_curr,
+                            cdf_cens = S_Y_0_curr,
+                            p_uncens = pi_curr,
+                            newtimes = newtimes,
+                            time_grid = time_grid_approx)
+
+    return(S_T_ests)
+  }
+
+  S_T_preds <- t(apply(X = as.matrix(seq(1, nrow(newX))),
+                    MARGIN = 1,
+                    FUN = estimate_S_T))
+
+  return(S_T_preds)
 }
