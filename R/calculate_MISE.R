@@ -24,7 +24,7 @@ calculate_MISE <- function(fit, time_grid, test_time, test_event, test_X, censor
   preds <- predict(fit, newX = test_X, newtimes = time_grid)
   MSEs <- rep(NA, length(time_grid))
   for (i in 1:length(time_grid)){
-    truth <- ifelse(test_time <= t_grid[i], 1, 0)
+    truth <- ifelse(test_time <= time_grid[i], 1, 0)
     MSE <- mean((preds[,i] - truth)^2, na.rm = TRUE)
     MSEs[i] <- MSE
   }
