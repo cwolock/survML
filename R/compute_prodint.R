@@ -9,7 +9,7 @@
 #' @return A vector of estimates of the survival function over \code{time_grid}
 #'
 #' @noRd
-compute_S_T <- function(cdf_uncens, cdf_cens, p_uncens, newtimes, time_grid){
+compute_prodint <- function(cdf_uncens, cdf_cens, p_uncens, newtimes, time_grid){
 
   estimate_S_T <- function(t){
     curr_length <- sum(time_grid <= t)

@@ -22,7 +22,7 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
   for (i in 1:nrow(bws)){
     bw_x <- bws[i,1]
     bw_y <- bws[i,2]
-    fit <- f_y_smoothnw(time = time,
+    fit <- f_y_smoothllkern(time = time,
                         event = event,
                         X = X,
                         censored = censored,
@@ -42,7 +42,7 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
   # pick optimal tuning parameters
   opt_bw<- bws[which.min(MISEs),]
 
-  opt_fit <- f_y_smoothnw(time = time,
+  opt_fit <- f_y_smoothllkern(time = time,
                           event = event,
                           X = X,
                           censored = censored,
