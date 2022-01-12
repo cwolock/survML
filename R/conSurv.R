@@ -43,7 +43,10 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
                                       censored = TRUE)
 
   # fit optimal models
-  P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX)
+  #P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
+  P_Delta_opt_preds <- predict(P_Delta_opt, newdata = newX)$pred # this is for SuperLearner
+
+  print(P_Delta_opt_preds)
   S_Y_1_opt_preds <- predict(S_Y_1_opt,
                              newX = newX,
                              newtimes = newtimes)

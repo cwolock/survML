@@ -40,5 +40,8 @@ estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE){
                            method = "method.NNloglik",
                            verbose = FALSE)
 
+  # opt_fit <- p_delta_rf(event = event,
+  #                       X = X)
+
   return(opt_fit)
 }
