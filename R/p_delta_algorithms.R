@@ -146,7 +146,7 @@ predict.p_delta_ranger <- function(fit, newX){
 #'
 #' @param event Event indicator
 #' @param X Covariates
-#' @param mtry Number of varaibles sampled as candidates as each split
+#' @param mtry Number of variables sampled as candidates as each split
 #' @param ntree Number of trees to grow
 #'
 #' @return An object of class \code{p_delta_rf}

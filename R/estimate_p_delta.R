@@ -11,27 +11,34 @@
 #' @noRd
 estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE){
 
-  bws <- seq(0.1, 1, by = 0.1)
-  MSEs <- rep(NA, length(bws))
-
-  for (i in 1:length(bws)){
-    fit <- p_delta_nw(event = event,
-                      X = X,
-                      bw = bws[i],
-                      kernel_type = "gaussian",
-                      kernel_order = 2)
-    MSEs[i] <- calculate_MSE(fit = fit,
-                             test_event = test_event,
-                             test_X = test_X)
-  }
-
-  opt_bw <- bws[which.min(MSEs)]
-
-  opt_fit <- p_delta_nw(event = event,
-                        X = X,
-                        bw = opt_bw,
-                        kernel_type = "gaussian",
-                        kernel_order = 2)
+  # bws <- seq(0.1, 1, by = 0.1)
+  # MSEs <- rep(NA, length(bws))
+  #
+  # for (i in 1:length(bws)){
+  #   fit <- p_delta_nw(event = event,
+  #                     X = X,
+  #                     bw = bws[i],
+  #                     kernel_type = "gaussian",
+  #                     kernel_order = 2)
+  #   MSEs[i] <- calculate_MSE(fit = fit,
+  #                            test_event = test_event,
+  #                            test_X = test_X)
+  # }
+  #
+  # opt_bw <- bws[which.min(MSEs)]
+  #
+  # opt_fit <- p_delta_nw(event = event,
+  #                       X = X,
+  #                       bw = opt_bw,
+  #                       kernel_type = "gaussian",
+  #                       kernel_order = 2)
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.xgboost")
+  opt_fit <- SuperLearner::SuperLearner(Y = event,
+                           X = X,
+                           family = "binomial",
+                           SL.library = SL.library,
+                           method = "method.NNloglik",
+                           verbose = FALSE)
 
   return(opt_fit)
 }

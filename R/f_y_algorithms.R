@@ -371,3 +371,51 @@ predict.f_y_smoothllkern <- function(fit, newX, newtimes){
   return(predictions)
 }
 
+#' Quantile regression forest
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param mtry Number of variables sampled as candidates as each split
+#' @param ntree Number of trees to grow
+#'
+#' @return An object of class \code{f_y_qrf}
+#' @noRd
+f_y_qrf <- function(time, event, X, censored, mtry = floor(sqrt(ncol(X))), ntree = 500){
+
+  if (censored){
+    time <- time[!as.logical(event)]
+    X <- X[!as.logical(event),]
+  } else{
+    time <- time[as.logical(event)]
+    X <- X[as.logical(event),]
+  }
+
+  qrf_fit <- quantregForest::quantregForest(x = X, y = time)
+
+  fit <- list(reg.object = qrf_fit)
+  class(fit) <- c("f_y_qrf")
+  return(fit)
+}
+
+#' Prediction function for quantile regression forest
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_qrf <- function(fit, newX, newtimes){
+
+  predict_qrf <- function(x){
+    pred <- predict(fit$reg.object, newdata = newX, what = function(z) ecdf(z)(x))
+    return(pred[1:nrow(newX)])
+  }
+  predictions <- apply(X = as.matrix(newtimes),
+                       MARGIN = 1,
+                       FUN = predict_qrf)
+  return(predictions)
+}
+
