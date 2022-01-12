@@ -32,7 +32,7 @@ estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE){
   #                       bw = opt_bw,
   #                       kernel_type = "gaussian",
   #                       kernel_order = 2)
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.xgboost")
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.randomForest")
   opt_fit <- SuperLearner::SuperLearner(Y = event,
                            X = X,
                            family = "binomial",
