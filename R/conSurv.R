@@ -77,11 +77,12 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
     # get S_Y estimates up to t
     S_Y_1_curr <- S_Y_1_opt_preds[i,]
     S_Y_0_curr <- S_Y_0_opt_preds[i,]
-    pi_curr <- 1 - P_Delta_opt_preds[i]
+    pi_curr <- P_Delta_opt_preds[i]
 
-    S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
-                            cdf_cens = S_Y_0_curr,
-                            p_uncens = pi_curr,
+    # switch roles of T and C for estimating S_C
+    S_T_ests <- compute_prodint(cdf_uncens = S_Y_0_curr,
+                            cdf_cens = S_Y_1_curr,
+                            p_uncens = 1-pi_curr,
                             newtimes = newtimes,
                             time_grid = time_grid_approx)
 
