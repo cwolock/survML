@@ -88,7 +88,7 @@ predict.f_y_expreg <- function(object, newX, newtimes) {
     predictions <- t(as.matrix(predictions))
   }
   predictions <- t(sapply(1:nrow(predictions), function(j) {
-    (1-stats::approx(predictions[j,], seq(0, .999, by=.001), xout = newtimes, method = "linear", rule = 2)$y)
+    (stats::approx(predictions[j,], seq(0, .999, by=.001), xout = newtimes, method = "linear", rule = 2)$y)
   }))
 
   return(predictions)
@@ -135,7 +135,7 @@ predict.f_y_weibreg <- function(object, newX, newtimes) {
     predictions <- t(as.matrix(predictions))
   }
   predictions <- t(sapply(1:nrow(predictions), function(j) {
-    (1-stats::approx(predictions[j,], seq(0, .999, by=.001), xout = newtimes, method = "linear", rule = 2)$y)
+    (stats::approx(predictions[j,], seq(0, .999, by=.001), xout = newtimes, method = "linear", rule = 2)$y)
   }))
 
   return(predictions)
@@ -182,7 +182,7 @@ predict.f_y_loglogreg <- function(object, newX, newtimes) {
     predictions <- t(as.matrix(predictions))
   }
   predictions <- t(sapply(1:nrow(predictions), function(j) {
-    (1-stats::approx(predictions[j,], seq(0, .999, by=.001), xout = newtimes, method = "linear", rule = 2)$y)
+    (stats::approx(predictions[j,], seq(0, .999, by=.001), xout = newtimes, method = "linear", rule = 2)$y)
   }))
 
   return(predictions)
@@ -419,3 +419,51 @@ predict.f_y_qrf <- function(fit, newX, newtimes){
   return(predictions)
 }
 
+#' Linear quantile regression
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#'
+#' @return An object of class \code{f_y_quantreg}
+#' @noRd
+f_y_quantreg <- function(time, event, X, censored){
+
+  if (censored){
+    time <- time[!as.logical(event)]
+    X <- X[!as.logical(event),]
+  } else{
+    time <- time[as.logical(event)]
+    X <- X[as.logical(event),]
+  }
+
+  dat <- data.frame(cbind(time = time, X))
+  fmla <- as.formula(paste("time ~ ", paste(colnames(X), collapse = "+")))
+
+  qr_fit <- quantreg::rq(formula = fmla,
+                         tau = seq(0.01, 0.99, by = 0.01),
+                         data = dat)
+
+  fit <- list(reg.object = qr_fit)
+  class(fit) <- c("f_y_quantreg")
+  return(fit)
+}
+
+#' Prediction function for linear quantile regression
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_quantreg <- function(fit, newX, newtimes){
+
+  predictions <- predict(fit$reg.object, newdata = newX)
+  predictions <- t(sapply(1:nrow(predictions), function(j) {
+    (stats::approx(predictions[j,], seq(0.01, .99, by=.01), xout = newtimes, method = "linear", rule = 2)$y)
+  }))
+
+  return(predictions)
+}

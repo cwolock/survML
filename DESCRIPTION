@@ -20,4 +20,5 @@ Imports:
     ranger,
     randomForest,
     quantregForest,
-    SuperLearner
+    SuperLearner,
+    quantreg
