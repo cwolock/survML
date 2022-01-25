@@ -490,14 +490,19 @@ f_y_qrnn <- function(time, event, X, censored, n.hidden = 3){
 
   X <- as.matrix(X)
   time <- as.matrix(time)
-  tau <- c(0.01, 0.99, by = 0.01)
+  #print(X)
+  #print(time)
+  tau <- seq(0.01, 0.99, by = 0.01)
   X.time.tau <- qrnn::composite.stack(X, time, tau)
-  fit <- qrnn::qrnn.fit(cbind(X.time.tau$tau, X.time.tau$X),
-                        X.time.tau$time,
+  fit <- qrnn::qrnn.fit(cbind(X.time.tau$tau, X.time.tau$x),
+                        X.time.tau$y,
                         tau = X.time.tau$tau,
                         n.hidden = n.hidden,
                         monotone = NULL,
-                        additive = TRUE)
+                        additive = TRUE,
+                        trace = FALSE)
+  #fit <- qrnn::mcqrnn.fit(x = X, y = time, tau = tau, n.hidden= 2)
+  #print(fit)
 
   fit <- list(reg.object = fit)
   class(fit) <- c("f_y_qrnn")
@@ -514,9 +519,12 @@ f_y_qrnn <- function(time, event, X, censored, n.hidden = 3){
 #' @noRd
 predict.f_y_qrnn <- function(fit, newX, newtimes){
 
-  tau <- c(0.01, 0.99, by = 0.01)
-  X.tau <- qrnn::composite.stack(newX, tau)
-  predictions <- matrix(qrnn::qrnn.predict(cbind(X.tau$tau, X.tau$X), fit$reg.object), ncol = length(tau))
+  newX <- as.matrix(newX)
+
+  tau <- seq(0.01, 0.99, by = 0.01)
+  X.tau <- qrnn::composite.stack(x = newX, y = as.matrix(0), tau = tau)
+  predictions <- matrix(qrnn::qrnn.predict(cbind(X.tau$tau, X.tau$x), fit$reg.object), ncol = length(tau))
+  #predictions <- qrnn::mcqrnn.predict(newX, fit$reg.object)
 
   predictions <- t(sapply(1:nrow(predictions), function(j) {
     (stats::approx(predictions[j,], seq(0.01, .99, by=.01), xout = newtimes, method = "linear", rule = 2)$y)
