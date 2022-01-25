@@ -54,7 +54,7 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
   #                         bwy = opt_bw[1,2],
   #                         kernel_type = "gaussian",
   #                         kernel_order = 2)
-  opt_fit <- f_y_qrf(time = time,
+  opt_fit <- f_y_quantreg(time = time,
                  event = event,
                  X = X,
                  censored = censored)

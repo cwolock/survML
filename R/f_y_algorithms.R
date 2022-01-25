@@ -467,3 +467,60 @@ predict.f_y_quantreg <- function(fit, newX, newtimes){
 
   return(predictions)
 }
+
+#' Additive neural net quantile regression
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param n.hidden Number of hidden nodes, passed to \code{qrnn.fit}
+#'
+#' @return An object of class \code{f_y_qrnn}
+#' @noRd
+f_y_qrnn <- function(time, event, X, censored, n.hidden = 3){
+
+  if (censored){
+    time <- time[!as.logical(event)]
+    X <- X[!as.logical(event),]
+  } else{
+    time <- time[as.logical(event)]
+    X <- X[as.logical(event),]
+  }
+
+  X <- as.matrix(X)
+  time <- as.matrix(time)
+  tau <- c(0.01, 0.99, by = 0.01)
+  X.time.tau <- qrnn::composite.stack(X, time, tau)
+  fit <- qrnn::qrnn.fit(cbind(X.time.tau$tau, X.time.tau$X),
+                        X.time.tau$time,
+                        tau = X.time.tau$tau,
+                        n.hidden = n.hidden,
+                        monotone = NULL,
+                        additive = TRUE)
+
+  fit <- list(reg.object = fit)
+  class(fit) <- c("f_y_qrnn")
+  return(fit)
+}
+
+#' Prediction function for quantile regression neural net
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_qrnn <- function(fit, newX, newtimes){
+
+  tau <- c(0.01, 0.99, by = 0.01)
+  X.tau <- qrnn::composite.stack(newX, tau)
+  predictions <- matrix(qrnn::qrnn.predict(cbind(X.tau$tau, X.tau$X), fit$reg.object), ncol = length(tau))
+
+  predictions <- t(sapply(1:nrow(predictions), function(j) {
+    (stats::approx(predictions[j,], seq(0.01, .99, by=.01), xout = newtimes, method = "linear", rule = 2)$y)
+  }))
+
+  return(predictions)
+}
