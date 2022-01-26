@@ -631,3 +631,94 @@ predict.f_y_stackSL <- function(fit, newX, newtimes){
   predictions <- 1 - predictions
   return(predictions)
 }
+
+#' Discrete hazard SuperLearner
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param bin_size Size of quantiles over which to make the stacking bins
+#'
+#' @return An object of class \code{f_y_discSL}
+#' @noRd
+f_y_discSL <- function(time, event, X, censored, bin_size){
+
+  if (censored){
+    time <- time[!as.logical(event)]
+    X <- X[!as.logical(event),]
+  } else{
+    time <- time[as.logical(event)]
+    X <- X[as.logical(event),]
+  }
+
+  # X <- as.matrix(X)
+  # time <- as.matrix(time)
+  dat <- data.frame(X, time)
+
+  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  intervals <- cbind(time_grid[-length(time_grid)], time_grid[-1])
+  n.intervals <- length(time_grid) - 1
+
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam")#, "SL.randomForest")
+  sl.fits <- lapply(1:(n.intervals-1), function(j) {
+    if(j == 1){
+      samp <- time >= 0
+    } else {
+      samp <- time > intervals[j,1]
+    }
+    outcome <- as.numeric(time <= intervals[j,2])
+    # } else {
+    #   outcome <- rep(1, length(time))
+    # }
+    fit <- SuperLearner::SuperLearner(Y = outcome[samp],
+                                      X = X[samp,],
+                                      SL.library = SL.library,
+                                      family = 'binomial',
+                                      method = 'method.NNloglik',
+                                      verbose = FALSE)
+    fit
+  })
+
+  fit <- list(reg.object = sl.fits, time_grid = time_grid)
+  class(fit) <- c("f_y_discSL")
+  return(fit)
+}
+
+#' Prediction function for discrete hazard SL
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_discSL <- function(fit, newX, newtimes){
+
+  time_grid <- fit$time_grid
+  n.intervals <- length(time_grid) - 1
+  intervals <- cbind(time_grid[-length(time_grid)], time_grid[-1])
+
+  new.time.bins <- findInterval(newtimes, time_grid, all.inside = TRUE)
+
+  hazard.ests <- sapply(1:(n.intervals-1), function(j) {
+    predict(fit$reg.object[[j]], newdata=newX)$pred
+  })
+
+  # set hazard in last time bin to 1
+  hazard.ests <- cbind(hazard.ests, rep(1, nrow(newX)))
+
+  hazard.ests <- 1-hazard.ests
+
+  get_pred <- function(j){
+    bin <- new.time.bins[j]
+    preds <- apply(hazard.ests[,1:bin,drop=FALSE], MARGIN = 1, FUN = prod)
+  }
+
+  predictions <- sapply(1:length(newtimes), get_pred)
+
+  predictions <- 1 - predictions
+  return(predictions)
+}
+
