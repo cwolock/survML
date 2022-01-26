@@ -638,7 +638,7 @@ predict.f_y_stackSL <- function(fit, newX, newtimes){
 #' @param event Indicator of event (vs censoring)
 #' @param X Covariate matrix
 #' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
-#' @param bin_size Size of quantiles over which to make the stacking bins
+#' @param bin_size Size of quantiles over which to make the time bins
 #'
 #' @return An object of class \code{f_y_discSL}
 #' @noRd
@@ -719,6 +719,93 @@ predict.f_y_discSL <- function(fit, newX, newtimes){
   predictions <- sapply(1:length(newtimes), get_pred)
 
   predictions <- 1 - predictions
+  return(predictions)
+}
+
+#' Discrete time isotonized SuperLearner
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param bin_size Size of quantiles over which to make the time bins
+#'
+#' @return An object of class \code{f_y_isoSL}
+#' @noRd
+f_y_isoSL <- function(time, event, X, censored, bin_size){
+
+  if (censored){
+    time <- time[!as.logical(event)]
+    X <- X[!as.logical(event),]
+  } else{
+    time <- time[as.logical(event)]
+    X <- X[as.logical(event),]
+  }
+
+  dat <- data.frame(X, time)
+
+  time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
+  time_grid <- time_grid[-1] # don't run regression at time 0
+  n.bins <- length(time_grid)
+
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam")#, "SL.randomForest")
+  sl.fits <- lapply(1:(n.bins-1), function(j) {
+    outcome <- as.numeric(time <= time_grid[j])
+    fit <- SuperLearner::SuperLearner(Y = outcome[],
+                                      X = X,
+                                      SL.library = SL.library,
+                                      family = 'binomial',
+                                      method = 'method.NNloglik',
+                                      verbose = FALSE)
+    fit
+  })
+
+  fit <- list(reg.object = sl.fits, time_grid = time_grid)
+  class(fit) <- c("f_y_isoSL")
+  return(fit)
+}
+
+#' Prediction function for discrete isotonized SL
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_isoSL <- function(fit, newX, newtimes){
+
+  time_grid <- fit$time_grid
+  n.bins <- length(time_grid)
+
+  time_grid <- c(0, time_grid)
+  new.time.bins <- apply(X = as.matrix(newtimes), MARGIN = 1, FUN = function(x) max(which(time_grid <= x)))
+
+  cdf.ests <- sapply(1:(n.bins-1), function(j) {
+    predict(fit$reg.object[[j]], newdata=newX)$pred
+  })
+
+  # set hazard in last time bin to 1
+  #cdf.ests <- cbind(cdf.ests, rep(1, nrow(newX)))
+
+  # isotonize??
+  iso.cdf.ests <- t(apply(cdf.ests, MARGIN = 1, FUN = Iso::pava))
+
+  get_pred <- function(j){
+    bin <- new.time.bins[j]
+    if (bin == 1){
+      pred <- rep(0, nrow(newX))
+    } else if (bin == length(time_grid)){
+      pred <- rep(1, nrow(newX))
+    } else{
+      pred <- iso.cdf.ests[,bin-1]
+    }
+    return
+    return(pred)
+  }
+
+  predictions <- sapply(1:length(newtimes), get_pred)
+
   return(predictions)
 }
 

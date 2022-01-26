@@ -54,11 +54,11 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
   #                         bwy = opt_bw[1,2],
   #                         kernel_type = "gaussian",
   #                         kernel_order = 2)
-  bin_sizes <- c(0.025, 0.05, 0.1, 0.2)
+  bin_sizes <- c(0.025, 0.05, 0.1)
   MISEs <- rep(NA, length(bin_sizes))
   #
   for (i in 1:length(bin_sizes)){
-    fit <- f_y_discSL(time = time,
+    fit <- f_y_isoSL(time = time,
                        event = event,
                        X = X,
                        censored = censored,
@@ -74,7 +74,7 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
 
   # pick optimal tuning parameters
   opt_bin_size <- bin_sizes[which.min(MISEs)]
-  opt_fit <- f_y_discSL(time = time,
+  opt_fit <- f_y_isoSL(time = time,
                  event = event,
                  X = X,
                  censored = censored,
