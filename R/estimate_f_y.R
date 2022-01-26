@@ -54,7 +54,7 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
   #                         bwy = opt_bw[1,2],
   #                         kernel_type = "gaussian",
   #                         kernel_order = 2)
-  bin_sizes <- c(0.05)#, 0.1)
+  bin_sizes <- c(0.025, 0.05, 0.1)
   MISEs <- rep(NA, length(bin_sizes))
   #
   for (i in 1:length(bin_sizes)){
