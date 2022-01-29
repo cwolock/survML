@@ -729,10 +729,11 @@ predict.f_y_discSL <- function(fit, newX, newtimes){
 #' @param X Covariate matrix
 #' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
 #' @param bin_size Size of quantiles over which to make the time bins
+#' @param isotonize Logical, indicates whether or not to isotonize cdf estimates using PAVA
 #'
 #' @return An object of class \code{f_y_isoSL}
 #' @noRd
-f_y_isoSL <- function(time, event, X, censored, bin_size){
+f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
 
   if (censored){
     time <- time[!as.logical(event)]
@@ -760,7 +761,7 @@ f_y_isoSL <- function(time, event, X, censored, bin_size){
     fit
   })
 
-  fit <- list(reg.object = sl.fits, time_grid = time_grid)
+  fit <- list(reg.object = sl.fits, time_grid = time_grid, isotonize = isotonize)
   class(fit) <- c("f_y_isoSL")
   return(fit)
 }
@@ -788,8 +789,13 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
   # set hazard in last time bin to 1
   #cdf.ests <- cbind(cdf.ests, rep(1, nrow(newX)))
 
-  # isotonize??
-  iso.cdf.ests <- t(apply(cdf.ests, MARGIN = 1, FUN = Iso::pava))
+  if (fit$isotonize){
+    # isotonize??
+    iso.cdf.ests <- t(apply(cdf.ests, MARGIN = 1, FUN = Iso::pava))
+  } else{
+    iso.cdf.ests <- cdf.ests
+  }
+
 
   get_pred <- function(j){
     bin <- new.time.bins[j]
@@ -800,7 +806,6 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
     } else{
       pred <- iso.cdf.ests[,bin-1]
     }
-    return
     return(pred)
   }
 

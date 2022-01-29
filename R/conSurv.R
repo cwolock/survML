@@ -21,11 +21,11 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
                     time_grid_eval, weights = NULL, test_time, test_event, test_X){
 
   # determine optimal models (currently using oracle tuning)
-  P_Delta_opt <- conSurv:::estimate_p_delta(event = event,
+  P_Delta_opt <- estimate_p_delta(event = event,
                                             X = X,
                                             test_event = test_event,
                                             test_X = test_X)
-  S_Y_1_opt <-conSurv:::estimate_f_y(time = time,
+  S_Y_1_opt <-estimate_f_y(time = time,
                                       event = event,
                                       X = X,
                                       test_time = test_time,
@@ -33,7 +33,7 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
                                       test_X = test_X,
                                       time_grid_eval = time_grid_eval,
                                       censored = FALSE)
-  S_Y_0_opt <- conSurv:::estimate_f_y(time = time,
+  S_Y_0_opt <- estimate_f_y(time = time,
                                       event = event,
                                       X = X,
                                       test_time = test_time,
@@ -46,10 +46,10 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
   #P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
   P_Delta_opt_preds <- predict(P_Delta_opt, newdata = newX)$pred # this is for SuperLearner
 
-  S_Y_1_opt_preds <- conSurv:::predict.f_y_isoSL(S_Y_1_opt,
+  S_Y_1_opt_preds <- predict(S_Y_1_opt,
                              newX = newX,
                              newtimes = time_grid_approx) # this was previously newtimes, which was possibly causing a HUGE issue
-  S_Y_0_opt_preds <- conSurv:::predict.f_y_isoSL(S_Y_0_opt,
+  S_Y_0_opt_preds <- predict(S_Y_0_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
 
