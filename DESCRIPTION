@@ -22,4 +22,5 @@ Imports:
     quantregForest,
     SuperLearner,
     quantreg,
-    qrnn
+    qrnn,
+    gbm

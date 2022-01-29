@@ -746,21 +746,32 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   time_grid <- time_grid[-1] # don't run regression at time 0
   n.bins <- length(time_grid)
 
+  sl.fits <- lapply(1:(n.bins-1), function(j) {
+    outcome <- as.numeric(time <= time_grid[j])
+    gbm.model <- as.formula(paste("outcome~", paste(colnames(X), collapse="+")))
+    fit.gbm <- gbm::gbm(formula = gbm.model, data = X, distribution = "bernoulli", n.trees = 1000,
+                        interaction.depth = 2, shrinkage = 0.1, bag.fraction = 0.5,
+                        n.minobsinnode = 10, cv.folds = 5, keep.data = TRUE,verbose = FALSE)
+    best.iter <- gbm::gbm.perf(fit.gbm, method = "cv", plot.it = FALSE)
+    fit <- list(object = fit.gbm, n.trees = best.iter)
+    fit
+  })
+
   # tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
   #             shrinkage = c(0.1, 0.01, 0.001))
   # xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
 
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.gbm")#, "SL.randomForest")
-  sl.fits <- lapply(1:(n.bins-1), function(j) {
-    outcome <- as.numeric(time <= time_grid[j])
-    fit <- SuperLearner::SuperLearner(Y = outcome,
-                                      X = X,
-                                      SL.library = SL.library,#xgb_grid$names,
-                                      family = 'binomial',
-                                      method = 'method.NNloglik',
-                                      verbose = FALSE)
-    fit
-  })
+  # SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.gbm")#, "SL.randomForest")
+  # sl.fits <- lapply(1:(n.bins-1), function(j) {
+  #   outcome <- as.numeric(time <= time_grid[j])
+  #   fit <- SuperLearner::SuperLearner(Y = outcome,
+  #                                     X = X,
+  #                                     SL.library = SL.library,#xgb_grid$names,
+  #                                     family = 'binomial',
+  #                                     method = 'method.NNloglik',
+  #                                     verbose = FALSE)
+  #   fit
+  # })
 
   fit <- list(reg.object = sl.fits, time_grid = time_grid, isotonize = isotonize)
   class(fit) <- c("f_y_isoSL")
@@ -784,7 +795,8 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
   new.time.bins <- apply(X = as.matrix(newtimes), MARGIN = 1, FUN = function(x) max(which(time_grid <= x)))
 
   cdf.ests <- sapply(1:(n.bins-1), function(j) {
-    predict(fit$reg.object[[j]], newdata=newX)$pred
+    predict(fit$reg.object[[j]]$object, newdata = newX, n.trees = fit$reg.object[[j]]$n.trees, type = "response") # gbm
+    #predict(fit$reg.object[[j]], newdata=newX)$pred this is for superlearner
   })
 
   if (fit$isotonize){
