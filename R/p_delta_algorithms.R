@@ -137,7 +137,6 @@ p_delta_ranger <- function(event, X, mtry = floor(sqrt(ncol(X))), num.trees = 50
 #' @noRd
 predict.p_delta_ranger <- function(fit, newX){
   pred <- predict(fit$reg.object, data = newX)$predictions
-  print(pred)
   pred <- pred[, "1"]
   return(pred)
 }

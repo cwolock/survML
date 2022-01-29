@@ -3,3 +3,4 @@
 export(conSurv)
 export(f_y_listWrappers)
 export(p_delta_listWrappers)
+export(stackSurv)

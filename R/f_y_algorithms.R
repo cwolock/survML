@@ -41,7 +41,6 @@ predict.f_y_ecdf <- function(fit, newX, newtimes){
   predictions <- apply(X = as.matrix(newtimes),
                        MARGIN = 1,
                        FUN = predict_ecdf)
-  print(predictions)
   predictions <- t(replicate(nrow(newX), predictions))
   return(predictions)
 }
@@ -244,9 +243,7 @@ predict.f_y_nw <- function(fit, newX, newtimes){
       pred <- rep(0, nrow(newX))
     } else{
       t_floor <-  max(which(fit$time_grid <= t))
-      print(t_floor)
       reg_floor <- fit$reg.object[[t_floor]]
-      print(reg_floor)
       pred <- predict(reg_floor, newdata = newX)
     }
     return(pred)
@@ -284,11 +281,11 @@ f_y_smoothnw <- function(time, event, X, censored, bw, bwy, kernel_type = "gauss
   ind <- time
   dat <- data.frame(cbind(ind = ind, X))
   nw_fit <- eval(bquote(np::npcdist(formula = .(fmla),
-                          data = dat,
-                          bws = c(bwy, rep(bw, ncol(X))),
-                          regtype = "lc",
-                          ckertype = kernel_type,
-                      ckerorder = kernel_order)))
+                                    data = dat,
+                                    bws = c(bwy, rep(bw, ncol(X))),
+                                    regtype = "lc",
+                                    ckertype = kernel_type,
+                                    ckerorder = kernel_order)))
 
   fit <- list(reg.object = nw_fit)
   class(fit) <- c("f_y_smoothnw")
@@ -749,12 +746,16 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   time_grid <- time_grid[-1] # don't run regression at time 0
   n.bins <- length(time_grid)
 
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.xgboost")#, "SL.randomForest")
+  # tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
+  #             shrinkage = c(0.1, 0.01, 0.001))
+  # xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
+
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.gbm")#, "SL.randomForest")
   sl.fits <- lapply(1:(n.bins-1), function(j) {
     outcome <- as.numeric(time <= time_grid[j])
-    fit <- SuperLearner::SuperLearner(Y = outcome[],
+    fit <- SuperLearner::SuperLearner(Y = outcome,
                                       X = X,
-                                      SL.library = SL.library,
+                                      SL.library = SL.library,#xgb_grid$names,
                                       family = 'binomial',
                                       method = 'method.NNloglik',
                                       verbose = FALSE)
@@ -785,9 +786,6 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
   cdf.ests <- sapply(1:(n.bins-1), function(j) {
     predict(fit$reg.object[[j]], newdata=newX)$pred
   })
-
-  # set hazard in last time bin to 1
-  #cdf.ests <- cbind(cdf.ests, rep(1, nrow(newX)))
 
   if (fit$isotonize){
     # isotonize??
