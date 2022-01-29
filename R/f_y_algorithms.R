@@ -749,7 +749,7 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   time_grid <- time_grid[-1] # don't run regression at time 0
   n.bins <- length(time_grid)
 
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam")#, "SL.randomForest")
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.xgboost")#, "SL.randomForest")
   sl.fits <- lapply(1:(n.bins-1), function(j) {
     outcome <- as.numeric(time <= time_grid[j])
     fit <- SuperLearner::SuperLearner(Y = outcome[],
