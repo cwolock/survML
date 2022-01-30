@@ -775,16 +775,16 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   #   fit
   # })
 
-  tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
-              shrinkage = c(0.1, 0.01))
-  xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
+  # tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
+  #             shrinkage = c(0.1, 0.01))
+  # xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
 
-  #SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.gbm")#, "SL.randomForest")
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.randomForest")
   sl.fits <- lapply(1:(n.bins-1), function(j) {
     outcome <- as.numeric(time <= time_grid[j])
     fit <- SuperLearner::SuperLearner(Y = outcome,
                                       X = X,
-                                      SL.library = xgb_grid$names,
+                                      SL.library = SL.library,#xgb_grid$names,
                                       family = 'binomial',
                                       method = 'method.NNloglik',
                                       verbose = FALSE)
