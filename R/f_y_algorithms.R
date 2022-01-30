@@ -746,16 +746,34 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   time_grid <- time_grid[-1] # don't run regression at time 0
   n.bins <- length(time_grid)
 
+  # this is for xgboost
+  if (!is.matrix(X)) {
+    X <- model.matrix(~ . - 1, X)
+  }
+
   sl.fits <- lapply(1:(n.bins-1), function(j) {
     outcome <- as.numeric(time <= time_grid[j])
-    gbm.model <- as.formula(paste("outcome~", paste(colnames(X), collapse="+")))
-    fit.gbm <- gbm::gbm(formula = gbm.model, data = X, distribution = "bernoulli", n.trees = 1000,
-                        interaction.depth = 2, shrinkage = 0.1, bag.fraction = 0.5,
-                        n.minobsinnode = 10, cv.folds = 5, keep.data = TRUE,verbose = FALSE)
-    best.iter <- gbm::gbm.perf(fit.gbm, method = "cv", plot.it = FALSE)
-    fit <- list(object = fit.gbm, n.trees = best.iter)
+    # Convert to an xgboost compatible data matrix, using the sample weights.
+    xgmat <- xgboost::xgb.DMatrix(data = X, label = outcome)
+    model <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = 500,
+                             max_depth = 2, min_child_weight = 10, eta = 0.1,
+                             verbose = FALSE, nthread = 1, params = list(),
+                             save_period = NULL, eval_metric = "logloss")
+    fit <- list(object = model)
     fit
   })
+
+  # gbm - sloooooow - also having segfault issues on cluster
+  # sl.fits <- lapply(1:(n.bins-1), function(j) {
+  #   outcome <- as.numeric(time <= time_grid[j])
+  #   gbm.model <- as.formula(paste("outcome~", paste(colnames(X), collapse="+")))
+  #   fit.gbm <- gbm::gbm(formula = gbm.model, data = X, distribution = "bernoulli", n.trees = 1000,
+  #                       interaction.depth = 2, shrinkage = 0.1, bag.fraction = 0.5,
+  #                       n.minobsinnode = 10, cv.folds = 5, keep.data = TRUE,verbose = FALSE)
+  #   best.iter <- gbm::gbm.perf(fit.gbm, method = "cv", plot.it = FALSE)
+  #   fit <- list(object = fit.gbm, n.trees = best.iter)
+  #   fit
+  # })
 
   # tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
   #             shrinkage = c(0.1, 0.01, 0.001))
@@ -794,8 +812,13 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
   time_grid <- c(0, time_grid)
   new.time.bins <- apply(X = as.matrix(newtimes), MARGIN = 1, FUN = function(x) max(which(time_grid <= x)))
 
+  # this is for xgboost
+  if (!is.matrix(newX)) {
+    newX = model.matrix(~ . - 1, newX)
+  }
   cdf.ests <- sapply(1:(n.bins-1), function(j) {
-    predict(fit$reg.object[[j]]$object, newdata = newX, n.trees = fit$reg.object[[j]]$n.trees, type = "response") # gbm
+    pred = predict(fit$reg.object[[j]]$object, newdata = newX)
+    #predict(fit$reg.object[[j]]$object, newdata = newX, n.trees = fit$reg.object[[j]]$n.trees, type = "response") # gbm
     #predict(fit$reg.object[[j]], newdata=newX)$pred this is for superlearner
   })
 
@@ -805,7 +828,6 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
   } else{
     iso.cdf.ests <- cdf.ests
   }
-
 
   get_pred <- function(j){
     bin <- new.time.bins[j]
