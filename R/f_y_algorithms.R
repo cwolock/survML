@@ -747,21 +747,21 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   n.bins <- length(time_grid)
 
   # this is for xgboost
-  if (!is.matrix(X)) {
-    X <- model.matrix(~ . - 1, X)
-  }
-
-  sl.fits <- lapply(1:(n.bins-1), function(j) {
-    outcome <- as.numeric(time <= time_grid[j])
-    # Convert to an xgboost compatible data matrix, using the sample weights.
-    xgmat <- xgboost::xgb.DMatrix(data = X, label = outcome)
-    model <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = 500,
-                             max_depth = 2, min_child_weight = 10, eta = 0.1,
-                             verbose = FALSE, nthread = 1, params = list(),
-                             save_period = NULL, eval_metric = "logloss")
-    fit <- list(object = model)
-    fit
-  })
+  # if (!is.matrix(X)) {
+  #   X <- model.matrix(~ . - 1, X)
+  # }
+  #
+  # sl.fits <- lapply(1:(n.bins-1), function(j) {
+  #   outcome <- as.numeric(time <= time_grid[j])
+  #   # Convert to an xgboost compatible data matrix, using the sample weights.
+  #   xgmat <- xgboost::xgb.DMatrix(data = X, label = outcome)
+  #   model <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = 500,
+  #                            max_depth = 2, min_child_weight = 10, eta = 0.1,
+  #                            verbose = FALSE, nthread = 1, params = list(),
+  #                            save_period = NULL, eval_metric = "logloss")
+  #   fit <- list(object = model)
+  #   fit
+  # })
 
   # gbm - sloooooow - also having segfault issues on cluster
   # sl.fits <- lapply(1:(n.bins-1), function(j) {
@@ -775,21 +775,21 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   #   fit
   # })
 
-  # tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
-  #             shrinkage = c(0.1, 0.01, 0.001))
-  # xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
+  tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
+              shrinkage = c(0.1, 0.01, 0.001))
+  xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
 
-  # SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.gbm")#, "SL.randomForest")
-  # sl.fits <- lapply(1:(n.bins-1), function(j) {
-  #   outcome <- as.numeric(time <= time_grid[j])
-  #   fit <- SuperLearner::SuperLearner(Y = outcome,
-  #                                     X = X,
-  #                                     SL.library = SL.library,#xgb_grid$names,
-  #                                     family = 'binomial',
-  #                                     method = 'method.NNloglik',
-  #                                     verbose = FALSE)
-  #   fit
-  # })
+  #SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.gbm")#, "SL.randomForest")
+  sl.fits <- lapply(1:(n.bins-1), function(j) {
+    outcome <- as.numeric(time <= time_grid[j])
+    fit <- SuperLearner::SuperLearner(Y = outcome,
+                                      X = X,
+                                      SL.library = xgb_grid$names,
+                                      family = 'binomial',
+                                      method = 'method.NNloglik',
+                                      verbose = FALSE)
+    fit
+  })
 
   fit <- list(reg.object = sl.fits, time_grid = time_grid, isotonize = isotonize)
   class(fit) <- c("f_y_isoSL")
@@ -813,13 +813,13 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
   new.time.bins <- apply(X = as.matrix(newtimes), MARGIN = 1, FUN = function(x) max(which(time_grid <= x)))
 
   # this is for xgboost
-  if (!is.matrix(newX)) {
-    newX = model.matrix(~ . - 1, newX)
-  }
+  # if (!is.matrix(newX)) {
+  #   newX = model.matrix(~ . - 1, newX)
+  # }
   cdf.ests <- sapply(1:(n.bins-1), function(j) {
-    pred = predict(fit$reg.object[[j]]$object, newdata = newX)
+    #pred = predict(fit$reg.object[[j]]$object, newdata = newX)
     #predict(fit$reg.object[[j]]$object, newdata = newX, n.trees = fit$reg.object[[j]]$n.trees, type = "response") # gbm
-    #predict(fit$reg.object[[j]], newdata=newX)$pred this is for superlearner
+    predict(fit$reg.object[[j]], newdata=newX)$pred #this is for superlearner
   })
 
   if (fit$isotonize){
