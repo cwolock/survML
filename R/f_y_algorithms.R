@@ -779,14 +779,15 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   #             shrinkage = c(0.1, 0.01))
   # xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
 
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.randomForest")
+  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.ranger")
   sl.fits <- lapply(1:(n.bins-1), function(j) {
     outcome <- as.numeric(time <= time_grid[j])
+
     fit <- SuperLearner::SuperLearner(Y = outcome,
                                       X = X,
                                       SL.library = SL.library,#xgb_grid$names,
-                                      family = 'binomial',
-                                      method = 'method.NNloglik',
+                                      family = binomial(),
+                                      method = 'method.NNLS',
                                       verbose = FALSE)
     fit
   })
