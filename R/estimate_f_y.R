@@ -78,7 +78,7 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
                  event = event,
                  X = X,
                  censored = censored,
-                 bin_size = 0.01)
+                 bin_size = 0.02)
 
   return(opt_fit)
 }
