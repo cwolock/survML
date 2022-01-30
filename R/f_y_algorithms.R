@@ -776,7 +776,7 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   # })
 
   tune = list(ntrees = c(100, 500), max_depth = c(1, 2), minobspernode = 10,
-              shrinkage = c(0.1, 0.01, 0.001))
+              shrinkage = c(0.1, 0.01))
   xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
 
   #SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.gbm")#, "SL.randomForest")
