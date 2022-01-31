@@ -730,7 +730,7 @@ predict.f_y_discSL <- function(fit, newX, newtimes){
 #'
 #' @return An object of class \code{f_y_isoSL}
 #' @noRd
-f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
+f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE, SL.library){
 
   if (censored){
     time <- time[!as.logical(event)]
@@ -779,7 +779,7 @@ f_y_isoSL <- function(time, event, X, censored, bin_size, isotonize = TRUE){
   #             shrinkage = c(0.1, 0.01))
   # xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
 
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.ranger")
+  #SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.ranger")
   sl.fits <- lapply(1:(n.bins-1), function(j) {
     outcome <- as.numeric(time <= time_grid[j])
 

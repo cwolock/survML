@@ -9,7 +9,7 @@
 #'
 #' @return Optimal fit for estimating p_delta
 #' @noRd
-estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE){
+estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE, SL.library){
 
   # bws <- seq(0.1, 1, by = 0.1)
   # MSEs <- rep(NA, length(bws))
@@ -32,7 +32,7 @@ estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE){
   #                       bw = opt_bw,
   #                       kernel_type = "gaussian",
   #                       kernel_order = 2)
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.ranger", "SL.earth")#, "SL.xgboost")
+  #SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.ranger", "SL.earth")#, "SL.xgboost")
   opt_fit <- SuperLearner::SuperLearner(Y = event,
                            X = X,
                            family = "binomial",

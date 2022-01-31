@@ -15,7 +15,8 @@ conSurv(
   weights = NULL,
   test_time,
   test_event,
-  test_X
+  test_X,
+  SL.library
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ conSurv(
 \item{test_event}{Event indicators to test against}
 
 \item{test_X}{Covariates corresponding to \code{test_times} and \code{test_event}}
+
+\item{SL.library}{SuperLearner library}
 }
 \value{
 An object of class \code{conSurv}

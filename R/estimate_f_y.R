@@ -13,7 +13,9 @@
 #'
 #' @return Optimal fit for estimating f_y
 #' @noRd
-estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_grid_eval, censored, rescale = TRUE){
+estimate_f_y <- function(time, event, X, test_time, test_event, test_X,
+                         time_grid_eval, censored, rescale = TRUE,
+                         SL.library){
 #
 #   bws <- expand.grid(x = seq(0.1, 1, by = 0.1), y = c(seq(0.5, 1, by = 0.1), seq(2, 5, by = 1)))
 #
@@ -78,7 +80,8 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X, time_gri
                  event = event,
                  X = X,
                  censored = censored,
-                 bin_size = 0.02)
+                 bin_size = 0.025,
+                 SL.library = SL.library)
 
   return(opt_fit)
 }

@@ -11,6 +11,7 @@
 #' @param test_time Observed times to evaluate against
 #' @param test_event Event indicators to test against
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
+#' @param SL.library SuperLearner library
 #'
 #' @return An object of class \code{conSurv}
 #'
@@ -18,13 +19,15 @@
 #'
 #' @examples
 conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
-                    time_grid_eval, weights = NULL, test_time, test_event, test_X){
+                    time_grid_eval, weights = NULL, test_time, test_event, test_X,
+                    SL.library){
 
   # determine optimal models (currently using oracle tuning)
   P_Delta_opt <- estimate_p_delta(event = event,
                                             X = X,
                                             test_event = test_event,
-                                            test_X = test_X)
+                                            test_X = test_X,
+                                  SL.library = SL.library)
   S_Y_1_opt <-estimate_f_y(time = time,
                                       event = event,
                                       X = X,
@@ -32,7 +35,8 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
                                       test_event = test_event,
                                       test_X = test_X,
                                       time_grid_eval = time_grid_eval,
-                                      censored = FALSE)
+                                      censored = FALSE,
+                           SL.library = SL.library)
   S_Y_0_opt <- estimate_f_y(time = time,
                                       event = event,
                                       X = X,
@@ -40,7 +44,8 @@ conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
                                       test_event = test_event,
                                       test_X = test_X,
                                       time_grid_eval = time_grid_eval,
-                                      censored = TRUE)
+                                      censored = TRUE,
+                            SL.library = SL.library)
 
   # fit optimal models
   #P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
