@@ -4,7 +4,18 @@
 \alias{stackSurv}
 \title{Estimate a conditional survival function via stacking}
 \usage{
-stackSurv(time, event, X, newX, newtimes, bin_size = NULL)
+stackSurv(
+  time,
+  event,
+  X,
+  newX,
+  newtimes,
+  bin_size = NULL,
+  test_time = NULL,
+  test_event = NULL,
+  test_X = NULL,
+  SL.library
+)
 }
 \arguments{
 \item{time}{Observed time}
@@ -18,6 +29,8 @@ stackSurv(time, event, X, newX, newtimes, bin_size = NULL)
 \item{newtimes}{Times at which to make the survival function prediction}
 
 \item{bin_size}{Quantiles on which to grid times. If NULL, defaults to every observed time}
+
+\item{SL.library}{SuperLearner library}
 }
 \value{
 An object of class \code{stack}

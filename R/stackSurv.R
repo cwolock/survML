@@ -6,13 +6,23 @@
 #' @param newX Values of covariates at which to make a prediction
 #' @param newtimes Times at which to make the survival function prediction
 #' @param bin_size Quantiles on which to grid times. If NULL, defaults to every observed time
+#' @param SL.library SuperLearner library
 #'
 #' @return An object of class \code{stack}
 #'
 #' @export
 #'
 #' @examples
-stackSurv <- function(time, event, X, newX, newtimes, bin_size = NULL){
+stackSurv <- function(time,
+                      event,
+                      X,
+                      newX,
+                      newtimes,
+                      bin_size = NULL,
+                      test_time = NULL,
+                      test_event = NULL,
+                      test_X = NULL,
+                      SL.library){
 
   X <- as.matrix(X)
   time <- as.matrix(time)
@@ -21,11 +31,11 @@ stackSurv <- function(time, event, X, newX, newtimes, bin_size = NULL){
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
     time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
   } else{
     time_grid <- sort(unique(time))
   }
 
-  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
   trunc_time_grid <- time_grid[-length(time_grid)]
 
   ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
@@ -47,12 +57,12 @@ stackSurv <- function(time, event, X, newX, newtimes, bin_size = NULL){
   Y <- stacked$event_indicators
   X <- stacked[,-ncol(stacked)]
 
-  SL.library <- c("SL.mean", "SL.glm", "SL.gam")#, "SL.xgboost")
+  #SL.library <- c("SL.mean", "SL.glm", "SL.gam")#, "SL.xgboost")
   fit <- SuperLearner::SuperLearner(Y = Y,
                                     X = X,
-                                    family = "binomial",
+                                    family = binomial(),
                                     SL.library = SL.library,
-                                    method = "method.NNloglik",
+                                    method = "method.NNLS",
                                     verbose = FALSE)
 
 

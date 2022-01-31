@@ -18,8 +18,17 @@
 #' @export
 #'
 #' @examples
-conSurv <- function(time, event, X, newX, newtimes, time_grid_approx,
-                    time_grid_eval, weights = NULL, test_time, test_event, test_X,
+conSurv <- function(time,
+                    event,
+                    X,
+                    newX,
+                    newtimes,
+                    time_grid_approx,
+                    time_grid_eval = NULL,
+                    weights = NULL,
+                    test_time = NULL,
+                    test_event = NULL,
+                    test_X = NULL,
                     SL.library){
 
   # determine optimal models (currently using oracle tuning)

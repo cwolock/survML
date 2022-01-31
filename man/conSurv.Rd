@@ -11,11 +11,11 @@ conSurv(
   newX,
   newtimes,
   time_grid_approx,
-  time_grid_eval,
+  time_grid_eval = NULL,
   weights = NULL,
-  test_time,
-  test_event,
-  test_X,
+  test_time = NULL,
+  test_event = NULL,
+  test_X = NULL,
   SL.library
 )
 }
