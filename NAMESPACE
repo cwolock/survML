@@ -2,5 +2,6 @@
 
 export(conSurv)
 export(f_y_listWrappers)
+export(gridSurv)
 export(p_delta_listWrappers)
 export(stackSurv)

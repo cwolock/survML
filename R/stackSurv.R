@@ -26,7 +26,8 @@ stackSurv <- function(time,
 
   X <- as.matrix(X)
   time <- as.matrix(time)
-  dat <- data.frame(X, time)
+  event <- as.matrix(event)
+  dat <- data.frame(X, time, event)
 
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
@@ -34,6 +35,7 @@ stackSurv <- function(time,
     time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
   } else{
     time_grid <- sort(unique(time))
+    time_grid <- c(0, time_grid)
   }
 
   trunc_time_grid <- time_grid[-length(time_grid)]
@@ -42,8 +44,8 @@ stackSurv <- function(time,
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
   for (i in 1:(length(trunc_time_grid))){
     risk_set <- dat[dat$time > time_grid[i],]
-    risk_set_covariates <- risk_set[,-ncol(risk_set)]
-    event_indicators <- matrix(ifelse(risk_set$time < time_grid[i + 1], 1, 0))
+    risk_set_covariates <- risk_set[,1:ncol(X)]
+    event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
     dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
     dummies[,i] <- 1
     newdata <- as.matrix(cbind(dummies, risk_set_covariates, event_indicators))
@@ -57,7 +59,6 @@ stackSurv <- function(time,
   Y <- stacked$event_indicators
   X <- stacked[,-ncol(stacked)]
 
-  #SL.library <- c("SL.mean", "SL.glm", "SL.gam")#, "SL.xgboost")
   fit <- SuperLearner::SuperLearner(Y = Y,
                                     X = X,
                                     family = binomial(),
@@ -82,7 +83,7 @@ stackSurv <- function(time,
     risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
     colnames(new_stacked) <- c(risk_set_names, colnames(newX))
     new_stacked <- data.frame(new_stacked)
-    haz_preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+    haz_preds <- predict(fit, newdata=new_stacked)$pred
     haz_preds <- matrix(haz_preds, nrow = nrow(newX))
     surv_preds <- 1 - haz_preds
     total_surv_preds <- apply(surv_preds, prod, MARGIN = 1)
@@ -90,7 +91,6 @@ stackSurv <- function(time,
   }
 
   predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
-  predictions <- 1 - predictions
 
   res <- list(S_T_preds = predictions,
               fit = fit)

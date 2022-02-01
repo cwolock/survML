@@ -9,7 +9,12 @@
 #'
 #' @return Optimal fit for estimating p_delta
 #' @noRd
-estimate_p_delta <- function(event, X, test_event, test_X, rescale = TRUE, SL.library){
+estimate_p_delta <- function(event,
+                             X,
+                             test_event = NULL,
+                             test_X = NULL,
+                             rescale = TRUE,
+                             SL.library){
 
   # bws <- seq(0.1, 1, by = 0.1)
   # MSEs <- rep(NA, length(bws))

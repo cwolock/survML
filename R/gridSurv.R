@@ -1,4 +1,4 @@
-#' Estimate a conditional survival function
+#' Estimate a conditional survival function by binary regression on a grid
 #'
 #' @param time Observed time
 #' @param event Indicator of event (vs censoring)
@@ -13,48 +13,37 @@
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
 #' @param SL.library SuperLearner library
 #'
-#' @return An object of class \code{conSurv}
+#' @return An object of class \code{gridSurv}
 #'
 #' @export
 #'
 #' @examples
-conSurv <- function(time,
-                    event,
-                    X,
-                    newX,
-                    newtimes,
-                    time_grid_approx,
-                    time_grid_eval = NULL,
-                    weights = NULL,
-                    test_time = NULL,
-                    test_event = NULL,
-                    test_X = NULL,
-                    SL.library){
+gridSurv <- function(time,
+                     event,
+                     X,
+                     newX,
+                     newtimes,
+                     time_grid_approx,
+                     bin_size = NULL,
+                     SL.library){
 
   # determine optimal models (currently using oracle tuning)
   P_Delta_opt <- estimate_p_delta(event = event,
                                   X = X,
-                                  test_event = test_event,
-                                  test_X = test_X,
                                   SL.library = SL.library)
-  S_Y_1_opt <-estimate_f_y(time = time,
-                           event = event,
-                           X = X,
-                           test_time = test_time,
-                           test_event = test_event,
-                           test_X = test_X,
-                           time_grid_eval = time_grid_eval,
-                           censored = FALSE,
-                           SL.library = SL.library)
-  S_Y_0_opt <- estimate_f_y(time = time,
-                            event = event,
-                            X = X,
-                            test_time = test_time,
-                            test_event = test_event,
-                            test_X = test_X,
-                            time_grid_eval = time_grid_eval,
-                            censored = TRUE,
-                            SL.library = SL.library)
+  S_Y_1_opt <- f_y_isoSL(time = time,
+                         event = event,
+                         X = X,
+                         censored = FALSE,
+                         bin_size = bin_size,
+                         SL.library = SL.library)
+
+  S_Y_0_opt <- f_y_isoSL(time = time,
+                         event = event,
+                         X = X,
+                         censored = TRUE,
+                         bin_size = bin_size,
+                         SL.library = SL.library)
 
   # fit optimal models
   #P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
@@ -114,6 +103,6 @@ conSurv <- function(time,
               P_Delta_algo = P_Delta_opt,
               F_Y_1_algo = S_Y_1_opt,
               F_Y_0_algo = S_Y_0_opt)
-  class(res) <- "conSurv"
+  class(res) <- "gridSurv"
   return(res)
 }
