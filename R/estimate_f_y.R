@@ -76,12 +76,21 @@ estimate_f_y <- function(time, event, X, test_time, test_event, test_X,
 
   # pick optimal tuning parameters
   #opt_bin_size <- bin_sizes[which.min(MISEs)]
-  opt_fit <- f_y_isoSL(time = time,
-                 event = event,
-                 X = X,
-                 censored = censored,
-                 bin_size = 0.05,
-                 SL.library = SL.library)
+
+  opt_fit <- f_y_smoothnw(time = time,
+                          event = event,
+                          X = X,
+                          censored = censored,
+                          bw = NULL,
+                          bwy = NULL,
+                          kernel_type = "gaussian",
+                          kernel_order = 2)
+  # opt_fit <- f_y_isoSL(time = time,
+  #                event = event,
+  #                X = X,
+  #                censored = censored,
+  #                bin_size = 0.05,
+  #                SL.library = SL.library)
 
   return(opt_fit)
 }

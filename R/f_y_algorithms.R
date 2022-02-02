@@ -280,9 +280,14 @@ f_y_smoothnw <- function(time, event, X, censored, bw, bwy, kernel_type = "gauss
   fmla <- as.formula(paste("ind ~ ", paste(colnames(X), collapse = "+")))
   ind <- time
   dat <- data.frame(cbind(ind = ind, X))
+  bws <- eval(bquote(np::npcdistbw(formula = .(fmla),
+                                 data = dat,
+                                 regtype = "lc",
+                                 ckertype = kernel_type,
+                                 ckerorder = kernel_order)))
   nw_fit <- eval(bquote(np::npcdist(formula = .(fmla),
                                     data = dat,
-                                    bws = c(bwy, rep(bw, ncol(X))),
+                                    bws = bws, #c(bwy, rep(bw, ncol(X))),
                                     regtype = "lc",
                                     ckertype = kernel_type,
                                     ckerorder = kernel_order)))
