@@ -12,7 +12,8 @@ gridSurv(
   newtimes,
   time_grid_approx,
   bin_size = NULL,
-  SL.library
+  SL.library,
+  stack = TRUE
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ gridSurv(
 \item{time_grid_approx}{Grid of time points on which to approximate PL integral}
 
 \item{SL.library}{SuperLearner library}
+
+\item{stack}{Logical, indicating whether to fit a single binary regression including time as a covariate}
 
 \item{time_grid_eval}{Grid of time points on which to evaluate (e.g. approximate a MISE integral)}
 

@@ -12,6 +12,7 @@
 #' @param test_event Event indicators to test against
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
 #' @param SL.library SuperLearner library
+#' @param stack Logical, indicating whether to fit a single binary regression including time as a covariate
 #'
 #' @return An object of class \code{gridSurv}
 #'
@@ -25,25 +26,44 @@ gridSurv <- function(time,
                      newtimes,
                      time_grid_approx,
                      bin_size = NULL,
-                     SL.library){
+                     SL.library,
+                     stack = TRUE){
 
   # determine optimal models (currently using oracle tuning)
   P_Delta_opt <- estimate_p_delta(event = event,
                                   X = X,
                                   SL.library = SL.library)
-  S_Y_1_opt <- f_y_isoSL(time = time,
-                         event = event,
-                         X = X,
-                         censored = FALSE,
-                         bin_size = bin_size,
-                         SL.library = SL.library)
 
-  S_Y_0_opt <- f_y_isoSL(time = time,
-                         event = event,
-                         X = X,
-                         censored = TRUE,
-                         bin_size = bin_size,
-                         SL.library = SL.library)
+  if (stack){
+    S_Y_1_opt <- f_y_stackSLcdf(time = time,
+                           event = event,
+                           X = X,
+                           censored = FALSE,
+                           bin_size = bin_size,
+                           SL.library = SL.library)
+
+    S_Y_0_opt <- f_y_stackSLcdf(time = time,
+                           event = event,
+                           X = X,
+                           censored = TRUE,
+                           bin_size = bin_size,
+                           SL.library = SL.library)
+  } else{
+    S_Y_1_opt <- f_y_isoSL(time = time,
+                           event = event,
+                           X = X,
+                           censored = FALSE,
+                           bin_size = bin_size,
+                           SL.library = SL.library)
+
+    S_Y_0_opt <- f_y_isoSL(time = time,
+                           event = event,
+                           X = X,
+                           censored = TRUE,
+                           bin_size = bin_size,
+                           SL.library = SL.library)
+  }
+
 
   # fit optimal models
   #P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms

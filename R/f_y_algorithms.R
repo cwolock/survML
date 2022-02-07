@@ -532,7 +532,7 @@ predict.f_y_qrnn <- function(fit, newX, newtimes){
   return(predictions)
 }
 
-#' Stacked binary regression with Super Learner
+#' Stacked binary regression with Super Learner, using the hazard
 #'
 #' @param time Observed time
 #' @param event Indicator of event (vs censoring)
@@ -540,9 +540,9 @@ predict.f_y_qrnn <- function(fit, newX, newtimes){
 #' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
 #' @param bin_size Size of quantiles over which to make the stacking bins
 #'
-#' @return An object of class \code{f_y_stackSL}
+#' @return An object of class \code{f_y_stackSLhaz}
 #' @noRd
-f_y_stackSL <- function(time, event, X, censored, bin_size){
+f_y_stackSLhaz <- function(time, event, X, censored, bin_size){
 
   if (censored){
     time <- time[!as.logical(event)]
@@ -589,11 +589,11 @@ f_y_stackSL <- function(time, event, X, censored, bin_size){
                                     verbose = FALSE)
 
   fit <- list(reg.object = fit, time_grid = time_grid)
-  class(fit) <- c("f_y_stackSL")
+  class(fit) <- c("f_y_stackSLhaz")
   return(fit)
 }
 
-#' Prediction function for stacked SL
+#' Prediction function for stacked SL hazard
 #'
 #' @param fit Fitted regression object
 #' @param newX Values of covariates at which to make a prediction
@@ -601,7 +601,7 @@ f_y_stackSL <- function(time, event, X, censored, bin_size){
 #'
 #' @return Matrix of predictions
 #' @noRd
-predict.f_y_stackSL <- function(fit, newX, newtimes){
+predict.f_y_stackSLhaz <- function(fit, newX, newtimes){
 
   time_grid <- fit$time_grid
   trunc_time_grid <- time_grid[-length(time_grid)]
@@ -732,6 +732,7 @@ predict.f_y_discSL <- function(fit, newX, newtimes){
 #' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
 #' @param bin_size Size of quantiles over which to make the time bins
 #' @param isotonize Logical, indicates whether or not to isotonize cdf estimates using PAVA
+#' @param SL.library Super Learner library
 #'
 #' @return An object of class \code{f_y_isoSL}
 #' @noRd
@@ -852,3 +853,94 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
   return(predictions)
 }
 
+
+#' Stacked binary regression with Super Learner, using the cdf
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param bin_size Size of quantiles over which to make the stacking bins
+#' @param isotonize Logical, indicates whether or not to isotonize cdf estimates using PAVA
+#' @param SL.library Super Learner library
+#'
+#' @return An object of class \code{f_y_stackSLcdf}
+#' @noRd
+f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE, SL.library){
+
+  if (censored){
+    time <- time[!as.logical(event)]
+    X <- X[!as.logical(event),]
+  } else{
+    time <- time[as.logical(event)]
+    X <- X[as.logical(event),]
+  }
+
+  X <- as.matrix(X)
+  time <- as.matrix(time)
+  dat <- data.frame(X, time)
+
+  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  trunc_time_grid <- time_grid[-length(time_grid)] # do I need to truncate if treating time as continuous? look at this later
+  # alternatively, time grid could just be observed times, or a fixed (non-data-dependent) grid
+
+
+  # we will treat time as continuous
+  ncol_stacked <- ncol(X) + 2 # covariates, time, binary outcome
+  stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
+  for (i in 1:(length(trunc_time_grid))){
+    event_indicators <- matrix(ifelse(time <= time_grid[i + 1], 1, 0))
+    t <- time_grid[i + 1]
+    newdata <- as.matrix(cbind(t, X, event_indicators))
+    stacked <- rbind(stacked, newdata)
+  }
+
+  stacked <- stacked[-1,]
+  colnames(stacked)[ncol(stacked)] <- "event_indicators"
+  stacked <- data.frame(stacked)
+  Y <- stacked$event_indicators
+  X <- stacked[,-ncol(stacked)]
+
+  fit <- SuperLearner::SuperLearner(Y = Y,
+                                    X = X,
+                                    family = binomial(),
+                                    SL.library = SL.library,
+                                    method = "method.NNloglik",
+                                    verbose = FALSE)
+
+  fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize)
+  class(fit) <- c("f_y_stackSLcdf")
+  return(fit)
+}
+
+#' Prediction function for stacked SL cdf
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_stackSLcdf <- function(fit, newX, newtimes){
+
+  time_grid <- fit$time_grid
+  trunc_time_grid <- time_grid[-length(time_grid)]
+
+  get_stacked_pred <- function(t){
+    new_stacked <- data.frame(newX, t = t)
+    preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+    return(preds)
+  }
+
+  predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+
+  if (fit$isotonize){
+    # isotonize??
+    iso.cdf.ests <- t(apply(predictions, MARGIN = 1, FUN = Iso::pava))
+  } else{
+    iso.cdf.ests <- predictions
+  }
+
+  return(iso.cdf.ests)
+}
