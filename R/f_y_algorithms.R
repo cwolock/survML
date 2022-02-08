@@ -930,7 +930,8 @@ f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
                                     family = binomial(),
                                     SL.library = xgb_grid$names,#SL.library,
                                     method = "method.NNloglik",
-                                    verbose = TRUE)
+                                    verbose = FALSE)
+  print(fit)
 
   fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
   class(fit) <- c("f_y_stackSLcdf")
