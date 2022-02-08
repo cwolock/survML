@@ -894,7 +894,7 @@ f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
     ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, time, binary outcome
   }
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
-  for (i in 1:(length(trunc_time_grid))){
+  for (i in 1:(length(trunc_time_grid)-1)){ # changed this to not do anything in last time bin
     event_indicators <- matrix(ifelse(time <= time_grid[i + 1], 1, 0))
     if (time_basis == "continuous"){
       t <- time_grid[i + 1]
