@@ -921,12 +921,16 @@ f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   Y <- stacked$event_indicators
   X <- stacked[,-ncol(stacked)]
 
+
+  tune = list(ntrees = c(100, 500, 1000), max_depth = c(1, 2),
+              shrinkage = c(0.1, 0.01))
+  xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
   fit <- SuperLearner::SuperLearner(Y = Y,
                                     X = X,
                                     family = binomial(),
-                                    SL.library = SL.library,
+                                    SL.library = xgb_grid$names,#SL.library,
                                     method = "method.NNloglik",
-                                    verbose = FALSE)
+                                    verbose = TRUE)
 
   fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
   class(fit) <- c("f_y_stackSLcdf")
