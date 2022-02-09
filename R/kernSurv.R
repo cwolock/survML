@@ -98,7 +98,7 @@ kernSurv <- function(time,
     # get S_Y estimates up to t
     S_Y_1_curr <- S_Y_1_opt_preds[i,]
     S_Y_0_curr <- S_Y_0_opt_preds[i,]
-    S_Y_curr <- S_Y_0_opt_preds[i,]
+    S_Y_curr <- S_Y_opt_preds[i,]
     pi_curr <- P_Delta_opt_preds[i]
 
     # switch roles of T and C for estimating S_C

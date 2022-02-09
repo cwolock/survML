@@ -336,20 +336,30 @@ predict.f_y_smoothnw <- function(fit, newX, newtimes){
 #' @noRd
 f_y_smoothllkern <- function(time, event, X, censored, bw, bwy, kernel_type = "gaussian", kernel_order = 2){
 
-  if (censored){
-    time <- time[!as.logical(event)]
-    X <- X[!as.logical(event),]
+  if (!is.null(censored)){
+    if (censored == TRUE){
+      time <- time[!as.logical(event)]
+      X <- X[!as.logical(event),]
+    } else if (censored == FALSE){
+      time <- time[as.logical(event)]
+      X <- X[as.logical(event),]
+    }
   } else{
-    time <- time[as.logical(event)]
-    X <- X[as.logical(event),]
+    time <- time
+    X <- X
   }
 
   fmla <- as.formula(paste("ind ~ ", paste(colnames(X), collapse = "+")))
   ind <- time
   dat <- data.frame(cbind(ind = ind, X))
+  bws <- eval(bquote(np::npcdistbw(formula = .(fmla),
+                                   data = dat,
+                                   regtype = "ll",
+                                   ckertype = kernel_type,
+                                   ckerorder = kernel_order)))
   ll_fit <- eval(bquote(np::npcdist(formula = .(fmla),
                                     data = dat,
-                                    bws = c(bwy, rep(bw, ncol(X))),
+                                    bws = bws,#c(bwy, rep(bw, ncol(X))),
                                     regtype = "ll",
                                     ckertype = kernel_type,
                                     ckerorder = kernel_order)))
