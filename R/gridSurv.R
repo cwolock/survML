@@ -120,7 +120,7 @@ gridSurv <- function(time,
     # switch roles of T and C for estimating S_C
     S_T_ests <- compute_prodint(cdf_uncens = S_Y_0_curr,
                                 cdf_cens = S_Y_1_curr,
-                                cdf_marg = S_Y_curr
+                                cdf_marg = S_Y_curr,
                                 p_uncens = 1-pi_curr,
                                 newtimes = newtimes,
                                 time_grid = time_grid_approx,
