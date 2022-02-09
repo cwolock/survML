@@ -38,3 +38,5 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 .Rproj.user
+
+R/extra_f_y_algos.R

@@ -147,7 +147,6 @@ predict.f_y_smoothllkern <- function(fit, newX, newtimes){
 #' @noRd
 f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE, SL.library, time_basis = "continuous"){
 
-  print(censored)
   if (!is.null(censored)){
     if (censored == TRUE){
       time <- time[!as.logical(event)]
@@ -206,8 +205,8 @@ f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   X <- stacked[,-ncol(stacked)]
 
 
-  tune = list(ntrees = c(100, 500, 1000), max_depth = 2,minobspernode = 10,
-              shrinkage = 0.1)
+  tune = list(ntrees = c(500, 1000), max_depth = c(2,3), minobspernode = 10,
+              shrinkage = c(0.01,0.1))
   xgb_grid = SuperLearner::create.SL.xgboost(tune = tune)
   fit <- SuperLearner::SuperLearner(Y = Y,
                                     X = X,

@@ -31,7 +31,6 @@ gridSurv <- function(time,
                      stack = TRUE,
                      denom_method = "conditional"){
 
-  print('hello')
 
   # determine optimal models (currently using oracle tuning)
   P_Delta_opt <- estimate_p_delta(event = event,
@@ -39,7 +38,6 @@ gridSurv <- function(time,
                                   SL.library = SL.library)
 
   if (stack){
-    print(bin_size)
     S_Y_1_opt <- f_y_stackSLcdf(time = time,
                            event = event,
                            X = X,
