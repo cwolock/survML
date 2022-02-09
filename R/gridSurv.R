@@ -13,6 +13,7 @@
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
 #' @param SL.library SuperLearner library
 #' @param stack Logical, indicating whether to fit a single binary regression including time as a covariate
+#' @param denom_method Method of computing the denominator
 #'
 #' @return An object of class \code{gridSurv}
 #'
@@ -27,7 +28,8 @@ gridSurv <- function(time,
                      time_grid_approx,
                      bin_size = NULL,
                      SL.library,
-                     stack = TRUE){
+                     stack = TRUE,
+                     denom_method = "conditional"){
 
   # determine optimal models (currently using oracle tuning)
   P_Delta_opt <- estimate_p_delta(event = event,
@@ -48,6 +50,12 @@ gridSurv <- function(time,
                            censored = TRUE,
                            bin_size = bin_size,
                            SL.library = SL.library)
+    S_Y_opt <- f_y_stackSLcdf(time = time,
+                                event = event,
+                                X = X,
+                                censored = NULL,
+                                bin_size = bin_size,
+                                SL.library = SL.library)
   } else{
     S_Y_1_opt <- f_y_isoSL(time = time,
                            event = event,
@@ -73,6 +81,9 @@ gridSurv <- function(time,
                              newX = newX,
                              newtimes = time_grid_approx) # this was previously newtimes, which was possibly causing a HUGE issue
   S_Y_0_opt_preds <- predict(S_Y_0_opt,
+                             newX = newX,
+                             newtimes = time_grid_approx)
+  S_Y_opt_preds <- predict(S_Y_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
 

@@ -5,11 +5,18 @@
 #' @param p_uncens Prediction of the probability of being uncensored
 #' @param newtimes Times at which to make the prediction
 #' @param time_grid Grid of time points over which to discretize the product integral
+#' @param denom_method Method of computing the denominator
 #'
 #' @return A vector of estimates of the survival function over \code{time_grid}
 #'
 #' @noRd
-compute_prodint <- function(cdf_uncens, cdf_cens, p_uncens, newtimes, time_grid){
+compute_prodint <- function(cdf_uncens,
+                            cdf_cens,
+                            cdf_marg,
+                            p_uncens,
+                            newtimes,
+                            time_grid,
+                            denom_method){
 
   estimate_S_T <- function(t){
     curr_length <- sum(time_grid <= t)
@@ -17,17 +24,25 @@ compute_prodint <- function(cdf_uncens, cdf_cens, p_uncens, newtimes, time_grid)
     # get S_Y estimates up to t
     S_Y_1_curr <- cdf_uncens[1:curr_length]
     S_Y_0_curr <- cdf_cens[1:curr_length]
+    S_Y_curr <- cdf_marg[1:curr_length]
 
     dF_Y_1_pred <- c(S_Y_1_curr[1], diff(S_Y_1_curr))
 
     S_Y_1_pred_left <- c(1, 1-S_Y_1_curr[-length(S_Y_1_curr)])# probability of being "at risk" at time t
     ### CHECK TO MAKE SURE THIS IS CORRECT WITH THE DISCRETIZATION OF TIME
     S_Y_0_pred_left <- c(1, 1-S_Y_0_curr[-length(S_Y_0_curr)])# probability of being "at risk" at time t
+    S_Y_pred_left <- c(1, 1-S_Y_curr[-length(S_Y_curr)])
 
     low_left <- S_Y_1_pred_left * p_uncens
     low_right <- S_Y_0_pred_left * (1 - p_uncens)
+    low <- S_Y_pred_left
     # product form
-    S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/(low_left + low_right))
+    if (denom_method == "conditional"){
+      S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/(low_left + low_right))
+    } else{
+      S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/low)
+    }
+
 
     return(S_T_est)
   }

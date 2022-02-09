@@ -7,6 +7,7 @@
 #' @param newtimes Times at which to make the survival function prediction
 #' @param time_grid_approx Grid of time points on which to approximate PL integral
 #' @param SL.library SuperLearner library
+#' @param denom_method Method of computing the denominator
 #'
 #' @return An object of class \code{kernSurv}
 #'
@@ -21,7 +22,8 @@ kernSurv <- function(time,
                     time_grid_approx,
                     kernel_type,
                     kernel_order,
-                    SL.library){
+                    SL.library,
+                    denom_method = "conditional"){
 
   # determine optimal models (currently using oracle tuning)
   P_Delta_opt <- estimate_p_delta(event = event,
@@ -46,6 +48,14 @@ kernSurv <- function(time,
                             bwy = NULL,
                             kernel_type = kernel_type,
                             kernel_order = kernel_order)
+  S_Y_opt <- f_y_smoothnw(time = time,
+                            event = event,
+                            X = X,
+                            censored = NULL,
+                            bw = NULL,
+                            bwy = NULL,
+                            kernel_type = kernel_type,
+                            kernel_order = kernel_order)
 
 
   # fit optimal models
@@ -58,18 +68,24 @@ kernSurv <- function(time,
   S_Y_0_opt_preds <- predict(S_Y_0_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
+  S_Y_opt_preds <- predict(S_Y_opt,
+                             newX = newX,
+                             newtimes = time_grid_approx)
 
   estimate_S_T <- function(i){
     # get S_Y estimates up to t
     S_Y_1_curr <- S_Y_1_opt_preds[i,]
     S_Y_0_curr <- S_Y_0_opt_preds[i,]
+    S_Y_curr <- S_Y_opt_preds[i,]
     pi_curr <- P_Delta_opt_preds[i]
 
     S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
                                 cdf_cens = S_Y_0_curr,
+                                cdf_marg = S_Y_curr,
                                 p_uncens = pi_curr,
                                 newtimes = newtimes,
-                                time_grid = time_grid_approx)
+                                time_grid = time_grid_approx,
+                                denom_method = denom_method)
 
     return(S_T_ests)
   }
@@ -82,14 +98,17 @@ kernSurv <- function(time,
     # get S_Y estimates up to t
     S_Y_1_curr <- S_Y_1_opt_preds[i,]
     S_Y_0_curr <- S_Y_0_opt_preds[i,]
+    S_Y_curr <- S_Y_0_opt_preds[i,]
     pi_curr <- P_Delta_opt_preds[i]
 
     # switch roles of T and C for estimating S_C
     S_T_ests <- compute_prodint(cdf_uncens = S_Y_0_curr,
                                 cdf_cens = S_Y_1_curr,
+                                cdf_marg = S_Y_curr,
                                 p_uncens = 1-pi_curr,
                                 newtimes = newtimes,
-                                time_grid = time_grid_approx)
+                                time_grid = time_grid_approx,
+                                denom_method = denom_method)
 
     return(S_T_ests)
   }
