@@ -884,12 +884,14 @@ predict.f_y_isoSL <- function(fit, newX, newtimes){
 #' @noRd
 f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE, SL.library, time_basis = "continuous"){
 
-  if (censored == TRUE){
-    time <- time[!as.logical(event)]
-    X <- X[!as.logical(event),]
-  } else if(censored == FALSE){
-    time <- time[as.logical(event)]
-    X <- X[as.logical(event),]
+  if (!is.null(censored)){
+    if (censored == TRUE){
+      time <- time[!as.logical(event)]
+      X <- X[!as.logical(event),]
+    } else if (censored == FALSE){
+      time <- time[as.logical(event)]
+      X <- X[as.logical(event),]
+    }
   } else{
     time <- time
     X <- X
