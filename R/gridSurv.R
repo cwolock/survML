@@ -37,6 +37,7 @@ gridSurv <- function(time,
                                   SL.library = SL.library)
 
   if (stack){
+    print(bin_size)
     S_Y_1_opt <- f_y_stackSLcdf(time = time,
                            event = event,
                            X = X,
