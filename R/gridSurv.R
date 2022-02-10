@@ -12,8 +12,8 @@
 #' @param test_event Event indicators to test against
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
 #' @param SL.library SuperLearner library
-#' @param stack Logical, indicating whether to fit a single binary regression including time as a covariate
-#' @param denom_method Method of computing the denominator
+#' @param stack Logical, indicating whether to fit a single bin
+#' @param V CV fold number
 #'
 #' @return An object of class \code{gridSurv}
 #'
@@ -29,7 +29,8 @@ gridSurv <- function(time,
                      bin_size = NULL,
                      SL.library,
                      stack = TRUE,
-                     denom_method = "conditional"){
+                     denom_method = "conditional",
+                     V = 10){
 
 
   # determine optimal models (currently using oracle tuning)
@@ -38,25 +39,48 @@ gridSurv <- function(time,
                                   SL.library = SL.library)
 
   if (stack){
-    S_Y_1_opt <- f_y_stackSLcdf(time = time,
-                           event = event,
-                           X = X,
-                           censored = FALSE,
-                           bin_size = bin_size,
-                           SL.library = SL.library)
+    if (is.null(V)){ # super learner version
+      S_Y_1_opt <- f_y_stackSLcdf(time = time,
+                                  event = event,
+                                  X = X,
+                                  censored = FALSE,
+                                  bin_size = bin_size,
+                                  SL.library = SL.library)
 
-    S_Y_0_opt <- f_y_stackSLcdf(time = time,
-                           event = event,
-                           X = X,
-                           censored = TRUE,
-                           bin_size = bin_size,
-                           SL.library = SL.library)
-    S_Y_opt <- f_y_stackSLcdf(time = time,
-                                event = event,
-                                X = X,
-                                censored = NULL,
-                                bin_size = bin_size,
-                                SL.library = SL.library)
+      S_Y_0_opt <- f_y_stackSLcdf(time = time,
+                                  event = event,
+                                  X = X,
+                                  censored = TRUE,
+                                  bin_size = bin_size,
+                                  SL.library = SL.library)
+      # S_Y_opt <- f_y_stackSLcdf(time = time,
+      #                           event = event,
+      #                           X = X,
+      #                           censored = NULL,
+      #                           bin_size = bin_size,
+      #                           SL.library = SL.library)
+    } else{ # do my own cross validation
+      S_Y_1_opt <- f_y_stackCVcdf(time = time,
+                                  event = event,
+                                  X = X,
+                                  censored = FALSE,
+                                  bin_size = bin_size,
+                                  V = V)
+
+      S_Y_0_opt <- f_y_stackCVcdf(time = time,
+                                  event = event,
+                                  X = X,
+                                  censored = TRUE,
+                                  bin_size = bin_size,
+                                  V = V)
+      # S_Y_opt <- f_y_stackCVcdf(time = time,
+      #                           event = event,
+      #                           X = X,
+      #                           censored = NULL,
+      #                           bin_size = bin_size,
+      #                           V = V)
+    }
+
   } else{
     S_Y_1_opt <- f_y_isoSL(time = time,
                            event = event,
@@ -84,20 +108,20 @@ gridSurv <- function(time,
   S_Y_0_opt_preds <- predict(S_Y_0_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
-  S_Y_opt_preds <- predict(S_Y_opt,
-                             newX = newX,
-                             newtimes = time_grid_approx)
+  # S_Y_opt_preds <- predict(S_Y_opt,
+  #                            newX = newX,
+  #                            newtimes = time_grid_approx)
 
   estimate_S_T <- function(i){
     # get S_Y estimates up to t
     S_Y_1_curr <- S_Y_1_opt_preds[i,]
     S_Y_0_curr <- S_Y_0_opt_preds[i,]
     pi_curr <- P_Delta_opt_preds[i]
-    S_Y_curr <- S_Y_opt_preds[i,]
+    #S_Y_curr <- S_Y_opt_preds[i,]
 
     S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
                                 cdf_cens = S_Y_0_curr,
-                                cdf_marg = S_Y_curr,
+                                #cdf_marg = S_Y_curr,
                                 p_uncens = pi_curr,
                                 newtimes = newtimes,
                                 time_grid = time_grid_approx,
@@ -114,13 +138,13 @@ gridSurv <- function(time,
     # get S_Y estimates up to t
     S_Y_1_curr <- S_Y_1_opt_preds[i,]
     S_Y_0_curr <- S_Y_0_opt_preds[i,]
-    S_Y_curr <- S_Y_opt_preds[i,]
+    #S_Y_curr <- S_Y_opt_preds[i,]
     pi_curr <- P_Delta_opt_preds[i]
 
     # switch roles of T and C for estimating S_C
     S_T_ests <- compute_prodint(cdf_uncens = S_Y_0_curr,
                                 cdf_cens = S_Y_1_curr,
-                                cdf_marg = S_Y_curr,
+                                #cdf_marg = S_Y_curr,
                                 p_uncens = 1-pi_curr,
                                 newtimes = newtimes,
                                 time_grid = time_grid_approx,
