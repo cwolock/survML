@@ -288,7 +288,7 @@ predict.f_y_stackSLcdf <- function(fit, newX, newtimes){
 #'
 #' @return An object of class \code{f_y_stackCVcdf}
 #' @noRd
-f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE, time_basis = "continuous", V){
+f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE, V, time_basis = "continuous"){
 
   cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
 
@@ -311,50 +311,9 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
 
   time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
-  trunc_time_grid <- time_grid[-length(time_grid)] # do I need to truncate if treating time as continuous? look at this later
-  # alternatively, time grid could just be observed times, or a fixed (non-data-dependent) grid
-  # should I truncate the grid at maximum desired follow-up time?
 
-
-  # we will treat time as continuous
-  if (time_basis == "continuous"){
-    ncol_stacked <- ncol(X) + 2 # covariates, time, binary outcome
-  } else{
-    ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, time, binary outcome
-  }
-  stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
-  for (i in 1:(length(trunc_time_grid))){ # can change this to not do anything in last time bin
-    event_indicators <- matrix(ifelse(time <= time_grid[i + 1], 1, 0))
-    if (time_basis == "continuous"){
-      t <- time_grid[i + 1]
-      newdata <- as.matrix(cbind(t, X, event_indicators))
-    }
-    else{
-      dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(X))
-      dummies[,i] <- 1
-      newdata <- as.matrix(cbind(dummies, X, event_indicators))
-    }
-    stacked <- rbind(stacked, newdata)
-  }
-
-  stacked <- stacked[-1,]
-  if (time_basis == "continuous"){
-    colnames(stacked)[ncol(stacked)] <- "event_indicators"
-  } else{
-    risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-    colnames(stacked)[1:(length(trunc_time_grid))] <- risk_set_names
-    colnames(stacked)[ncol(stacked)] <- "event_indicators"
-  }
-
-  stacked <- data.frame(stacked)
-  Y <- stacked$event_indicators
-  X <- as.matrix(stacked[,-ncol(stacked)])
-
-  # I'm going to do cross validation on the stacked data set, which "shuffles" individuals since they are repeated
-  # another option to is to do CV on the original data set, then stack each CV set
-
-  tune <- list(ntrees = c(1000, 5000), max_depth = c(2,3, 4),
-              eta = c(0.1, 0.5))
+  tune <- list(ntrees = c(500, 1000, 2000), max_depth = c(1,2,3),
+              eta = c(0.01, 0.1))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
@@ -367,19 +326,24 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
     risks <- rep(NA, V)
     for (j in 1:V){
       train_X <- X[-cv_folds[[j]],]
-      train_Y <- Y[-cv_folds[[j]]]
-      xgmat <- xgboost::xgb.DMatrix(data = train_X, label = train_Y)
+      train_time <- time[-cv_folds[[j]]]
+      train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
+      xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                        max_depth = max_depth, eta = eta,
                        verbose = FALSE, nthread = 1,
                        save_period = NULL, eval_metric = "logloss")
       test_X <- X[cv_folds[[j]],]
-      test_Y <- Y[cv_folds[[j]]]
-      preds <- predict(fit, newdata = test_X)
+      test_time <- time[cv_folds[[j]]]
+      test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
+      preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)])
+      preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
+      truth <- test_stack[,ncol(test_stack)]
       log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
-        -test_Y[x] * log(preds[x]) - (1-test_Y[x])*log(1 - preds[x])
+        -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
       })
-      sum_log_loss <- sum(unlist(log_loss))
+      log_loss <- unlist(log_loss)
+      sum_log_loss <- sum(log_loss)
       risks[j] <- sum_log_loss
     }
     return(sum(risks))
@@ -392,6 +356,9 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   opt_max_depth <- param_grid$max_depth[opt_param_index]
   opt_eta <- param_grid$eta[opt_param_index]
   opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
+  stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+  Y <- stacked[,ncol(stacked)]
+  X <- as.matrix(stacked[,-ncol(stacked)])
   xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
   fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                           max_depth = opt_max_depth, eta = opt_eta,
