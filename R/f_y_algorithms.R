@@ -356,9 +356,6 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   tune <- list(ntrees = c(1000, 5000), max_depth = c(2,3, 4),
               eta = c(0.1, 0.5))
 
-  tune <- list(ntrees = c(1000), max_depth = c(2,4),
-               eta = c(0.5))
-
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
                             eta = tune$eta)
@@ -401,6 +398,8 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
                           verbose = FALSE, nthread = 1,
                           save_period = NULL, eval_metric = "logloss")
 
+  print(censored)
+  print(CV_risks)
   print(fit$params)
   print(fit$niter)
   fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
