@@ -290,8 +290,6 @@ predict.f_y_stackSLcdf <- function(fit, newX, newtimes){
 #' @noRd
 f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE, V, time_basis = "continuous"){
 
-  cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
-
   if (!is.null(censored)){
     if (censored == TRUE){
       time <- time[!as.logical(event)]
@@ -304,6 +302,8 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
     time <- time
     X <- X
   }
+
+  cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
 
   X <- as.matrix(X)
   time <- as.matrix(time)
