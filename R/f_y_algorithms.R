@@ -205,7 +205,7 @@ f_y_stackSLcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   X <- stacked[,-ncol(stacked)]
 
 
-  tune = list(ntrees = c(1000, 5000), max_depth = c(2,3, 4), minobspernode = 10,
+  tune = list(ntrees = c(1000, 5000, 10000), max_depth = c(2,3, 4), minobspernode = 10,
               shrinkage = c(0.01, 0.1, 0.5))
   xgb_grid = SuperLearner::create.SL.xgboost(tune = tune, detailed_names = TRUE)
   fit <- SuperLearner::SuperLearner(Y = Y,
