@@ -124,7 +124,9 @@ kernSurv <- function(time,
               F_Y_0_preds = S_Y_0_opt_preds,
               P_Delta_algo = P_Delta_opt,
               F_Y_1_algo = S_Y_1_opt,
-              F_Y_0_algo = S_Y_0_opt)
+              F_Y_0_algo = S_Y_0_opt,
+              F_Y_algo = S_Y_opt,
+              F_Y_preds = S_Y_opt_preds)
   class(res) <- "kernSurv"
   return(res)
 }
