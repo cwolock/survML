@@ -14,7 +14,8 @@ estimate_p_delta <- function(event,
                              test_event = NULL,
                              test_X = NULL,
                              rescale = TRUE,
-                             SL.library){
+                             SL.library = NULL,
+                             V = NULL){
 
   # bws <- seq(0.1, 1, by = 0.1)
   # MSEs <- rep(NA, length(bws))
@@ -38,15 +39,17 @@ estimate_p_delta <- function(event,
   #                       kernel_type = "gaussian",
   #                       kernel_order = 2)
   #SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.ranger", "SL.earth")#, "SL.xgboost")
-  opt_fit <- SuperLearner::SuperLearner(Y = event,
-                           X = X,
-                           family = "binomial",
-                           SL.library = SL.library,
-                           method = "method.NNloglik",
-                           verbose = FALSE)
+  # opt_fit <- SuperLearner::SuperLearner(Y = event,
+  #                          X = X,
+  #                          family = "binomial",
+  #                          SL.library = SL.library,
+  #                          method = "method.NNloglik",
+  #                          verbose = FALSE)
 
   # opt_fit <- p_delta_rf(event = event,
   #                       X = X)
+
+  opt_fit <- p_delta_xgboost(event = event, X = X, V = V)
 
   return(opt_fit)
 }

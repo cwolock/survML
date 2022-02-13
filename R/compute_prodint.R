@@ -11,7 +11,7 @@
 #'
 #' @noRd
 compute_prodint <- function(cdf_uncens,
-                            cdf_cens,
+                            cdf_cens = NA,
                             cdf_marg = NA,
                             p_uncens,
                             newtimes,
