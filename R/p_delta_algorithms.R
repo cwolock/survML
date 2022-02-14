@@ -14,8 +14,8 @@ p_delta_xgboost <- function(event, X, V){
   event <- as.matrix(event)
   dat <- data.frame(X, event)
 
-  tune <- list(ntrees = c(500, 1000, 2000), max_depth = c(1,2,3),
-               eta = c(0.01, 0.1))
+  tune <- list(ntrees = c(250, 500, 1000, 2000), max_depth = c(1,2,3),
+               eta = c(0.005))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
@@ -99,14 +99,16 @@ p_delta_ranger <- function(event, X, V){
   event <- as.matrix(event)
   dat <- data.frame(X, event)
 
-  tune <- list(num.trees = c(250, 500, 1000), max.depth = c(1,2,3))
+  tune <- list(num.trees = c(250, 500, 1000), max.depth = c(1,2,3), mtry = c(1,2,3))
 
   param_grid <- expand.grid(num.trees = tune$num.trees,
-                            max.depth = tune$max.depth)
+                            max.depth = tune$max.depth,
+                            mtry = tune$mtry)
 
   get_CV_risk <- function(i){
     num.trees <- param_grid$num.trees[i]
     max.depth <- param_grid$max.depth[i]
+    mtry <- param_grid$mtry[i]
     risks <- rep(NA, V)
     for (j in 1:V){
       train_X <- X[-cv_folds[[j]],]
@@ -116,6 +118,7 @@ p_delta_ranger <- function(event, X, V){
                             data = train,
                             num.trees = num.trees,
                             max.depth = max.depth,
+                            mtry = mtry,
                             probability = TRUE)
       test_X <- X[cv_folds[[j]],]
       test_event <- event[cv_folds[[j]]]
@@ -139,16 +142,19 @@ p_delta_ranger <- function(event, X, V){
   opt_param_index <- which.min(CV_risks)
   opt_num.trees <- param_grid$num.trees[opt_param_index]
   opt_max.depth <- param_grid$max.depth[opt_param_index]
-  opt_params <- list(ntrees = opt_num.trees, max_depth = opt_max.depth)
+  opt_mtry <- param_grid$mtry[opt_param_index]
+  opt_params <- list(ntrees = opt_num.trees, max_depth = opt_max.depth, mtry = opt_mtry)
   fit <- ranger::ranger(formula = event ~ .,
                         data = dat,
                         num.trees = opt_num.trees,
                         max.depth = opt_max.depth,
+                        mtry = opt_mtry,
                         probability = TRUE)
 
   print(CV_risks)
   print(opt_max.depth)
   print(fit$num.trees)
+  print(opt_mtry)
 
   fit <- list(reg.object = fit)
   class(fit) <- c("p_delta_ranger")

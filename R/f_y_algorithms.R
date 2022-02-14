@@ -171,8 +171,8 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  tune <- list(ntrees = c(500, 1000, 2000), max_depth = c(1,2,3),
-              eta = c(0.01, 0.1))
+  tune <- list(ntrees = c(250, 500, 1000, 2000), max_depth = c(1,2,3),
+              eta = c(0.005))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
@@ -301,14 +301,16 @@ f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TR
   time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  tune <- list(num.trees = c(250, 500, 1000), max.depth = c(1,2,3))
+  tune <- list(num.trees = c(250, 500, 1000, 2000), max.depth = c(1,2,3), mtry = c(1,2,3))
 
   param_grid <- expand.grid(num.trees = tune$num.trees,
-                            max.depth = tune$max.depth)
+                            max.depth = tune$max.depth,
+                            mtry = tune.mtrys)
 
   get_CV_risk <- function(i){
     num.trees <- param_grid$num.trees[i]
     max.depth <- param_grid$max.depth[i]
+    mtry <- param_grid$mtry[i]
     risks <- rep(NA, V)
     for (j in 1:V){
       train_X <- X[-cv_folds[[j]],]
@@ -318,6 +320,7 @@ f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TR
                             data = train_stack,
                             num.trees = num.trees,
                             max.depth = max.depth,
+                            mtry = mtry,
                             probability = TRUE)
       test_X <- X[cv_folds[[j]],]
       test_time <- time[cv_folds[[j]]]
@@ -341,7 +344,8 @@ f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TR
   opt_param_index <- which.min(CV_risks)
   opt_num.trees <- param_grid$num.trees[opt_param_index]
   opt_max.depth <- param_grid$max.depth[opt_param_index]
-  opt_params <- list(ntrees = opt_num.trees, max_depth = opt_max.depth)
+  opt_mtry <- param_grid$mtry[opt_param_index]
+  opt_params <- list(ntrees = opt_num.trees, max_depth = opt_max.depth, mtry = opt_mtry)
   stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
@@ -349,12 +353,14 @@ f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TR
                         data = stacked,
                         num.trees = opt_num.trees,
                         max.depth = opt_max.depth,
+                        mtry = opt_mtry,
                         probability = TRUE)
 
   print(censored)
   print(CV_risks)
   print(opt_max.depth)
   print(fit$num.trees)
+  print(opt_mtry)
   fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
   class(fit) <- c("f_y_stackCVranger")
   return(fit)
