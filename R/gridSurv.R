@@ -11,7 +11,6 @@
 #' @param test_time Observed times to evaluate against
 #' @param test_event Event indicators to test against
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
-#' @param SL.library SuperLearner library
 #' @param stack Logical, indicating whether to fit a single bin
 #' @param V CV fold number
 #'
@@ -27,86 +26,78 @@ gridSurv <- function(time,
                      newtimes,
                      time_grid_approx,
                      bin_size = NULL,
-                     SL.library = NULL,
                      stack = TRUE,
-                     denom_method,
+                     denom_method = "stratified",
+                     fast = FALSE,
                      V = 10){
 
+  if (!fast){ # do xgboost if speed not a concern
+    # determine optimal models
+    P_Delta_opt <- p_delta_xgboost(event = event,
+                                   X = X,
+                                   V = V)
+    S_Y_1_opt <- f_y_stackCVcdf(time = time,
+                                event = event,
+                                X = X,
+                                censored = FALSE,
+                                bin_size = bin_size,
+                                V = V)
 
-  # determine optimal models (currently using oracle tuning)
-  P_Delta_opt <- estimate_p_delta(event = event,
-                                  X = X,
-                                  V = V)
-
-  if (stack){
-    if (is.null(V)){ # super learner version - although this is actually broken, because stacking ruins the cross-validation
-      S_Y_1_opt <- f_y_stackSLcdf(time = time,
-                                  event = event,
-                                  X = X,
-                                  censored = FALSE,
-                                  bin_size = bin_size,
-                                  SL.library = SL.library)
-
-      S_Y_0_opt <- f_y_stackSLcdf(time = time,
+    if (denom_method == "stratified"){
+      S_Y_0_opt <- f_y_stackCVcdf(time = time,
                                   event = event,
                                   X = X,
                                   censored = TRUE,
                                   bin_size = bin_size,
-                                  SL.library = SL.library)
-      # S_Y_opt <- f_y_stackSLcdf(time = time,
-      #                           event = event,
-      #                           X = X,
-      #                           censored = NULL,
-      #                           bin_size = bin_size,
-      #                           SL.library = SL.library)
-    } else{ # do my own cross validation
-      S_Y_1_opt <- f_y_stackCVcdf(time = time,
-                                  event = event,
-                                  X = X,
-                                  censored = FALSE,
-                                  bin_size = bin_size,
                                   V = V)
-
-      if (denom_method == "conditional"){
-        S_Y_0_opt <- f_y_stackCVcdf(time = time,
-                                    event = event,
-                                    X = X,
-                                    censored = TRUE,
-                                    bin_size = bin_size,
-                                    V = V)
-        S_Y_0_opt_preds <- predict(S_Y_0_opt,
-                                   newX = newX,
-                                   newtimes = time_grid_approx)
-      } else{
-        S_Y_opt <- f_y_stackCVcdf(time = time,
-                                  event = event,
-                                  X = X,
-                                  censored = NULL,
-                                  bin_size = bin_size,
-                                  V = V)
-        S_Y_opt_preds <- predict(S_Y_opt,
+      S_Y_0_opt_preds <- predict(S_Y_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
-      }
-
+    } else{
+      S_Y_opt <- f_y_stackCVcdf(time = time,
+                                event = event,
+                                X = X,
+                                censored = NULL,
+                                bin_size = bin_size,
+                                V = V)
+      S_Y_opt_preds <- predict(S_Y_opt,
+                               newX = newX,
+                               newtimes = time_grid_approx)
     }
+  } else{ # if speed is a concern, use ranger
+    # determine optimal models
+    P_Delta_opt <- p_delta_ranger(event = event,
+                                   X = X,
+                                   V = V)
+    S_Y_1_opt <- f_y_stackCVranger(time = time,
+                                event = event,
+                                X = X,
+                                censored = FALSE,
+                                bin_size = bin_size,
+                                V = V)
 
-  } else{ # not stacked
-    S_Y_1_opt <- f_y_isoSL(time = time,
-                           event = event,
-                           X = X,
-                           censored = FALSE,
-                           bin_size = bin_size,
-                           SL.library = SL.library)
-
-    S_Y_0_opt <- f_y_isoSL(time = time,
-                           event = event,
-                           X = X,
-                           censored = TRUE,
-                           bin_size = bin_size,
-                           SL.library = SL.library)
+    if (denom_method == "stratified"){
+      S_Y_0_opt <- f_y_stackCVranger(time = time,
+                                  event = event,
+                                  X = X,
+                                  censored = TRUE,
+                                  bin_size = bin_size,
+                                  V = V)
+      S_Y_0_opt_preds <- predict(S_Y_0_opt,
+                                 newX = newX,
+                                 newtimes = time_grid_approx)
+    } else{
+      S_Y_opt <- f_y_stackCVranger(time = time,
+                                event = event,
+                                X = X,
+                                censored = NULL,
+                                bin_size = bin_size,
+                                V = V)
+      S_Y_opt_preds <- predict(S_Y_opt,
+                               newX = newX,
+                               newtimes = time_grid_approx)
+    }
   }
-
 
   # fit optimal models
   P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
@@ -116,15 +107,13 @@ gridSurv <- function(time,
                              newX = newX,
                              newtimes = time_grid_approx) # this was previously newtimes, which was possibly causing a HUGE issue
 
-
-
   estimate_S_T <- function(i){
     # get S_Y estimates up to t
     S_Y_1_curr <- S_Y_1_opt_preds[i,]
 
     pi_curr <- P_Delta_opt_preds[i]
 
-    if (denom_method == "conditional"){
+    if (denom_method == "stratified"){
       S_Y_0_curr <- S_Y_0_opt_preds[i,]
       S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
                                   cdf_cens = S_Y_0_curr,

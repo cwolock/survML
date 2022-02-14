@@ -48,8 +48,16 @@ estimate_p_delta <- function(event,
 
   # opt_fit <- p_delta_rf(event = event,
   #                       X = X)
-
-  opt_fit <- p_delta_xgboost(event = event, X = X, V = V)
+  if (is.null(V)){
+    opt_fit <- SuperLearner::SuperLearner(Y = event,
+                             X = X,
+                             family = "binomial",
+                             SL.library = SL.library,
+                             method = "method.NNloglik",
+                             verbose = FALSE)
+  } else{
+    opt_fit <- p_delta_xgboost(event = event, X = X, V = V)
+  }
 
   return(opt_fit)
 }

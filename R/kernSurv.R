@@ -23,7 +23,7 @@ kernSurv <- function(time,
                     kernel_type,
                     kernel_order,
                     SL.library,
-                    denom_method = "conditional"){
+                    denom_method = "stratified"){
 
   # determine optimal models (currently using oracle tuning)
   P_Delta_opt <- estimate_p_delta(event = event,
