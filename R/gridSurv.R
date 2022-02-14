@@ -115,9 +115,6 @@ gridSurv <- function(time,
 
     if (denom_method == "stratified"){
       S_Y_0_curr <- S_Y_0_opt_preds[i,]
-      print(S_Y_1_curr)
-      print(S_Y_0_curr)
-      print(pi_curr)
       S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
                                   cdf_cens = S_Y_0_curr,
                                   #cdf_marg = S_Y_curr,
@@ -125,7 +122,6 @@ gridSurv <- function(time,
                                   newtimes = newtimes,
                                   time_grid = time_grid_approx,
                                   denom_method = denom_method)
-      print(S_T_ests)
     } else{
       S_Y_curr <- S_Y_opt_preds[i,]
       S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
