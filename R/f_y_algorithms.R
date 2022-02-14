@@ -171,8 +171,8 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  tune <- list(ntrees = c(250, 500, 1000, 2000), max_depth = c(1,2,3),
-              eta = c(0.005))
+  tune <- list(ntrees = c(250, 500, 1000, 2500), max_depth = c(1,2,3),
+              eta = c(0.01))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
@@ -301,11 +301,11 @@ f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TR
   time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  tune <- list(num.trees = c(250, 500, 1000, 2000), max.depth = c(1,2,3), mtry = c(1,2,3))
+  tune <- list(num.trees = c(250, 500, 1000, 2000), max.depth = c(1,2,3,4), mtry = c(1,2,3))
 
   param_grid <- expand.grid(num.trees = tune$num.trees,
                             max.depth = tune$max.depth,
-                            mtry = tune.mtrys)
+                            mtry = tune$mtry)
 
   get_CV_risk <- function(i){
     num.trees <- param_grid$num.trees[i]
