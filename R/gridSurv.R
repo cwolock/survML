@@ -33,6 +33,7 @@ gridSurv <- function(time,
                      V = 10,
                      entry = NULL){
 
+
   if (!fast){ # do xgboost if speed not a concern
     # determine optimal models
     P_Delta_opt <- p_delta_xgboost(event = event,
@@ -190,6 +191,7 @@ gridSurv <- function(time,
     if (denom_method == "stratified"){
       S_Y_0_curr <- S_Y_0_opt_preds[i,]
       if (!is.null(entry)){ # truncation
+        print("shouldn't be here")
         F_W_0_curr <- F_W_0_opt_preds[i,]
         F_W_1_curr <- F_W_1_opt_preds[i,]
         # S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
