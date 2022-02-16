@@ -43,7 +43,7 @@ stackSurv <- function(time,
   ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
   for (i in 1:(length(trunc_time_grid))){
-    risk_set <- dat[dat$time > time_grid[i],]
+    risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
     risk_set_covariates <- risk_set[,1:ncol(X)]
     event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
     dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))

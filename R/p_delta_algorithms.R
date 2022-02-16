@@ -99,7 +99,7 @@ p_delta_ranger <- function(event, X, V){
   event <- as.matrix(event)
   dat <- data.frame(X, event)
 
-  tune <- list(num.trees = c(250, 500, 1000, 2000), max.depth = c(1,2,3,4), mtry = c(1,2))
+  tune <- list(num.trees = c(250, 500, 1000), max.depth = c(1,2,3,4), mtry = c(1,2))
 
   param_grid <- expand.grid(num.trees = tune$num.trees,
                             max.depth = tune$max.depth,

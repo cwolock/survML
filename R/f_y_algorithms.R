@@ -301,7 +301,7 @@ f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TR
   time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  tune <- list(num.trees = c(250, 500, 1000, 2000), max.depth = c(1,2,3,4), mtry = c(1,2,3))
+  tune <- list(num.trees = c(250, 500, 1000), max.depth = c(1,2,3,4), mtry = c(1,2,3))
 
   param_grid <- expand.grid(num.trees = tune$num.trees,
                             max.depth = tune$max.depth,

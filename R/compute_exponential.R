@@ -1,16 +1,16 @@
-#' Compute the plug-in product-limit survival function estimator
+#' Compute the plug-in exponential survival function estimator
 #'
 #' @param cdf_uncens Matrix of predictions of the cdf of the uncensored times (F_Y_1) on chosen time grid
 #' @param cdf_cens Predictions of the cdf of the censored times (F_Y_0) on chosen time grid
 #' @param p_uncens Prediction of the probability of being uncensored
 #' @param newtimes Times at which to make the prediction
-#' @param time_grid Grid of time points over which to discretize the product integral
+#' @param time_grid Grid of time points over which to discretize the integral
 #' @param denom_method Method of computing the denominator
 #'
 #' @return A vector of estimates of the survival function over \code{time_grid}
 #'
 #' @noRd
-compute_prodint <- function(cdf_uncens,
+compute_exponential <- function(cdf_uncens,
                             cdf_cens = NA,
                             cdf_marg = NA,
                             entry_uncens = NA,
@@ -46,6 +46,7 @@ compute_prodint <- function(cdf_uncens,
         low_left <- S_Y_1_pred_left * p_uncens
       }
 
+
       # product form
       if (denom_method == "stratified"){
         S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/(low_left + low_right))
@@ -71,11 +72,12 @@ compute_prodint <- function(cdf_uncens,
       # product form
       if (denom_method == "stratified"){
         #print(1 - p_uncens * dF_Y_1_pred/(low_left + low_right))
-        S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/(low_left + low_right))
+        S_T_est <- exp(-sum(p_uncens * dF_Y_1_pred/(low_left + low_right)))
       } else{
-        S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/low)
+        S_T_est <- exp(-sum(p_uncens * dF_Y_1_pred/low))
       }
     }
+
 
     return(S_T_est)
   }

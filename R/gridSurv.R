@@ -13,6 +13,7 @@
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
 #' @param stack Logical, indicating whether to fit a single bin
 #' @param V CV fold number
+#' @param entry Variable indicating time of entry into the study (truncation variable)
 #'
 #' @return An object of class \code{gridSurv}
 #'
@@ -29,7 +30,8 @@ gridSurv <- function(time,
                      stack = TRUE,
                      denom_method = "stratified",
                      fast = FALSE,
-                     V = 10){
+                     V = 10,
+                     entry = NULL){
 
   if (!fast){ # do xgboost if speed not a concern
     # determine optimal models
@@ -64,6 +66,43 @@ gridSurv <- function(time,
                                newX = newX,
                                newtimes = time_grid_approx)
     }
+    if (!is.null(entry)){ # if a truncation variable is given
+      if (denom_method == "stratified"){
+        F_W_1_opt <- f_w_stackCVcdf(time = time,
+                                    event = event,
+                                    X = X,
+                                    censored = FALSE,
+                                    bin_size = bin_size,
+                                    V = V,
+                                    entry = entry)
+        F_W_1_opt_preds <- predict(F_W_1_opt,
+                                   newX = newX,
+                                   newtimes = newtimes)
+        F_W_0_opt <- f_w_stackCVcdf(time = time,
+                                    event = event,
+                                    X = X,
+                                    censored = TRUE,
+                                    bin_size = bin_size,
+                                    V = V,
+                                    entry = entry)
+        F_W_0_opt_preds <- predict(F_W_0_opt,
+                                   newX = newX,
+                                   newtimes = newtimes)
+
+
+      } else{
+        F_W_opt <-f_w_stackCVcdf(time = time,
+                                 event = event,
+                                 X = X,
+                                 censored = NULL,
+                                 bin_size = bin_size,
+                                 V = V,
+                                 entry = entry)
+        F_W_opt_preds <- predict(F_W_opt,
+                                   newX = newX,
+                                   newtimes = newtimes)
+      }
+    }
   } else{ # if speed is a concern, use ranger
     # determine optimal models
     P_Delta_opt <- p_delta_ranger(event = event,
@@ -97,6 +136,41 @@ gridSurv <- function(time,
                                newX = newX,
                                newtimes = time_grid_approx)
     }
+    if (!is.null(entry)){ # if a truncation variable is given
+      if (denom_method == "stratified"){
+        F_W_1_opt <- f_w_stackCVranger(time = time,
+                                    event = event,
+                                    X = X,
+                                    censored = FALSE,
+                                    bin_size = bin_size,
+                                    V = V,
+                                    entry = entry)
+        F_W_1_opt_preds <- predict(F_W_1_opt,
+                                   newX = newX,
+                                   newtimes = newtimes)
+        F_W_0_opt <- f_w_stackCVranger(time = time,
+                                    event = event,
+                                    X = X,
+                                    censored = TRUE,
+                                    bin_size = bin_size,
+                                    V = V,
+                                    entry = entry)
+        F_W_0_opt_preds <- predict(F_W_0_opt,
+                                   newX = newX,
+                                   newtimes = newtimes)
+      } else{
+        F_W_opt <-f_w_stackCVranger(time = time,
+                                 event = event,
+                                 X = X,
+                                 censored = NULL,
+                                 bin_size = bin_size,
+                                 V = V,
+                                 entry = entry)
+        F_W_opt_preds <- predict(F_W_opt,
+                                   newX = newX,
+                                   newtimes = newtimes)
+      }
+    }
   }
 
   # fit optimal models
@@ -115,26 +189,74 @@ gridSurv <- function(time,
 
     if (denom_method == "stratified"){
       S_Y_0_curr <- S_Y_0_opt_preds[i,]
-      S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
-                                  cdf_cens = S_Y_0_curr,
-                                  #cdf_marg = S_Y_curr,
-                                  p_uncens = pi_curr,
-                                  newtimes = newtimes,
-                                  time_grid = time_grid_approx,
-                                  denom_method = denom_method)
-    } else{
+      if (!is.null(entry)){ # truncation
+        F_W_0_curr <- F_W_0_opt_preds[i,]
+        F_W_1_curr <- F_W_1_opt_preds[i,]
+        # S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
+        #                            cdf_cens = S_Y_0_curr,
+        #                            #cdf_marg = S_Y_curr,
+        #                            entry_uncens = F_W_1_curr,
+        #                            entry_cens = F_W_0_curr,
+        #                            p_uncens = pi_curr,
+        #                            newtimes = newtimes,
+        #                            time_grid = time_grid_approx,
+        #                            denom_method = denom_method,
+        #                            truncation = TRUE)
+        S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
+                                   cdf_cens = S_Y_0_curr,
+                                   #cdf_marg = S_Y_curr,
+                                   entry_uncens = F_W_1_curr,
+                                   entry_cens = F_W_0_curr,
+                                   p_uncens = pi_curr,
+                                   newtimes = newtimes,
+                                   time_grid = time_grid_approx,
+                                   denom_method = denom_method,
+                                   truncation = TRUE)
+      } else{ # no truncation
+        S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
+                                    cdf_cens = S_Y_0_curr,
+                                    #cdf_marg = S_Y_curr,
+                                    p_uncens = pi_curr,
+                                    newtimes = newtimes,
+                                    time_grid = time_grid_approx,
+                                    denom_method = denom_method,
+                                    truncation = FALSE)
+      }
+
+    } else{ # marginal denominator
       S_Y_curr <- S_Y_opt_preds[i,]
-      S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
-                                  #cdf_cens = S_Y_0_curr,
-                                  cdf_marg = S_Y_curr,
-                                  p_uncens = pi_curr,
-                                  newtimes = newtimes,
-                                  time_grid = time_grid_approx,
-                                  denom_method = denom_method)
+      if (!is.null(entry)){
+        F_W_curr <- F_W_opt_preds[i,]
+        # S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
+        #                            #cdf_cens = S_Y_0_curr,
+        #                            cdf_marg = S_Y_curr,
+        #                            p_uncens = pi_curr,
+        #                            entry_marg = F_W_curr,
+        #                            newtimes = newtimes,
+        #                            time_grid = time_grid_approx,
+        #                            denom_method = denom_method,
+        #                            truncation = TRUE)
+        S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
+                                   #cdf_cens = S_Y_0_curr,
+                                   cdf_marg = S_Y_curr,
+                                   p_uncens = pi_curr,
+                                   entry_marg = F_W_curr,
+                                   newtimes = newtimes,
+                                   time_grid = time_grid_approx,
+                                   denom_method = denom_method,
+                                   truncation = TRUE)
+      } else{
+        S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
+                                    #cdf_cens = S_Y_0_curr,
+                                    cdf_marg = S_Y_curr,
+                                    p_uncens = pi_curr,
+                                    newtimes = newtimes,
+                                    time_grid = time_grid_approx,
+                                    denom_method = denom_method,
+                                    truncation = FALSE)
+      }
+
     }
-
-
-
 
     return(S_T_ests)
   }
@@ -174,9 +296,13 @@ gridSurv <- function(time,
               #P_Delta_preds = P_Delta_opt_preds,
               #F_Y_1_preds = S_Y_1_opt_preds,
               #F_Y_0_preds = S_Y_0_opt_preds,
+              #F_W_1_preds = F_W_1_opt_preds,
+              #F_W_0_preds = F_W_0_opt_preds,
               #P_Delta_algo = P_Delta_opt,
               #F_Y_1_algo = S_Y_1_opt,
-              #F_Y_0_algo = S_Y_0_opt)
+              #F_Y_0_algo = S_Y_0_opt,
+              #F_W_1_algo = F_W_1_opt,
+              #F_W_0_algo = F_W_0_opt)
   class(res) <- "gridSurv"
   return(res)
 }
