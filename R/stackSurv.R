@@ -45,7 +45,7 @@ stackSurv <- function(time,
   tune <- list(ntrees = c(250, 500, 1000, 2500), max_depth = c(1,2,3),
                eta = c(0.01))
   tune <- list(ntrees = c(2000), max_depth = c(1),
-               eta = c(0.01))
+                eta = c(0.01))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
@@ -61,12 +61,12 @@ stackSurv <- function(time,
     risks <- rep(NA, V)
     for (j in 1:V){
       train <- stacked[-cv_folds[[j]],]
-      xgmat <- xgboost::xgb.DMatrix(data = train[,-ncol(train)], label = train[,ncol(train)])
+      xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train[,-ncol(train)]), label = as.matrix(train[,ncol(train)]))
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                               max_depth = max_depth, eta = eta,
                               verbose = FALSE, nthread = 1,
                               save_period = NULL, eval_metric = "logloss")
-      test <- stacked[cv_folds[[j]],]
+      test <- as.matrix(stacked[cv_folds[[j]],])
       preds <- predict(fit, newdata = test[,-ncol(test)])
       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
       truth <- test[,ncol(test)]
@@ -166,9 +166,9 @@ stackSurv <- function(time,
   opt_eta <- param_grid$eta[opt_param_index]
   opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
   #stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
-  Y <- stacked[,ncol(stacked)]
-  X <- as.matrix(stacked[,-ncol(stacked)])
-  xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
+  Y1 <- stacked[,ncol(stacked)]
+  X1 <- as.matrix(stacked[,-ncol(stacked)])
+  xgmat <- xgboost::xgb.DMatrix(data = X1, label = Y1)
   fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                           max_depth = opt_max_depth, eta = opt_eta,
                           verbose = FALSE, nthread = 1,
@@ -180,6 +180,7 @@ stackSurv <- function(time,
     new_stacked <- cbind(dummies, newX)
     risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
     colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
+    new_stacked <- as.matrix(new_stacked)
     preds <- predict(fit, newdata=new_stacked)
     return(preds)
   }
