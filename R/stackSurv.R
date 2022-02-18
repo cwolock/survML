@@ -44,8 +44,8 @@ stackSurv <- function(time,
 
   tune <- list(ntrees = c(250, 500, 1000, 2500), max_depth = c(1,2,3),
                eta = c(0.01))
-  tune <- list(ntrees = c(2000), max_depth = c(1),
-                eta = c(0.01))
+  # tune <- list(ntrees = c(2000), max_depth = c(1),
+  #               eta = c(0.01))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
