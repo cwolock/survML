@@ -23,4 +23,5 @@ Imports:
     SuperLearner,
     quantreg,
     qrnn,
-    gbm
+    gbm,
+    gam

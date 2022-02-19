@@ -1,139 +1,3 @@
-#' Smoothed Nadaraya-Watson estimator
-#'
-#' @param time Observed time
-#' @param event Indicator of event (vs censoring)
-#' @param X Covariate matrix
-#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
-#' @param bw bw
-#' @param bwy bwy
-#' @param kernel_type Kernel_type
-#' @param kernel_order Kernel_order
-#'
-#' @return An object of class \code{f_y_smoothnw}
-#' @noRd
-f_y_smoothnw <- function(time, event, X, censored, bw, bwy, kernel_type = "gaussian", kernel_order = 2){
-
-  if (!is.null(censored)){
-    if (censored == TRUE){
-      time <- time[!as.logical(event)]
-      X <- X[!as.logical(event),]
-    } else if (censored == FALSE){
-      time <- time[as.logical(event)]
-      X <- X[as.logical(event),]
-    }
-  } else{
-    time <- time
-    X <- X
-  }
-
-  fmla <- as.formula(paste("ind ~ ", paste(colnames(X), collapse = "+")))
-  ind <- time
-  dat <- data.frame(cbind(ind = ind, X))
-  bws <- eval(bquote(np::npcdistbw(formula = .(fmla),
-                                   data = dat,
-                                   regtype = "lc",
-                                   ckertype = kernel_type,
-                                   ckerorder = kernel_order)))
-  nw_fit <- eval(bquote(np::npcdist(formula = .(fmla),
-                                    data = dat,
-                                    bws = bws, #c(bwy, rep(bw, ncol(X))),
-                                    regtype = "lc",
-                                    ckertype = kernel_type,
-                                    ckerorder = kernel_order)))
-
-  fit <- list(reg.object = nw_fit)
-  class(fit) <- c("f_y_smoothnw")
-  return(fit)
-}
-
-#' Prediction function for smoothed Nadaraya-Watson estimator
-#'
-#' @param fit Fitted regression object
-#' @param newX Values of covariates at which to make a prediction
-#' @param newtimes
-#'
-#' @return Matrix of predictions
-#' @noRd
-predict.f_y_smoothnw <- function(fit, newX, newtimes){
-  predict_nw <- function(t){
-    pred <- predict(fit$reg.object, newdata = cbind(ind = rep(t, nrow(newX)), newX))
-    return(pred)
-  }
-  predictions <- apply(X = as.matrix(newtimes),
-                       MARGIN = 1,
-                       FUN = predict_nw)
-  return(predictions)
-}
-
-#' Smoothed locally linear kernel regression estimator
-#'
-#' @param time Observed time
-#' @param event Indicator of event (vs censoring)
-#' @param X Covariate matrix
-#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
-#' @param bw bw
-#' @param bwy bwy
-#' @param kernel_type Kernel_type
-#' @param kernel_order Kernel_order
-#'
-#' @return An object of class \code{f_y_smoothlllkern}
-#' @noRd
-f_y_smoothllkern <- function(time, event, X, censored, bw, bwy, kernel_type = "gaussian", kernel_order = 2){
-
-  if (!is.null(censored)){
-    if (censored == TRUE){
-      time <- time[!as.logical(event)]
-      X <- X[!as.logical(event),]
-    } else if (censored == FALSE){
-      time <- time[as.logical(event)]
-      X <- X[as.logical(event),]
-    }
-  } else{
-    time <- time
-    X <- X
-  }
-
-  fmla <- as.formula(paste("ind ~ ", paste(colnames(X), collapse = "+")))
-  ind <- time
-  dat <- data.frame(cbind(ind = ind, X))
-  bws <- eval(bquote(np::npcdistbw(formula = .(fmla),
-                                   data = dat,
-                                   regtype = "ll",
-                                   ckertype = kernel_type,
-                                   ckerorder = kernel_order)))
-  ll_fit <- eval(bquote(np::npcdist(formula = .(fmla),
-                                    data = dat,
-                                    bws = bws,#c(bwy, rep(bw, ncol(X))),
-                                    regtype = "ll",
-                                    ckertype = kernel_type,
-                                    ckerorder = kernel_order)))
-
-  fit <- list(reg.object = ll_fit)
-  class(fit) <- c("f_y_smoothllkern")
-  return(fit)
-}
-
-#' Prediction function for smoothed locally linear kernel estimator
-#'
-#' @param fit Fitted regression object
-#' @param newX Values of covariates at which to make a prediction
-#' @param newtimes
-#'
-#' @return Matrix of predictions
-#' @noRd
-predict.f_y_smoothllkern <- function(fit, newX, newtimes){
-  predict_ll <- function(t){
-    pred <- predict(fit$reg.object, newdata = cbind(ind = rep(t, nrow(newX)), newX))
-    return(pred)
-  }
-  predictions <- apply(X = as.matrix(newtimes),
-                       MARGIN = 1,
-                       FUN = predict_ll)
-  return(predictions)
-}
-
-
-
 #' Stacked binary regression with homemade cross validation, using the cdf
 #'
 #' @param time Observed time
@@ -147,7 +11,7 @@ predict.f_y_smoothllkern <- function(fit, newX, newtimes){
 #'
 #' @return An object of class \code{f_y_stackCVcdf}
 #' @noRd
-f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE, V, time_basis = "continuous"){
+f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TRUE, V, time_basis = "continuous"){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -275,11 +139,11 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
   print(fit$params)
   print(fit$niter)
   fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
-  class(fit) <- c("f_y_stackCVcdf")
+  class(fit) <- c("f_y_stack_xgboost")
   return(fit)
 }
 
-#' Prediction function for stacked CV cdf
+#' Prediction function for stacked xgboost CDF
 #'
 #' @param fit Fitted regression object
 #' @param newX Values of covariates at which to make a prediction
@@ -287,7 +151,7 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
 #'
 #' @return Matrix of predictions
 #' @noRd
-predict.f_y_stackCVcdf <- function(fit, newX, newtimes){
+predict.f_y_stack_xgboost <- function(fit, newX, newtimes){
 
   time_grid <- fit$time_grid
   trunc_time_grid <- time_grid[-length(time_grid)]
@@ -337,9 +201,9 @@ predict.f_y_stackCVcdf <- function(fit, newX, newtimes){
 #' @param V Number of CV folds
 #' @param time_basis How to treat time
 #'
-#' @return An object of class \code{f_y_stackCVranger}
+#' @return An object of class \code{f_y_stack_ranger}
 #' @noRd
-f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TRUE, V, time_basis = "continuous"){
+f_y_stack_ranger <- function(time, event, X, censored, bin_size, isotonize = TRUE, V, time_basis = "continuous"){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -436,7 +300,7 @@ f_y_stackCVranger <- function(time, event, X, censored, bin_size, isotonize = TR
 #'
 #' @return Matrix of predictions
 #' @noRd
-predict.f_y_stackCVranger <- function(fit, newX, newtimes){
+predict.f_y_stack_ranger <- function(fit, newX, newtimes){
 
   time_grid <- fit$time_grid
   trunc_time_grid <- time_grid[-length(time_grid)]
@@ -449,6 +313,119 @@ predict.f_y_stackCVranger <- function(fit, newX, newtimes){
   }
 
   predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+
+  if (fit$isotonize){
+    iso.cdf.ests <- t(apply(predictions, MARGIN = 1, FUN = Iso::pava))
+  } else{
+    iso.cdf.ests <- predictions
+  }
+
+  return(iso.cdf.ests)
+}
+
+
+#' Stacked binary cdf regression with gam
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param bin_size Size of quantiles over which to make the stacking bins
+#' @param isotonize Logical, indicates whether or not to isotonize cdf estimates using PAVA
+#' @param time_basis How to treat time
+#' @param cts.num If a variable has more than this many unique values, consider it continuous
+#'
+#' @return An object of class \code{f_y_stack_gam}
+#' @noRd
+f_y_stack_gam <- function(time, event, X, censored, bin_size, deg.gam = 2,isotonize = TRUE, time_basis = "continuous", cts.num = 4){
+
+  if (!is.null(censored)){
+    if (censored == TRUE){
+      time <- time[!as.logical(event)]
+      X <- X[!as.logical(event),]
+    } else if (censored == FALSE){
+      time <- time[as.logical(event)]
+      X <- X[as.logical(event),]
+    }
+  } else{
+    time <- time
+    X <- X
+  }
+
+  time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
+  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+
+  if (time_basis == "continuous"){
+    stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+  } else{
+    stacked <- conSurv:::stack_dummy(time = time, X = X, time_grid = time_grid)
+  }
+
+
+
+
+  Y <- stacked[,ncol(stacked)]
+  X <- stacked[,-ncol(stacked)]
+  cts.x <- apply(X, 2, function(x) (length(unique(x)) > cts.num))
+  X <- as.data.frame(X)
+  print(head(Y))
+  print(head(X))
+  if (sum(!cts.x) > 0) {
+    gam.model <- as.formula(paste("Y~",
+                                  paste(paste("s(", colnames(X[, cts.x, drop = FALSE]), ",", deg.gam,")", sep=""),
+                                        collapse = "+"), "+", paste(colnames(X[, !cts.x, drop=FALSE]), collapse = "+")))
+  } else {
+    gam.model <- as.formula(paste("Y~",
+                                  paste(paste("s(", colnames(X[, cts.x, drop = FALSE]), ",", deg.gam, ")", sep=""),
+                                        collapse = "+")))
+  }
+  # fix for when all variables are binomial
+  if (sum(!cts.x) == length(cts.x)) {
+    gam.model <- as.formula(paste("Y~", paste(colnames(X), collapse = "+"), sep = ""))
+  }
+  fit.gam <- gam::gam(gam.model, data = X, family = binomial(), control = gam::gam.control(maxit = 50, bf.maxit = 50))
+
+  fit <- list(reg.object = fit.gam, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
+  class(fit) <- c("f_y_stack_gam")
+  return(fit)
+}
+
+#' Prediction function for stacked GAM cdf estimation
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_stack_gam <- function(fit, newX, newtimes){
+
+  time_grid <- fit$time_grid
+  trunc_time_grid <- time_grid[-length(time_grid)]
+
+  if (fit$time_basis == "continuous"){
+    get_stacked_pred <- function(t){
+      new_stacked <- data.frame(t = t, newX)
+      preds <- gam::predict.Gam(fit$reg.object, newdata=new_stacked, type = "response")
+      return(preds)
+    }
+
+    predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+  } else{
+    get_preds <- function(t){
+      dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
+      index <- max(which(time_grid <= t))
+      dummies[,index] <- 1
+      new_stacked <- cbind(dummies, newX)
+      risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+      colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
+      new_stacked <- new_stacked
+      preds <- gam::predict.Gam(fit$reg.object, newdata=new_stacked, type = "response")
+      return(preds)
+    }
+
+    predictions <- apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1)
+  }
 
   if (fit$isotonize){
     iso.cdf.ests <- t(apply(predictions, MARGIN = 1, FUN = Iso::pava))

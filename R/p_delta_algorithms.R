@@ -1,3 +1,40 @@
+#' Binary SuperLearner
+#'
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param SL.library
+#'
+#' @return An object of class \code{p_delta_SuperLearner}
+#' @noRd
+p_delta_SuperLearner <- function(event, X, SL.library){
+
+  X <- as.data.frame(X)
+  opt_fit <- SuperLearner::SuperLearner(Y = event,
+                                        X = X,
+                                        family = "binomial",
+                                        SL.library = SL.library,
+                                        method = "method.NNloglik",
+                                        verbose = FALSE)
+
+  print(opt_fit)
+  fit <- list(reg.object = opt_fit)
+  class(fit) <- c("p_delta_SuperLearner")
+  return(fit)
+}
+
+#' Prediction function for p delta SuperLearner
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.p_delta_SuperLearner <- function(fit, newX){
+  X <- as.data.frame(newX)
+  preds <- predict(fit$reg.object, newdata = newX)$pred
+  return(preds)
+}
+
 #' Binary xgboost regression with homemade cross validation
 #'
 #' @param event Indicator of event (vs censoring)
@@ -188,11 +225,11 @@ p_delta_nw <- function(event, X, bw, kernel_type = "gaussian", kernel_order = 2)
   fmla <- as.formula(paste("event ~ ", paste(colnames(X), collapse = "+")))
   dat <- data.frame(cbind(event = event, X))
   fit.nw <- np::npreg(fmla,
-                   data = dat,
-                   bws = rep(bw, ncol(X)),
-                   regtype = "lc",
-                   ckertype = kernel_type,
-                   ckerorder = kernel_order)
+                      data = dat,
+                      bws = rep(bw, ncol(X)),
+                      regtype = "lc",
+                      ckertype = kernel_type,
+                      ckerorder = kernel_order)
   fit <- list(reg.object = fit.nw)
   class(fit) <- c("p_delta_nw")
   return(fit)
@@ -219,8 +256,8 @@ predict.p_delta_nw <- function(fit, newX){
 #' @noRd
 p_delta_logit_reg <- function(event, X){
   fit.logit_reg <- stats::glm(event ~ .,
-                    family = binomial(link = "logit"),
-                    data = cbind(event = event, X))
+                              family = binomial(link = "logit"),
+                              data = cbind(event = event, X))
   fit <- list(reg.object = fit.logit_reg)
   class(fit) <- c("p_delta_logit_reg")
   return(fit)
