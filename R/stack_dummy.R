@@ -3,6 +3,7 @@
 #' @return A stacked dataset
 #' @noRd
 stack_dummy <- function(time, X, time_grid){
+  dat <- data.frame(X, time)
   ncol_stacked <- ncol(X) + length(time_grid) + 1 # covariates, risk set dummies, binary outcome
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
   for (i in 1:(length(time_grid))){
