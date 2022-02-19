@@ -178,51 +178,97 @@ f_y_stackCVcdf <- function(time, event, X, censored, bin_size, isotonize = TRUE,
                             max_depth = tune$max_depth,
                             eta = tune$eta)
 
-  get_CV_risk <- function(i){
-    ntrees <- param_grid$ntrees[i]
-    max_depth <- param_grid$max_depth[i]
-    eta <- param_grid$eta[i]
-    risks <- rep(NA, V)
-    for (j in 1:V){
-      train_X <- X[-cv_folds[[j]],]
-      train_time <- time[-cv_folds[[j]]]
-      train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
-      xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
-      fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
-                       max_depth = max_depth, eta = eta,
-                       verbose = FALSE, nthread = 1,
-                       save_period = NULL, eval_metric = "logloss")
-      test_X <- X[cv_folds[[j]],]
-      test_time <- time[cv_folds[[j]]]
-      test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
-      preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)])
-      preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
-      truth <- test_stack[,ncol(test_stack)]
-      log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
-        -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
-      })
-      log_loss <- unlist(log_loss)
-      sum_log_loss <- sum(log_loss)
-      risks[j] <- sum_log_loss
+  if (time_basis == "continuous"){
+    get_CV_risk <- function(i){
+      ntrees <- param_grid$ntrees[i]
+      max_depth <- param_grid$max_depth[i]
+      eta <- param_grid$eta[i]
+      risks <- rep(NA, V)
+      for (j in 1:V){
+        train_X <- X[-cv_folds[[j]],]
+        train_time <- time[-cv_folds[[j]]]
+        train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
+        xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
+        fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
+                                max_depth = max_depth, eta = eta,
+                                verbose = FALSE, nthread = 1,
+                                save_period = NULL, eval_metric = "logloss")
+        test_X <- X[cv_folds[[j]],]
+        test_time <- time[cv_folds[[j]]]
+        test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
+        preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)])
+        preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
+        truth <- test_stack[,ncol(test_stack)]
+        log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
+          -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
+        })
+        log_loss <- unlist(log_loss)
+        sum_log_loss <- sum(log_loss)
+        risks[j] <- sum_log_loss
+      }
+      return(sum(risks))
     }
-    return(sum(risks))
+
+    CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
+
+    opt_param_index <- which.min(CV_risks)
+    opt_ntrees <- param_grid$ntrees[opt_param_index]
+    opt_max_depth <- param_grid$max_depth[opt_param_index]
+    opt_eta <- param_grid$eta[opt_param_index]
+    opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
+    stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+    Y <- stacked[,ncol(stacked)]
+    X <- as.matrix(stacked[,-ncol(stacked)])
+    xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
+    fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
+                            max_depth = opt_max_depth, eta = opt_eta,
+                            verbose = FALSE, nthread = 1,
+                            save_period = NULL, eval_metric = "logloss")
+  } else{
+    get_CV_risk <- function(i){
+      ntrees <- param_grid$ntrees[i]
+      max_depth <- param_grid$max_depth[i]
+      eta <- param_grid$eta[i]
+      risks <- rep(NA, V)
+      for (j in 1:V){
+        train_X <- X[-cv_folds[[j]],]
+        train_time <- time[-cv_folds[[j]]]
+        train_stack <- conSurv:::stack_dummy(time = train_time, X = train_X, time_grid = time_grid)
+        xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]), label = as.matrix(train_stack[,ncol(train_stack)]))
+        fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
+                                max_depth = max_depth, eta = eta,
+                                verbose = FALSE, nthread = 1,
+                                save_period = NULL, eval_metric = "logloss")
+        test_X <- X[cv_folds[[j]],]
+        test_time <- time[cv_folds[[j]]]
+        test_stack <- conSurv:::stack_dummy(time = test_time, X = test_X, time_grid = time_grid)
+        preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
+        preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
+        truth <- test_stack[,ncol(test_stack)]
+        log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
+          -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
+        })
+        log_loss <- unlist(log_loss)
+        sum_log_loss <- sum(log_loss)
+        risks[j] <- sum_log_loss
+      }
+      return(sum(risks))
+    }
+    CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
+    opt_param_index <- which.min(CV_risks)
+    opt_ntrees <- param_grid$ntrees[opt_param_index]
+    opt_max_depth <- param_grid$max_depth[opt_param_index]
+    opt_eta <- param_grid$eta[opt_param_index]
+    opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
+    stacked <- conSurv:::stack_dummy(time = time, X = X, time_grid = time_grid)
+    Y <- stacked[,ncol(stacked)]
+    X <- as.matrix(stacked[,-ncol(stacked)])
+    xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
+    fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
+                            max_depth = opt_max_depth, eta = opt_eta,
+                            verbose = FALSE, nthread = 1,
+                            save_period = NULL, eval_metric = "logloss")
   }
-
-  CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
-
-  opt_param_index <- which.min(CV_risks)
-  opt_ntrees <- param_grid$ntrees[opt_param_index]
-  opt_max_depth <- param_grid$max_depth[opt_param_index]
-  opt_eta <- param_grid$eta[opt_param_index]
-  opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
-  stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
-  Y <- stacked[,ncol(stacked)]
-  X <- as.matrix(stacked[,-ncol(stacked)])
-  xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
-  fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
-                          max_depth = opt_max_depth, eta = opt_eta,
-                          verbose = FALSE, nthread = 1,
-                          save_period = NULL, eval_metric = "logloss")
 
   print(censored)
   print(CV_risks)
@@ -246,13 +292,29 @@ predict.f_y_stackCVcdf <- function(fit, newX, newtimes){
   time_grid <- fit$time_grid
   trunc_time_grid <- time_grid[-length(time_grid)]
 
-  get_stacked_pred <- function(t){
-    new_stacked <- as.matrix(data.frame(t = t, newX))
-    preds <- predict(fit$reg.object, newdata=new_stacked)
-    return(preds)
-  }
+  if (fit$time_basis == "continuous"){
+    get_stacked_pred <- function(t){
+      new_stacked <- as.matrix(data.frame(t = t, newX))
+      preds <- predict(fit$reg.object, newdata=new_stacked)
+      return(preds)
+    }
 
-  predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+    predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+  } else{
+    get_preds <- function(t){
+      dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
+      index <- max(which(time_grid <= t))
+      dummies[,index] <- 1
+      new_stacked <- cbind(dummies, newX)
+      risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+      colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
+      new_stacked <- as.matrix(new_stacked)
+      preds <- predict(fit$reg.object, newdata=new_stacked)
+      return(preds)
+    }
+
+    predictions <- apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1)
+  }
 
   if (fit$isotonize){
     iso.cdf.ests <- t(apply(predictions, MARGIN = 1, FUN = Iso::pava))

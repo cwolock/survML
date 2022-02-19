@@ -31,7 +31,8 @@ gridSurv <- function(time,
                      denom_method = "stratified",
                      fast = FALSE,
                      V = 10,
-                     entry = NULL){
+                     entry = NULL,
+                     time_basis){
 
 
   if (!fast){ # do xgboost if speed not a concern
@@ -44,7 +45,8 @@ gridSurv <- function(time,
                                 X = X,
                                 censored = FALSE,
                                 bin_size = bin_size,
-                                V = V)
+                                V = V,
+                                time_basis = time_basis)
 
     if (denom_method == "stratified"){
       S_Y_0_opt <- f_y_stackCVcdf(time = time,
@@ -52,7 +54,8 @@ gridSurv <- function(time,
                                   X = X,
                                   censored = TRUE,
                                   bin_size = bin_size,
-                                  V = V)
+                                  V = V,
+                                  time_basis = time_basis)
       S_Y_0_opt_preds <- predict(S_Y_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
