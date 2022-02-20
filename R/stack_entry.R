@@ -9,7 +9,7 @@ stack_entry <- function(time, entry, X, time_grid){
   ncol_stacked <- ncol(X) + 2 # covariates, time, binary outcome
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
   for (i in 1:(length(trunc_time_grid))){ # can change this to not do anything in last time bin
-    risk_set <- dat[dat$time >= time_grid[i+1],]
+    risk_set <- dat[dat$time > time_grid[i],] # maybe this should be >= i+1? Need to think more carefully about this. obv in the limit, doesn't matter
     risk_set_covariates <- risk_set[,1:ncol(X)]
     event_indicators <- matrix(ifelse(risk_set$entry <= time_grid[i + 1 ], 1, 0))
     t <- rep(time_grid[i + 1], nrow(risk_set_covariates))
@@ -17,7 +17,6 @@ stack_entry <- function(time, entry, X, time_grid){
     stacked <- rbind(stacked, newdata)
   }
   stacked <- stacked[-1,]
-  print(stacked)
   colnames(stacked)[ncol(stacked)] <- "event_indicators"
   return(stacked)
 }

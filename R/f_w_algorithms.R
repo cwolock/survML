@@ -9,9 +9,9 @@
 #' @param V Number of CV folds
 #' @param time_basis How to treat time
 #'
-#' @return An object of class \code{f_w_stackCVcdf}
+#' @return An object of class \code{f_w_stack_xgboost}
 #' @noRd
-f_w_stackCVcdf <- function(time, event, entry, X, censored, bin_size, V, time_basis = "continuous"){
+f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V, time_basis = "continuous"){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -99,7 +99,7 @@ f_w_stackCVcdf <- function(time, event, entry, X, censored, bin_size, V, time_ba
   print(fit$params)
   print(fit$niter)
   fit <- list(reg.object = fit, time_grid = time_grid, time_basis = time_basis)
-  class(fit) <- c("f_w_stackCVcdf")
+  class(fit) <- c("f_w_stack_xgboost")
   return(fit)
 }
 
@@ -111,7 +111,7 @@ f_w_stackCVcdf <- function(time, event, entry, X, censored, bin_size, V, time_ba
 #'
 #' @return Matrix of predictions
 #' @noRd
-predict.f_w_stackCVcdf <- function(fit, newX, newtimes){
+predict.f_w_stack_xgboost <- function(fit, newX, newtimes){
 
   time_grid <- fit$time_grid
   trunc_time_grid <- time_grid[-length(time_grid)]
@@ -139,9 +139,9 @@ predict.f_w_stackCVcdf <- function(fit, newX, newtimes){
 #' @param V Number of CV folds
 #' @param time_basis How to treat time
 #'
-#' @return An object of class \code{f_w_stackCVranger}
+#' @return An object of class \code{f_w_stack_ranger}
 #' @noRd
-f_w_stackCVranger <- function(time, event, entry, X, censored, bin_size, V, time_basis = "continuous"){
+f_w_stack_ranger <- function(time, event, entry, X, censored, bin_size, V, time_basis = "continuous"){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -232,7 +232,7 @@ f_w_stackCVranger <- function(time, event, entry, X, censored, bin_size, V, time
   print(fit$num.trees)
   print(opt_mtry)
   fit <- list(reg.object = fit, time_grid = time_grid, time_basis = time_basis)
-  class(fit) <- c("f_w_stackCVranger")
+  class(fit) <- c("f_w_stack_ranger")
   return(fit)
 }
 
@@ -244,7 +244,7 @@ f_w_stackCVranger <- function(time, event, entry, X, censored, bin_size, V, time
 #'
 #' @return Matrix of predictions
 #' @noRd
-predict.f_w_stackCVranger <- function(fit, newX, newtimes){
+predict.f_w_stack_ranger <- function(fit, newX, newtimes){
 
   time_grid <- fit$time_grid
   trunc_time_grid <- time_grid[-length(time_grid)]
@@ -261,3 +261,90 @@ predict.f_w_stackCVranger <- function(fit, newX, newtimes){
   return(predictions)
 }
 
+#' Stacked binary regression with gam
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param entry Truncation variable, time of entry into the study
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param bin_size Size of quantiles over which to make the stacking bins
+#' @param time_basis How to treat time
+#'
+#' @return An object of class \code{f_w_stack_gam}
+#' @noRd
+f_w_stack_gam <- function(time, event, entry, X, censored, bin_size, deg.gam = 2, cts.num = 4,time_basis = "continuous"){
+
+  if (!is.null(censored)){
+    if (censored == TRUE){
+      time <- time[!as.logical(event)]
+      entry <- entry[!as.logical(event)]
+      X <- X[!as.logical(event),]
+    } else if (censored == FALSE){
+      time <- time[as.logical(event)]
+      X <- X[as.logical(event),]
+      entry <- entry[as.logical(event)]
+    }
+  } else{
+    time <- time
+    entry <- entry
+    X <- X
+  }
+
+  X <- as.matrix(X)
+  time <- as.matrix(time)
+  entry <- as.matrix(entry)
+  dat <- data.frame(X, time, entry)
+
+  # should my grid be quantiles of entry, or of Y??
+  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+
+  stacked <- conSurv:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid)
+  Y <- stacked[,ncol(stacked)]
+  X <- as.matrix(stacked[,-ncol(stacked)])
+  cts.x <- apply(X, 2, function(x) (length(unique(x)) > cts.num))
+  X <- as.data.frame(X)
+  if (sum(!cts.x) > 0) {
+    gam.model <- as.formula(paste("Y~",
+                                  paste(paste("s(", colnames(X[, cts.x, drop = FALSE]), ",", deg.gam,")", sep=""),
+                                        collapse = "+"), "+", paste(colnames(X[, !cts.x, drop=FALSE]), collapse = "+")))
+  } else {
+    gam.model <- as.formula(paste("Y~",
+                                  paste(paste("s(", colnames(X[, cts.x, drop = FALSE]), ",", deg.gam, ")", sep=""),
+                                        collapse = "+")))
+  }
+  # fix for when all variables are binomial
+  if (sum(!cts.x) == length(cts.x)) {
+    gam.model <- as.formula(paste("Y~", paste(colnames(X), collapse = "+"), sep = ""))
+  }
+  fit.gam <- gam::gam(gam.model, data = X, family = binomial(), control = gam::gam.control(maxit = 50, bf.maxit = 50))
+
+  fit <- list(reg.object = fit.gam, time_grid = time_grid, time_basis = time_basis)
+  class(fit) <- c("f_w_stack_gam")
+  return(fit)
+}
+
+#' Prediction function for stacked gam
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_w_stack_gam <- function(fit, newX, newtimes){
+
+  time_grid <- fit$time_grid
+  trunc_time_grid <- time_grid[-length(time_grid)]
+
+  get_stacked_pred <- function(t){
+    new_stacked <- data.frame(t = t, newX)
+    preds <- gam::predict.Gam(fit$reg.object, newdata=new_stacked, type = "response")
+    return(preds)
+  }
+
+  predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+
+  return(predictions)
+}

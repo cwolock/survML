@@ -361,15 +361,10 @@ f_y_stack_gam <- function(time, event, X, censored, bin_size, deg.gam = 2,isoton
     stacked <- conSurv:::stack_dummy(time = time, X = X, time_grid = time_grid)
   }
 
-
-
-
   Y <- stacked[,ncol(stacked)]
   X <- stacked[,-ncol(stacked)]
   cts.x <- apply(X, 2, function(x) (length(unique(x)) > cts.num))
   X <- as.data.frame(X)
-  print(head(Y))
-  print(head(X))
   if (sum(!cts.x) > 0) {
     gam.model <- as.formula(paste("Y~",
                                   paste(paste("s(", colnames(X[, cts.x, drop = FALSE]), ",", deg.gam,")", sep=""),

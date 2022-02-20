@@ -207,22 +207,20 @@ gridSurv <- function(time,
     }
     if (!is.null(entry)){ # if a truncation variable is given
       if (denom_method == "stratified"){
-        F_W_1_opt <- f_w_stackCVcdf(time = time,
+        F_W_1_opt <- f_w_stack_gam(time = time,
                                     event = event,
                                     X = X,
                                     censored = FALSE,
                                     bin_size = bin_size,
-                                    V = V,
                                     entry = entry)
         F_W_1_opt_preds <- predict(F_W_1_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
-        F_W_0_opt <- f_w_stackCVcdf(time = time,
+        F_W_0_opt <- f_w_stack_gam(time = time,
                                     event = event,
                                     X = X,
                                     censored = TRUE,
                                     bin_size = bin_size,
-                                    V = V,
                                     entry = entry)
         F_W_0_opt_preds <- predict(F_W_0_opt,
                                    newX = newX,
@@ -230,12 +228,11 @@ gridSurv <- function(time,
 
 
       } else{
-        F_W_opt <-f_w_stackCVcdf(time = time,
+        F_W_opt <-f_w_stack_gam(time = time,
                                  event = event,
                                  X = X,
                                  censored = NULL,
                                  bin_size = bin_size,
-                                 V = V,
                                  entry = entry)
         F_W_opt_preds <- predict(F_W_opt,
                                  newX = newX,
