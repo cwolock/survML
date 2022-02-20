@@ -36,7 +36,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V, time
   entry <- as.matrix(entry)
   dat <- data.frame(X, time, entry)
 
-  time_grid <- quantile(dat$entry, probs = seq(0, 1, by = bin_size))
+  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   tune <- list(ntrees = c(250, 500, 1000, 2500), max_depth = c(1,2,3),

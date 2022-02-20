@@ -18,14 +18,11 @@ stackSurv <- function(time,
                       X,
                       newX,
                       newtimes,
-                      time_grid_approx,
                       bin_size = NULL,
-                      test_time = NULL,
-                      test_event = NULL,
-                      test_X = NULL,
                       V = 10,
                       time_basis = "continuous",
-                      algorithm = "xgboost"){
+                      algorithm = "xgboost",
+                      entry = NULL){
 
   cts.num <- 4
   deg.gam <- 2
@@ -58,7 +55,11 @@ stackSurv <- function(time,
     cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
 
     if (time_basis == "continuous"){
-      stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
+      stacked <- conSurv:::stack_haz(time = time,
+                                     event = event,
+                                     X = X,
+                                     time_grid = time_grid,
+                                     entry = entry)
       # I guess for stacking, I can do cross validation on stacked dataset, rather than on individuals? shouldn't matter too
       # much I'd think
       get_CV_risk <- function(i){
@@ -156,7 +157,11 @@ stackSurv <- function(time,
       ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
       stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
       for (i in 1:(length(trunc_time_grid))){
-        risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
+        if (is.null(entry)){
+          risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
+        } else{
+          risk_set <- dat[dat$time > time_grid[i] & entry <= time_grid[i+1],] # should this be <= rather than <??
+        }
         risk_set_covariates <- risk_set[,1:ncol(X)]
         event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
         dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
@@ -391,7 +396,7 @@ stackSurv <- function(time,
       #colnames(stacked)[1] <- "time"
       #stacked <- data.frame(stacked)
       # make sure the two ways of stacking agree
-      stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
+      stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid, entry = entry)
       Y <- stacked[,ncol(stacked)]
       X <- stacked[,-ncol(stacked)]
 
@@ -440,7 +445,11 @@ stackSurv <- function(time,
       ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
       stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
       for (i in 1:(length(trunc_time_grid))){
-        risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
+        if (is.null(entry)){
+          risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
+        } else{
+          risk_set <- dat[dat$time > time_grid[i] & entry <= time_grid[i+1],] # should this be <= rather than <??
+        }
         risk_set_covariates <- risk_set[,1:ncol(X)]
         event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
         dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
