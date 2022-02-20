@@ -52,7 +52,7 @@ f_w_stackCVcdf <- function(time, event, entry, X, censored, bin_size, V, time_ba
     eta <- param_grid$eta[i]
     risks <- rep(NA, V)
     for (j in 1:V){
-      train_X <- X[-cv_folds[[j]],]
+      train_X <- X[-cv_folds[[j]],,drop=FALSE]
       train_time <- time[-cv_folds[[j]]]
       train_entry <- entry[-cv_folds[[j]]]
       train_stack <- conSurv:::stack_entry(time = train_time, entry = train_entry, X = train_X, time_grid = time_grid)
@@ -61,7 +61,7 @@ f_w_stackCVcdf <- function(time, event, entry, X, censored, bin_size, V, time_ba
                        max_depth = max_depth, eta = eta,
                        verbose = FALSE, nthread = 1,
                        save_period = NULL, eval_metric = "logloss")
-      test_X <- X[cv_folds[[j]],]
+      test_X <- X[cv_folds[[j]],,drop=FALSE]
       test_time <- time[cv_folds[[j]]]
       test_entry <- entry[cv_folds[[j]]]
       test_stack <- conSurv:::stack_entry(time = test_time, entry = test_entry, X = test_X, time_grid = time_grid)
