@@ -133,13 +133,17 @@ stackSurv <- function(time,
         return(preds)
       }
 
-      hazard_preds <- apply(X = matrix(time_grid_approx), FUN = get_hazard_preds, MARGIN = 1)
+      hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
 
       get_surv_preds <- function(t){
-        final_index <- max(which(time_grid_approx <= t))
-        haz <- as.matrix(hazard_preds[,1:final_index])
-        anti_haz <- 1 - haz
-        surv <- apply(anti_haz, MARGIN = 1, prod)
+        if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- max(which(time_grid[-1] <= t))
+          haz <- as.matrix(hazard_preds[,1:final_index])
+          anti_haz <- 1 - haz
+          surv <- apply(anti_haz, MARGIN = 1, prod)
+        } else{
+          surv <- rep(1, nrow(hazard_preds))
+        }
         return(surv)
       }
 
@@ -414,13 +418,17 @@ stackSurv <- function(time,
         return(preds)
       }
 
-      hazard_preds <- apply(X = matrix(time_grid_approx), FUN = get_hazard_preds, MARGIN = 1)
+      hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
 
       get_surv_preds <- function(t){
-        final_index <- max(which(time_grid_approx <= t))
-        haz <- as.matrix(hazard_preds[,1:final_index])
-        anti_haz <- 1 - haz
-        surv <- apply(anti_haz, MARGIN = 1, prod)
+        if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- max(which(time_grid[-1] <= t))
+          haz <- as.matrix(hazard_preds[,1:final_index])
+          anti_haz <- 1 - haz
+          surv <- apply(anti_haz, MARGIN = 1, prod)
+        } else{
+          surv <- rep(1, nrow(hazard_preds))
+        }
         return(surv)
       }
 
