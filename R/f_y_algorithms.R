@@ -431,3 +431,100 @@ predict.f_y_stack_gam <- function(fit, newX, newtimes){
   return(iso.cdf.ests)
 }
 
+#' Stacked binary cdf regression with earth
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param bin_size Size of quantiles over which to make the stacking bins
+#' @param isotonize Logical, indicates whether or not to isotonize cdf estimates using PAVA
+#' @param time_basis How to treat time
+#' @param cts.num If a variable has more than this many unique values, consider it continuous
+#'
+#' @return An object of class \code{f_y_stack_earth}
+#' @noRd
+f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE, time_basis = "continuous",
+                          degree = 2, penalty = 3, nk = max(21, 2*ncol(X) + 1), pmethod = "backward",
+                          nfold = 0, ncross = 1, minspan = 0, endspan = 0){
+
+  if (!is.null(censored)){
+    if (censored == TRUE){
+      time <- time[!as.logical(event)]
+      X <- X[!as.logical(event),]
+    } else if (censored == FALSE){
+      time <- time[as.logical(event)]
+      X <- X[as.logical(event),]
+    }
+  } else{
+    time <- time
+    X <- X
+  }
+
+  time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
+  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+
+  if (time_basis == "continuous"){
+    stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+  } else{
+    stacked <- conSurv:::stack_dummy(time = time, X = X, time_grid = time_grid)
+  }
+
+  Y <- stacked[,ncol(stacked)]
+  X <- stacked[,-ncol(stacked)]
+  X <- as.data.frame(X)
+
+  fit.earth <- earth::earth(x = X, y = Y, degree = degree, nk = nk, penalty = penalty, pmethod = pmethod,
+                            nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan,
+                            glm = list(family = binomial))
+
+  fit <- list(reg.object = fit.earth, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
+  class(fit) <- c("f_y_stack_earth")
+  return(fit)
+}
+
+#' Prediction function for stacked earth cdf estimation
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_y_stack_earth <- function(fit, newX, newtimes){
+
+  time_grid <- fit$time_grid
+  trunc_time_grid <- time_grid[-length(time_grid)]
+
+  if (fit$time_basis == "continuous"){
+    get_stacked_pred <- function(t){
+      new_stacked <- data.frame(t = t, newX)
+      preds <- predict(fit$reg.object, newdata = new_stacked, type = "response")
+      return(preds)
+    }
+
+    predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+  } else{
+    get_preds <- function(t){
+      dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
+      index <- max(which(time_grid <= t))
+      dummies[,index] <- 1
+      new_stacked <- cbind(dummies, newX)
+      risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+      colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
+      new_stacked <- new_stacked
+      preds <- predict(fit$reg.object, newdata = new_stacked, type = "response")
+      return(preds)
+    }
+
+    predictions <- apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1)
+  }
+
+  if (fit$isotonize){
+    iso.cdf.ests <- t(apply(predictions, MARGIN = 1, FUN = Iso::pava))
+  } else{
+    iso.cdf.ests <- predictions
+  }
+
+  return(iso.cdf.ests)
+}

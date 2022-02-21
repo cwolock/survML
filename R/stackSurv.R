@@ -482,6 +482,107 @@ stackSurv <- function(time,
 
       surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
     }
+  } else if (algorithm == "earth"){
+
+    degree = 2
+    penalty = 3
+    nk = max(21, 2*ncol(X) + 1)
+    pmethod = "backward"
+    nfold = 0
+    ncross = 1
+    minspan = 0
+    endspan = 0
+
+    if (time_basis == "continuous"){
+      # continuous time
+
+      # make sure the two ways of stacking agree
+      stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid, entry = entry)
+      Y <- stacked[,ncol(stacked)]
+      X <- stacked[,-ncol(stacked)]
+      X <- as.data.frame(X)
+
+      fit.earth <- earth::earth(x = X, y = Y, degree = degree, nk = nk, penalty = penalty, pmethod = pmethod,
+                                nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan,
+                                glm = list(family = binomial))
+
+      get_hazard_preds <- function(t){
+        new_stacked <- data.frame(t = t, newX)
+        preds <- predict(fit.earth, newdata=new_stacked, type = "response")
+        return(preds)
+      }
+
+      hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
+
+      get_surv_preds <- function(t){
+        if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- max(which(time_grid[-1] <= t))
+          haz <- as.matrix(hazard_preds[,1:final_index])
+          anti_haz <- 1 - haz
+          surv <- apply(anti_haz, MARGIN = 1, prod)
+        } else{
+          surv <- rep(1, nrow(hazard_preds))
+        }
+        return(surv)
+      }
+
+      surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+    } else if (time_basis == "dummy"){
+      # # Super learner version of stacking
+      # # dummies
+      # # this version does dummy variables for time - include this as an option
+      ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
+      stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
+      for (i in 1:(length(trunc_time_grid))){
+        if (is.null(entry)){
+          risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
+        } else{
+          risk_set <- dat[dat$time > time_grid[i] & entry <= time_grid[i+1],] # should this be <= rather than <??
+        }
+        risk_set_covariates <- risk_set[,1:ncol(X)]
+        event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
+        dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
+        dummies[,i] <- 1
+        newdata <- as.matrix(cbind(dummies, risk_set_covariates, event_indicators))
+        stacked <- rbind(stacked, newdata)
+      }
+
+      stacked <- stacked[-1,]
+      risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+      colnames(stacked)[1:(length(trunc_time_grid))] <- risk_set_names
+      stacked <- data.frame(stacked)
+      Y <- stacked$event_indicators
+      X <- stacked[,-ncol(stacked)]
+
+      X <- as.data.frame(X)
+
+      fit.earth <- earth::earth(x = X, y = Y, degree = degree, nk = nk, penalty = penalty, pmethod = pmethod,
+                                nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan,
+                                glm = list(family = binomial))
+
+      get_hazard_preds <- function(t){
+        dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
+        index <- max(which(trunc_time_grid <= t))
+        dummies[,index] <- 1
+        new_stacked <- cbind(dummies, newX)
+        risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+        colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
+        preds <- predict(fit.earth, newdata=new_stacked, type = "response")
+        return(preds)
+      }
+
+      hazard_preds <- apply(X = matrix(trunc_time_grid), FUN = get_hazard_preds, MARGIN = 1)
+
+      get_surv_preds <- function(t){
+        final_index <- max(which(trunc_time_grid <= t))
+        haz <- as.matrix(hazard_preds[,1:final_index])
+        anti_haz <- 1 - haz
+        surv <- apply(anti_haz, MARGIN = 1, prod)
+        return(surv)
+      }
+
+      surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+    }
   }
 
   res <- list(S_T_preds = surv_preds)

@@ -239,6 +239,73 @@ gridSurv <- function(time,
                                  newtimes = time_grid_approx)
       }
     }
+  } else if (algorithm == "earth"){
+    # determine optimal models
+    SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth", "SL.ranger")
+    P_Delta_opt <- p_delta_SuperLearner(event = event,
+                                        X = X,
+                                        SL.library = SL.library)
+    S_Y_1_opt <- f_y_stack_earth(time = time,
+                                 event = event,
+                                 X = X,
+                                 censored = FALSE,
+                                 bin_size = bin_size,
+                                 time_basis = time_basis)
+
+    if (denom_method == "stratified"){
+      S_Y_0_opt <- f_y_stack_earth(time = time,
+                                   event = event,
+                                   X = X,
+                                   censored = TRUE,
+                                   bin_size = bin_size,
+                                   time_basis = time_basis)
+      S_Y_0_opt_preds <- predict(S_Y_0_opt,
+                                 newX = newX,
+                                 newtimes = time_grid_approx)
+    } else{
+      S_Y_opt <- f_y_stack_earth(time = time,
+                                 event = event,
+                                 X = X,
+                                 censored = NULL,
+                                 bin_size = bin_size)
+      S_Y_opt_preds <- predict(S_Y_opt,
+                               newX = newX,
+                               newtimes = time_grid_approx)
+    }
+    if (!is.null(entry)){ # if a truncation variable is given
+      if (denom_method == "stratified"){
+        F_W_1_opt <- f_w_stack_gam(time = time,
+                                   event = event,
+                                   X = X,
+                                   censored = FALSE,
+                                   bin_size = bin_size,
+                                   entry = entry)
+        F_W_1_opt_preds <- predict(F_W_1_opt,
+                                   newX = newX,
+                                   newtimes = time_grid_approx)
+        F_W_0_opt <- f_w_stack_gam(time = time,
+                                   event = event,
+                                   X = X,
+                                   censored = TRUE,
+                                   bin_size = bin_size,
+                                   entry = entry)
+        F_W_0_opt_preds <- predict(F_W_0_opt,
+                                   newX = newX,
+                                   newtimes = time_grid_approx)
+
+
+      } else{
+        F_W_opt <-f_w_stack_gam(time = time,
+                                event = event,
+                                X = X,
+                                censored = NULL,
+                                bin_size = bin_size,
+                                entry = entry)
+        F_W_opt_preds <- predict(F_W_opt,
+                                 newX = newX,
+                                 newtimes = time_grid_approx)
+      }
+    }
   }
 
   # fit optimal models
