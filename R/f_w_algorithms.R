@@ -348,3 +348,83 @@ predict.f_w_stack_gam <- function(fit, newX, newtimes){
 
   return(predictions)
 }
+
+#' Stacked binary regression with earth
+#'
+#' @param time Observed time
+#' @param event Indicator of event (vs censoring)
+#' @param entry Truncation variable, time of entry into the study
+#' @param X Covariate matrix
+#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
+#' @param bin_size Size of quantiles over which to make the stacking bins
+#' @param time_basis How to treat time
+#'
+#' @return An object of class \code{f_w_stack_gam}
+#' @noRd
+f_w_stack_earth <- function(time, event, entry, X, censored, bin_size,time_basis = "continuous", degree = 2,
+                            penalty = 3, nk = max(21, 2*ncol(X) + 1), pmethod = "backward",
+                            nfold = 0, ncross = 1, minspan = 0, endspan = 0){
+
+  if (!is.null(censored)){
+    if (censored == TRUE){
+      time <- time[!as.logical(event)]
+      entry <- entry[!as.logical(event)]
+      X <- X[!as.logical(event),]
+    } else if (censored == FALSE){
+      time <- time[as.logical(event)]
+      X <- X[as.logical(event),]
+      entry <- entry[as.logical(event)]
+    }
+  } else{
+    time <- time
+    entry <- entry
+    X <- X
+  }
+
+  X <- as.matrix(X)
+  time <- as.matrix(time)
+  entry <- as.matrix(entry)
+  dat <- data.frame(X, time, entry)
+
+  # should my grid be quantiles of entry, or of Y??
+  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+
+  stacked <- conSurv:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid)
+  Y <- stacked[,ncol(stacked)]
+  X <- as.matrix(stacked[,-ncol(stacked)])
+  X <- as.data.frame(X)
+
+  fit.earth <- earth::earth(x = X, y = Y, degree = degree, nk = nk, penalty = penalty, pmethod = pmethod,
+                            nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan,
+                            glm = list(family = binomial))
+
+  fit <- list(reg.object = fit.earth, time_grid = time_grid, time_basis = time_basis)
+  class(fit) <- c("f_w_stack_earth")
+  return(fit)
+}
+
+#' Prediction function for stacked earth
+#'
+#' @param fit Fitted regression object
+#' @param newX Values of covariates at which to make a prediction
+#' @param newtimes
+#'
+#' @return Matrix of predictions
+#' @noRd
+predict.f_w_stack_earth <- function(fit, newX, newtimes){
+
+  time_grid <- fit$time_grid
+  trunc_time_grid <- time_grid[-length(time_grid)]
+
+  get_stacked_pred <- function(t){
+    new_stacked <- data.frame(t = t, newX)
+    preds <- predict(fit$reg.object, newdata=new_stacked, type = "response")
+    return(preds)
+  }
+
+  predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+
+  return(predictions)
+}
+
