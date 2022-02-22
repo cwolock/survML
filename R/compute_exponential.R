@@ -49,9 +49,10 @@ compute_exponential <- function(cdf_uncens,
 
       # product form
       if (denom_method == "stratified"){
-        S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/(low_left + low_right))
+        #print(1 - p_uncens * dF_Y_1_pred/(low_left + low_right))
+        S_T_est <- exp(-sum(p_uncens * dF_Y_1_pred/(low_left + low_right)))
       } else{
-        S_T_est <- prod(1 - p_uncens * dF_Y_1_pred/low)
+        S_T_est <- exp(-sum(p_uncens * dF_Y_1_pred/low))
       }
     } else{ # if there is truncation
       if (denom_method != "stratified"){
