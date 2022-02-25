@@ -51,7 +51,7 @@ p_delta_xgboost <- function(event, X, V){
   event <- as.matrix(event)
   dat <- data.frame(X, event)
 
-  tune <- list(ntrees = c(200, 300, 500, 1000), max_depth = c(1,2,3),
+  tune <- list(ntrees = c(100, 200, 300, 500, 1000), max_depth = c(1,2,3),
                eta = c(0.05))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
