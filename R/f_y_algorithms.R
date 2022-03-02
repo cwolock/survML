@@ -32,8 +32,16 @@ f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TR
   time <- as.matrix(time)
   dat <- data.frame(X, time)
 
-  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
+  if (!is.null(bin_size)){
+    time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  } else{
+    time_grid <- sort(unique(time))
+    time_grid <- c(0, time_grid)
+  }
+  # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   tune <- list(ntrees = c(100, 200, 300, 500, 1000), max_depth = c(1,2,3),
               eta = c(0.05))
@@ -224,8 +232,16 @@ f_y_stack_ranger <- function(time, event, X, censored, bin_size, isotonize = TRU
   time <- as.matrix(time)
   dat <- data.frame(X, time)
 
-  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
+  if (!is.null(bin_size)){
+    time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  } else{
+    time_grid <- sort(unique(time))
+    time_grid <- c(0, time_grid)
+  }
+  # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   tune <- list(num.trees = c(250, 500, 1000), max.depth = c(1,2,3,4), mtry = c(1,2,3))
 
@@ -352,8 +368,17 @@ f_y_stack_gam <- function(time, event, X, censored, bin_size, deg.gam = 2,isoton
     X <- X
   }
 
-  time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
-  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
+  if (!is.null(bin_size)){
+    time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  } else{
+    time_grid <- sort(unique(time))
+    time_grid <- c(0, time_grid)
+  }
+
+  # time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
+  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   if (time_basis == "continuous"){
     stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
