@@ -38,7 +38,8 @@ gridSurv_reverse <- function(time,
                                  X = X,
                                  censored = NULL,
                                  bin_size = bin_size,
-                                 V = V)
+                                 V = V,
+                                 time_basis = time_basis)
     S_Y_opt_preds <- predict(S_Y_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
@@ -49,7 +50,9 @@ gridSurv_reverse <- function(time,
                                 censored = NULL,
                                 bin_size = bin_size,
                                 V = V,
-                                entry = entry)
+                                entry = entry,
+                                time_basis = time_basis,
+                                direction = "reverse")
     F_W_opt_preds <- predict(F_W_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
@@ -58,7 +61,8 @@ gridSurv_reverse <- function(time,
                                event = NULL,
                                X = X,
                                censored = NULL,
-                               bin_size = bin_size)
+                               bin_size = bin_size,
+                               time_basis = time_basis)
     S_Y_opt_preds <- predict(S_Y_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
@@ -68,7 +72,9 @@ gridSurv_reverse <- function(time,
                               X = X,
                               censored = NULL,
                               bin_size = bin_size,
-                              entry = entry)
+                              entry = entry,
+                              time_basis = time_basis,
+                              direction = "reverse")
     F_W_opt_preds <- predict(F_W_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
