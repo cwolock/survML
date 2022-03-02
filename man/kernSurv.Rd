@@ -13,7 +13,8 @@ kernSurv(
   time_grid_approx,
   kernel_type,
   kernel_order,
-  SL.library
+  SL.library,
+  denom_method = "stratified"
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ kernSurv(
 \item{time_grid_approx}{Grid of time points on which to approximate PL integral}
 
 \item{SL.library}{SuperLearner library}
+
+\item{denom_method}{Method of computing the denominator}
 }
 \value{
 An object of class \code{kernSurv}

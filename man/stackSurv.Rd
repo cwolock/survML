@@ -11,10 +11,10 @@ stackSurv(
   newX,
   newtimes,
   bin_size = NULL,
-  test_time = NULL,
-  test_event = NULL,
-  test_X = NULL,
-  SL.library
+  V = 10,
+  time_basis = "continuous",
+  algorithm = "xgboost",
+  entry = NULL
 )
 }
 \arguments{
