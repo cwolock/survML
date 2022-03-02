@@ -13,8 +13,7 @@
 #' @export
 #'
 #' @examples
-stackSurv <- function(time,
-                      event,
+stackSurv_reverse <- function(time,
                       X,
                       newX,
                       newtimes,
@@ -22,16 +21,14 @@ stackSurv <- function(time,
                       V = 10,
                       time_basis = "continuous",
                       algorithm = "xgboost",
-                      entry = NULL,
-                      direction = "forward"){
+                      entry = NULL){
 
   cts.num <- 4
   deg.gam <- 2
 
   X <- as.matrix(X)
   time <- as.matrix(time)
-  event <- as.matrix(event)
-  dat <- data.frame(X, time, event)
+  dat <- data.frame(X, time)
 
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
@@ -498,7 +495,8 @@ stackSurv <- function(time,
       # continuous time
 
       # make sure the two ways of stacking agree
-      stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid, entry = entry)
+      stacked <- conSurv:::stack_haz(time = time, event = rep(1,length(time)),
+                                     X = X, time_grid = time_grid, entry = entry, direction = "reverse")
       Y <- stacked[,ncol(stacked)]
       X <- stacked[,-ncol(stacked)]
       X <- as.data.frame(X)
@@ -513,16 +511,18 @@ stackSurv <- function(time,
         return(preds)
       }
 
-      hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
+      hazard_preds <- apply(X = matrix(time_grid[-length(time_grid)]), FUN = get_hazard_preds, MARGIN = 1)
+      # don't estimate hazard at final time point (it's 0)
 
       get_surv_preds <- function(t){
-        if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
-          final_index <- max(which(time_grid[-1] <= t))
-          haz <- as.matrix(hazard_preds[,1:final_index])
+        if (sum(time_grid[-length(time_grid)] >= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- min(which(time_grid[-length(time_grid)] >= t))
+          haz <- as.matrix(hazard_preds[,final_index:(length(time_grid)-1)])
           anti_haz <- 1 - haz
           surv <- apply(anti_haz, MARGIN = 1, prod)
+          surv <- 1 - surv
         } else{
-          surv <- rep(1, nrow(hazard_preds))
+          surv <- rep(0, nrow(hazard_preds))
         }
         return(surv)
       }

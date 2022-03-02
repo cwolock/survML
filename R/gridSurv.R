@@ -63,7 +63,8 @@ gridSurv <- function(time,
                                    X = X,
                                    censored = NULL,
                                    bin_size = bin_size,
-                                   V = V)
+                                   V = V,
+                                   time_basis = time_basis)
       S_Y_opt_preds <- predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
@@ -76,7 +77,8 @@ gridSurv <- function(time,
                                     censored = FALSE,
                                     bin_size = bin_size,
                                     V = V,
-                                    entry = entry)
+                                    entry = entry,
+                                    time_basis = time_basis)
         F_W_1_opt_preds <- predict(F_W_1_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -86,7 +88,8 @@ gridSurv <- function(time,
                                     censored = TRUE,
                                     bin_size = bin_size,
                                     V = V,
-                                    entry = entry)
+                                    entry = entry,
+                                    time_basis = time_basis)
         F_W_0_opt_preds <- predict(F_W_0_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -99,7 +102,8 @@ gridSurv <- function(time,
                                  censored = NULL,
                                  bin_size = bin_size,
                                  V = V,
-                                 entry = entry)
+                                 entry = entry,
+                                 time_basis = time_basis)
         F_W_opt_preds <- predict(F_W_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -115,7 +119,8 @@ gridSurv <- function(time,
                                   X = X,
                                   censored = FALSE,
                                   bin_size = bin_size,
-                                  V = V)
+                                  V = V,
+                                  time_basis = time_basis)
 
     if (denom_method == "stratified"){
       S_Y_0_opt <- f_y_stack_ranger(time = time,
@@ -123,7 +128,8 @@ gridSurv <- function(time,
                                     X = X,
                                     censored = TRUE,
                                     bin_size = bin_size,
-                                    V = V)
+                                    V = V,
+                                    time_basis = time_basis)
       S_Y_0_opt_preds <- predict(S_Y_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -133,7 +139,8 @@ gridSurv <- function(time,
                                   X = X,
                                   censored = NULL,
                                   bin_size = bin_size,
-                                  V = V)
+                                  V = V,
+                                  time_basis = time_basis)
       S_Y_opt_preds <- predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
@@ -146,7 +153,8 @@ gridSurv <- function(time,
                                        censored = FALSE,
                                        bin_size = bin_size,
                                        V = V,
-                                       entry = entry)
+                                       entry = entry,
+                                       time_basis = time_basis)
         F_W_1_opt_preds <- predict(F_W_1_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -156,7 +164,8 @@ gridSurv <- function(time,
                                        censored = TRUE,
                                        bin_size = bin_size,
                                        V = V,
-                                       entry = entry)
+                                       entry = entry,
+                                       time_basis = time_basis)
         F_W_0_opt_preds <- predict(F_W_0_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -167,7 +176,8 @@ gridSurv <- function(time,
                                     censored = NULL,
                                     bin_size = bin_size,
                                     V = V,
-                                    entry = entry)
+                                    entry = entry,
+                                    time_basis = time_basis)
         F_W_opt_preds <- predict(F_W_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -201,7 +211,8 @@ gridSurv <- function(time,
                                event = event,
                                X = X,
                                censored = NULL,
-                               bin_size = bin_size)
+                               bin_size = bin_size,
+                               time_basis = time_basis)
       S_Y_opt_preds <- predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
@@ -213,7 +224,8 @@ gridSurv <- function(time,
                                     X = X,
                                     censored = FALSE,
                                     bin_size = bin_size,
-                                    entry = entry)
+                                    entry = entry,
+                                   time_basis = time_basis)
         F_W_1_opt_preds <- predict(F_W_1_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -222,7 +234,8 @@ gridSurv <- function(time,
                                     X = X,
                                     censored = TRUE,
                                     bin_size = bin_size,
-                                    entry = entry)
+                                    entry = entry,
+                                   time_basis = time_basis)
         F_W_0_opt_preds <- predict(F_W_0_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -234,7 +247,8 @@ gridSurv <- function(time,
                                  X = X,
                                  censored = NULL,
                                  bin_size = bin_size,
-                                 entry = entry)
+                                 entry = entry,
+                                time_basis = time_basis)
         F_W_opt_preds <- predict(F_W_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -268,7 +282,8 @@ gridSurv <- function(time,
                                  event = event,
                                  X = X,
                                  censored = NULL,
-                                 bin_size = bin_size)
+                                 bin_size = bin_size,
+                                 time_basis = time_basis)
       S_Y_opt_preds <- predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
@@ -280,7 +295,8 @@ gridSurv <- function(time,
                                    X = X,
                                    censored = FALSE,
                                    bin_size = bin_size,
-                                   entry = entry)
+                                   entry = entry,
+                                   time_basis = time_basis)
         F_W_1_opt_preds <- predict(F_W_1_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -289,7 +305,8 @@ gridSurv <- function(time,
                                    X = X,
                                    censored = TRUE,
                                    bin_size = bin_size,
-                                   entry = entry)
+                                   entry = entry,
+                                   time_basis = time_basis)
         F_W_0_opt_preds <- predict(F_W_0_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -301,7 +318,8 @@ gridSurv <- function(time,
                                 X = X,
                                 censored = NULL,
                                 bin_size = bin_size,
-                                entry = entry)
+                                entry = entry,
+                                time_basis = time_basis)
         F_W_opt_preds <- predict(F_W_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
