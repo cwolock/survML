@@ -2,7 +2,7 @@
 #'
 #' @return A stacked dataset
 #' @noRd
-stack_haz <- function(time, event, X, time_grid, entry, direction){
+stack_haz <- function(time, event, X, time_grid, entry, direction = "forward"){
   trunc_time_grid <- time_grid[-length(time_grid)] # do I need to truncate if treating time as continuous? look at this later
   dat <- data.frame(X, event = event, time = time)
   # we will treat time as continuous
