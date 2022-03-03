@@ -534,7 +534,8 @@ predict.f_y_stack_earth <- function(fit, newX, newtimes){
       return(preds)
     }
 
-    predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+    #predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+    predictions <- apply(X = matrix(fit$time_grid), FUN = get_stacked_pred, MARGIN = 1)
   } else{
     get_preds <- function(t){
       dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
@@ -551,11 +552,21 @@ predict.f_y_stack_earth <- function(fit, newX, newtimes){
     predictions <- apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1)
   }
 
+  predictions[,1] <- 0
+
   if (fit$isotonize){
     iso.cdf.ests <- t(apply(predictions, MARGIN = 1, FUN = Iso::pava))
   } else{
     iso.cdf.ests <- predictions
   }
+
+  cdf.ests <- matrix(unlist(lapply(1:nrow(iso.cdf.ests),
+                            function(v){
+                              approx(x = fit$time_grid, y = iso.cdf.ests[v,], xout = newtimes, method = "linear")$y
+                            })),
+                     nrow = nrow(newX),
+                     ncol = length(newtimes),
+                     byrow = TRUE)
 
   return(iso.cdf.ests)
 }
