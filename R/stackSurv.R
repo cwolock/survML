@@ -66,7 +66,8 @@ stackSurv <- function(time,
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
                                 verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss")
+                                save_period = NULL, eval_metric = "logloss",
+                                subsample = 0.5)
         test <- as.matrix(stacked[cv_folds[[j]],])
         preds <- predict(fit, newdata = test[,-ncol(test)])
         preds[preds == 1] <- 0.99 # this is a hack, but come back to it later

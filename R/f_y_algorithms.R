@@ -64,7 +64,8 @@ f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TR
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
                                 verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss")
+                                save_period = NULL, eval_metric = "logloss",
+                                subsample = 0.5)
         test_X <- X[cv_folds[[j]],]
         test_time <- time[cv_folds[[j]]]
         test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
@@ -534,8 +535,8 @@ predict.f_y_stack_earth <- function(fit, newX, newtimes){
       return(preds)
     }
 
-    #predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
-    predictions <- apply(X = matrix(fit$time_grid), FUN = get_stacked_pred, MARGIN = 1)
+    predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+    #predictions <- apply(X = matrix(fit$time_grid), FUN = get_stacked_pred, MARGIN = 1)
   } else{
     get_preds <- function(t){
       dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
@@ -552,7 +553,7 @@ predict.f_y_stack_earth <- function(fit, newX, newtimes){
     predictions <- apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1)
   }
 
-  predictions[,1] <- 0
+  #predictions[,1] <- 0
 
   if (fit$isotonize){
     iso.cdf.ests <- t(apply(predictions, MARGIN = 1, FUN = Iso::pava))
@@ -560,14 +561,14 @@ predict.f_y_stack_earth <- function(fit, newX, newtimes){
     iso.cdf.ests <- predictions
   }
 
-  cdf.ests <- matrix(unlist(lapply(1:nrow(iso.cdf.ests),
-                            function(v){
-                              approx(x = fit$time_grid, y = iso.cdf.ests[v,], xout = newtimes, method = "linear",
-                                     rule = 2)$y
-                            })),
-                     nrow = nrow(newX),
-                     ncol = length(newtimes),
-                     byrow = TRUE)
+  # cdf.ests <- matrix(unlist(lapply(1:nrow(iso.cdf.ests),
+  #                           function(v){
+  #                             approx(x = fit$time_grid, y = iso.cdf.ests[v,], xout = newtimes, method = "linear",
+  #                                    rule = 2)$y
+  #                           })),
+  #                    nrow = nrow(newX),
+  #                    ncol = length(newtimes),
+  #                    byrow = TRUE)
 
-  return(cdf.ests)
+  return(iso.cdf.ests)
 }
