@@ -465,15 +465,15 @@ gridSurv <- function(time,
   #                        FUN = estimate_S_C))
 
   res <- list(S_T_preds = S_T_preds,
-              S_C_preds = NA)#,
-  #P_Delta_preds = P_Delta_opt_preds,
-  #F_Y_1_preds = S_Y_1_opt_preds,
-  #F_Y_0_preds = S_Y_0_opt_preds,
-  #F_W_1_preds = F_W_1_opt_preds,
-  #F_W_0_preds = F_W_0_opt_preds,
-  #P_Delta_algo = P_Delta_opt,
-  #F_Y_1_algo = S_Y_1_opt,
-  #F_Y_0_algo = S_Y_0_opt,
+              S_C_preds = NA)
+  # P_Delta_preds = P_Delta_opt_preds,
+  # F_Y_1_preds = S_Y_1_opt_preds,
+  # F_Y_0_preds = S_Y_0_opt_preds,
+  # #F_W_1_preds = F_W_1_opt_preds,
+  # #F_W_0_preds = F_W_0_opt_preds,
+  # P_Delta_algo = P_Delta_opt,
+  # F_Y_1_algo = S_Y_1_opt,
+  # F_Y_0_algo = S_Y_0_opt)
   #F_W_1_algo = F_W_1_opt,
   #F_W_0_algo = F_W_0_opt)
   class(res) <- "gridSurv"

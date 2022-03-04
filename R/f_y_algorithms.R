@@ -562,11 +562,12 @@ predict.f_y_stack_earth <- function(fit, newX, newtimes){
 
   cdf.ests <- matrix(unlist(lapply(1:nrow(iso.cdf.ests),
                             function(v){
-                              approx(x = fit$time_grid, y = iso.cdf.ests[v,], xout = newtimes, method = "linear")$y
+                              approx(x = fit$time_grid, y = iso.cdf.ests[v,], xout = newtimes, method = "linear",
+                                     rule = 2)$y
                             })),
                      nrow = nrow(newX),
                      ncol = length(newtimes),
                      byrow = TRUE)
 
-  return(iso.cdf.ests)
+  return(cdf.ests)
 }
