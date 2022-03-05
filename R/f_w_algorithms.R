@@ -37,8 +37,15 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
   entry <- as.matrix(entry)
   dat <- data.frame(X, time, entry)
 
-  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  if (!is.null(bin_size)){
+    time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  } else{
+    time_grid <- sort(unique(time))
+    time_grid <- c(0, time_grid)
+  }
+  # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   tune <- list(ntrees = c(100, 200, 300, 500, 1000), max_depth = c(1,2,3),
               eta = c(0.05))
@@ -62,7 +69,8 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                        max_depth = max_depth, eta = eta,
                        verbose = FALSE, nthread = 1,
-                       save_period = NULL, eval_metric = "logloss")
+                       save_period = NULL, eval_metric = "logloss",
+                       subsample = 0.5)
       test_X <- X[cv_folds[[j]],,drop=FALSE]
       test_time <- time[cv_folds[[j]]]
       test_entry <- entry[cv_folds[[j]]]
@@ -396,8 +404,15 @@ f_w_stack_earth <- function(time, event, entry, X, censored, bin_size,time_basis
   dat <- data.frame(X, time, entry)
 
   # should my grid be quantiles of entry, or of Y??
-  time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-  time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  if (!is.null(bin_size)){
+    time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  } else{
+    time_grid <- sort(unique(time))
+    time_grid <- c(0, time_grid)
+  }
+  # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   stacked <- conSurv:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, direction = direction)
   Y <- stacked[,ncol(stacked)]
