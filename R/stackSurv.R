@@ -45,8 +45,8 @@ stackSurv <- function(time,
   trunc_time_grid <- time_grid[-length(time_grid)]
 
   if (algorithm == "xgboost"){
-    tune <- list(ntrees = c(100, 200, 300, 500, 1000), max_depth = c(1,2,3),
-                 eta = c(0.05))
+    tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
+                 eta = c(0.1))
     # tune <- list(ntrees = c(2000), max_depth = c(1),
     #               eta = c(0.01))
 
