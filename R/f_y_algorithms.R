@@ -471,8 +471,21 @@ predict.f_y_stack_gam <- function(fit, newX, newtimes){
 #' @return An object of class \code{f_y_stack_earth}
 #' @noRd
 f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE, time_basis = "continuous",
-                          degree = 2, penalty = 3, nk = max(21, 2*ncol(X) + 1), pmethod = "backward",
-                          nfold = 0, ncross = 1, minspan = 0, endspan = 0){
+                            V = 5){
+
+  #degree = 2
+  penalty = 3
+  nk = max(21, 2*ncol(X) + 1)
+  pmethod = "backward"
+  nfold = 0
+  ncross = 1
+  minspan = 0
+  endspan = 0
+
+  tune <- list(degree = c(1,2,3), nprune = seq.int(1, nk, length.out = 5))
+
+  param_grid <- expand.grid(degree = tune$degree,
+                            nprune = tune$nprune)
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -496,6 +509,75 @@ f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE
     time_grid <- c(0, time_grid)
   }
 
+  cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
+
+  if (time_basis == "continuous"){
+    get_CV_risk <- function(i){
+      degree = param_grid$degree[i]
+      nprune = param_grid$nprune[i]
+      risks <- rep(NA, V)
+      for (j in 1:V){
+        train_X <- X[-cv_folds[[j]],]
+        train_time <- time[-cv_folds[[j]]]
+        train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
+        .Y <- train_stack[,ncol(train_stack)]
+        .X <- train_stack[,-ncol(train_stack)]
+        .X <- as.data.frame(.X)
+        fit <- earth::earth(x = .X, y = .Y, degree = degree, nk = nk, penalty = penalty, pmethod = pmethod,
+                            nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan, nprune = nprune,
+                            glm = list(family = binomial))
+        test_X <- X[cv_folds[[j]],]
+        test_time <- time[cv_folds[[j]]]
+        test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
+        preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)], type = "response")
+        preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
+        truth <- test_stack[,ncol(test_stack)]
+        log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
+          -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
+        })
+        log_loss <- unlist(log_loss)
+        sum_log_loss <- sum(log_loss)
+        risks[j] <- sum_log_loss
+      }
+      return(sum(risks))
+    }
+  } else{
+    get_CV_risk <- function(i){
+      degree = param_grid$degree[i]
+      nprune = param_grid$nprune[i]
+      risks <- rep(NA, V)
+      for (j in 1:V){
+        train_X <- X[-cv_folds[[j]],]
+        train_time <- time[-cv_folds[[j]]]
+        train_stack <- conSurv:::stack_dummy(time = train_time, X = train_X, time_grid = time_grid)
+        .Y <- train_stack[,ncol(train_stack)]
+        .X <- train_stack[,-ncol(train_stack)]
+        .X <- as.data.frame(X)
+        fit <- earth::earth(x = .X, y = .Y, degree = degree, nk = nk, penalty = penalty, pmethod = pmethod,
+                            nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan, nprune = nprune,
+                            glm = list(family = binomial))
+        test_X <- X[cv_folds[[j]],]
+        test_time <- time[cv_folds[[j]]]
+        test_stack <- conSurv:::stack_dummy(time = test_time, X = test_X, time_grid = time_grid)
+        preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]), type = "response")
+        preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
+        truth <- test_stack[,ncol(test_stack)]
+        log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
+          -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
+        })
+        log_loss <- unlist(log_loss)
+        sum_log_loss <- sum(log_loss)
+        risks[j] <- sum_log_loss
+      }
+      return(sum(risks))
+    }
+  }
+
+  CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
+  opt_param_index <- which.min(CV_risks)
+  opt_degree <- param_grid$degree[opt_param_index]
+  opt_nprune <- param_grid$nprune[opt_param_index]
+
   if (time_basis == "continuous"){
     stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
   } else{
@@ -506,8 +588,8 @@ f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE
   X <- stacked[,-ncol(stacked)]
   X <- as.data.frame(X)
 
-  fit.earth <- earth::earth(x = X, y = Y, degree = degree, nk = nk, penalty = penalty, pmethod = pmethod,
-                            nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan,
+  fit.earth <- earth::earth(x = X, y = Y, degree = opt_degree, nk = nk, penalty = penalty, pmethod = pmethod,
+                            nfold = nfold, ncross = ncross, minspan = minspan, endspan = endspan, nprune = opt_nprune,
                             glm = list(family = binomial))
 
   fit <- list(reg.object = fit.earth, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
