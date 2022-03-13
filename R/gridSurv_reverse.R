@@ -103,7 +103,11 @@ gridSurv_reverse <- function(time,
                        MARGIN = 1,
                        FUN = estimate_S_T))
 
-  res <- list(S_T_preds = S_T_preds)
+  res <- list(S_T_preds = S_T_preds,
+              F_T_preds = S_Y_opt_preds,
+              F_W_preds = F_W_opt_preds,
+              F_T_opt = S_Y_opt,
+              F_W_opt = F_W_opt)
   class(res) <- "gridSurv_reverse"
   return(res)
 }
