@@ -11,7 +11,15 @@
 #'
 #' @return An object of class \code{f_y_stackCVcdf}
 #' @noRd
-f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TRUE, V, time_basis = "continuous"){
+f_y_stack_xgboost <- function(time,
+                              event,
+                              X,
+                              censored,
+                              bin_size,
+                              isotonize = TRUE,
+                              V,
+                              time_basis = "continuous",
+                              tuning_params = NULL){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -43,29 +51,37 @@ f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TR
   # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
-              eta = c(0.1))
+  if (is.null(tuning_params)){
+    tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
+                 eta = c(0.1), subsamp_size = c(100))
+  } else{
+    tune <- tuning_params
+  }
+
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
-                            eta = tune$eta)
+                            eta = tune$eta,
+                            subsamp_size = tune$subsamp_size)
 
-  ratio <- 100/length(time)
+  #ratio <- 100/length(time)
 
   if (time_basis == "continuous"){
     get_CV_risk <- function(i){
       ntrees <- param_grid$ntrees[i]
       max_depth <- param_grid$max_depth[i]
       eta <- param_grid$eta[i]
+      subsamp_size <- param_grid$subsamp_size[i]
       risks <- rep(NA, V)
       for (j in 1:V){
         train_X <- X[-cv_folds[[j]],]
         train_time <- time[-cv_folds[[j]]]
         train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
+        ratio <- min(c(subsamp_size/nrow(train_stack), 1))
         xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
-                                verbose = FALSE, nthread = 1,
+                                verbose = FALSE,
                                 save_period = NULL, eval_metric = "logloss",
                                 subsample = ratio)
         test_X <- X[cv_folds[[j]],]
@@ -90,14 +106,16 @@ f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TR
     opt_ntrees <- param_grid$ntrees[opt_param_index]
     opt_max_depth <- param_grid$max_depth[opt_param_index]
     opt_eta <- param_grid$eta[opt_param_index]
-    opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
+    opt_subsamp_size <- param_grid$subsamp_size[opt_param_index]
+    opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsamp_size = opt_subsamp_size)
     stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+    ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
     Y <- stacked[,ncol(stacked)]
     X <- as.matrix(stacked[,-ncol(stacked)])
     xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
     fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                             max_depth = opt_max_depth, eta = opt_eta,
-                            verbose = FALSE, nthread = 1,
+                            verbose = FALSE,
                             save_period = NULL, eval_metric = "logloss",
                             subsample = ratio)
   } else{

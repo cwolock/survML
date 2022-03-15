@@ -23,7 +23,8 @@ stackSurv <- function(time,
                       time_basis = "continuous",
                       algorithm = "xgboost",
                       entry = NULL,
-                      direction = "forward"){
+                      direction = "forward",
+                      tuning_params = NULL){
 
   cts.num <- 4
   deg.gam <- 2
@@ -45,28 +46,32 @@ stackSurv <- function(time,
   trunc_time_grid <- time_grid[-length(time_grid)]
 
   if (algorithm == "xgboost"){
-    ratio <- 100/length(time)
-    tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
-                 eta = c(0.1))
-    # tune <- list(ntrees = c(2000), max_depth = c(1),
-    #               eta = c(0.01))
+    if (is.null(tuning_params)){
+      tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
+                   eta = c(0.1), subsamp_size = c(100))
+    } else{
+      tune <- tuning_params
+    }
 
     param_grid <- expand.grid(ntrees = tune$ntrees,
                               max_depth = tune$max_depth,
-                              eta = tune$eta)
+                              eta = tune$eta,
+                              subsamp_size = tune$subsamp_size)
     cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
 
     get_CV_risk <- function(i){
       ntrees <- param_grid$ntrees[i]
       max_depth <- param_grid$max_depth[i]
       eta <- param_grid$eta[i]
+      subsamp_size <- param_grid$subsamp_size[i]
       risks <- rep(NA, V)
       for (j in 1:V){
         train <- stacked[-cv_folds[[j]],]
         xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train[,-ncol(train)]), label = as.matrix(train[,ncol(train)]))
+        ratio <- min(c(subsamp_size/nrow(train), 1))
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
-                                verbose = FALSE, nthread = 1,
+                                verbose = FALSE,
                                 save_period = NULL, eval_metric = "logloss",
                                 subsample = ratio)
         test <- as.matrix(stacked[cv_folds[[j]],])
@@ -98,14 +103,16 @@ stackSurv <- function(time,
       opt_ntrees <- param_grid$ntrees[opt_param_index]
       opt_max_depth <- param_grid$max_depth[opt_param_index]
       opt_eta <- param_grid$eta[opt_param_index]
-      opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
+      opt_subsamp_size <- param_grid$subsamp_size[opt_param_index]
+      opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsamp_size = opt_subsamp_size)
       #stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
       Y2 <- stacked[,ncol(stacked)]
       X2 <- as.matrix(stacked[,-ncol(stacked)])
       xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
+      ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                               max_depth = opt_max_depth, eta = opt_eta,
-                              verbose = FALSE, nthread = 1,
+                              verbose = FALSE,
                               save_period = NULL, eval_metric = "logloss", subsample = ratio)
 
       get_hazard_preds <- function(t){

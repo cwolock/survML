@@ -30,21 +30,24 @@ gridSurv <- function(time,
                      V = 10,
                      entry = NULL,
                      time_basis,
-                     surv_form = "PI"){
+                     surv_form = "PI",
+                     tuning_params = NULL){
 
 
   if (algorithm == "xgboost"){ # do xgboost if speed not a concern
     # determine optimal models
     P_Delta_opt <- p_delta_xgboost(event = event,
                                    X = X,
-                                   V = V)
+                                   V = V,
+                                   tuning_params = tuning_params)
     S_Y_1_opt <- f_y_stack_xgboost(time = time,
                                    event = event,
                                    X = X,
                                    censored = FALSE,
                                    bin_size = bin_size,
                                    V = V,
-                                   time_basis = time_basis)
+                                   time_basis = time_basis,
+                                   tuning_params = tuning_params)
 
     if (denom_method == "stratified"){
       S_Y_0_opt <- f_y_stack_xgboost(time = time,
@@ -53,7 +56,8 @@ gridSurv <- function(time,
                                      censored = TRUE,
                                      bin_size = bin_size,
                                      V = V,
-                                     time_basis = time_basis)
+                                     time_basis = time_basis,
+                                     tuning_params = tuning_params)
       S_Y_0_opt_preds <- predict(S_Y_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -64,7 +68,8 @@ gridSurv <- function(time,
                                    censored = NULL,
                                    bin_size = bin_size,
                                    V = V,
-                                   time_basis = time_basis)
+                                   time_basis = time_basis,
+                                   tuning_params = tuning_params)
       S_Y_opt_preds <- predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
@@ -78,7 +83,8 @@ gridSurv <- function(time,
                                     bin_size = bin_size,
                                     V = V,
                                     entry = entry,
-                                    time_basis = time_basis)
+                                    time_basis = time_basis,
+                                    tuning_params = tuning_params)
         F_W_1_opt_preds <- predict(F_W_1_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -89,7 +95,8 @@ gridSurv <- function(time,
                                     bin_size = bin_size,
                                     V = V,
                                     entry = entry,
-                                    time_basis = time_basis)
+                                    time_basis = time_basis,
+                                    tuning_params = tuning_params)
         F_W_0_opt_preds <- predict(F_W_0_opt,
                                    newX = newX,
                                    newtimes = time_grid_approx)
@@ -103,7 +110,8 @@ gridSurv <- function(time,
                                  bin_size = bin_size,
                                  V = V,
                                  entry = entry,
-                                 time_basis = time_basis)
+                                 time_basis = time_basis,
+                                 tuning_params = tuning_params)
         F_W_opt_preds <- predict(F_W_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)

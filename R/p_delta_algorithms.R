@@ -43,7 +43,7 @@ predict.p_delta_SuperLearner <- function(fit, newX){
 #'
 #' @return An object of class \code{f_y_stackCVcdf}
 #' @noRd
-p_delta_xgboost <- function(event, X, V){
+p_delta_xgboost <- function(event, X, V, tuning_params = NULL){
 
   cv_folds <- split(sample(1:length(event)), rep(1:V, length = length(event)))
 
@@ -51,8 +51,16 @@ p_delta_xgboost <- function(event, X, V){
   event <- as.matrix(event)
   dat <- data.frame(X, event)
 
-  tune <- list(ntrees = c(100, 200, 300, 500, 1000), max_depth = c(1,2,3),
-               eta = c(0.05))
+  if (is.null(tuning_params)){
+    tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
+                 eta = c(0.1))
+  } else{
+    tune <- tuning_params
+  }
+
+#
+#   tune <- list(ntrees = c(100, 200, 300, 500, 1000), max_depth = c(1,2,3),
+#                eta = c(0.05))
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
@@ -69,7 +77,7 @@ p_delta_xgboost <- function(event, X, V){
       xgmat <- xgboost::xgb.DMatrix(data = train_X, label = train_event)
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                               max_depth = max_depth, eta = eta,
-                              verbose = FALSE, nthread = 1,
+                              verbose = FALSE,
                               save_period = NULL, eval_metric = "logloss")
       test_X <- X[cv_folds[[j]],]
       test_event <- event[cv_folds[[j]]]
@@ -96,7 +104,7 @@ p_delta_xgboost <- function(event, X, V){
   xgmat <- xgboost::xgb.DMatrix(data = X, label = event)
   fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                           max_depth = opt_max_depth, eta = opt_eta,
-                          verbose = FALSE, nthread = 1,
+                          verbose = FALSE,
                           save_period = NULL, eval_metric = "logloss")
 
   print(CV_risks)
