@@ -50,6 +50,8 @@ f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TR
                             max_depth = tune$max_depth,
                             eta = tune$eta)
 
+  ratio <- 100/length(time)
+
   if (time_basis == "continuous"){
     get_CV_risk <- function(i){
       ntrees <- param_grid$ntrees[i]
@@ -65,7 +67,7 @@ f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TR
                                 max_depth = max_depth, eta = eta,
                                 verbose = FALSE, nthread = 1,
                                 save_period = NULL, eval_metric = "logloss",
-                                subsample = 0.5)
+                                subsample = ratio)
         test_X <- X[cv_folds[[j]],]
         test_time <- time[cv_folds[[j]]]
         test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
@@ -96,7 +98,8 @@ f_y_stack_xgboost <- function(time, event, X, censored, bin_size, isotonize = TR
     fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                             max_depth = opt_max_depth, eta = opt_eta,
                             verbose = FALSE, nthread = 1,
-                            save_period = NULL, eval_metric = "logloss")
+                            save_period = NULL, eval_metric = "logloss",
+                            subsample = ratio)
   } else{
     get_CV_risk <- function(i){
       ntrees <- param_grid$ntrees[i]

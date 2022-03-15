@@ -45,6 +45,7 @@ stackSurv <- function(time,
   trunc_time_grid <- time_grid[-length(time_grid)]
 
   if (algorithm == "xgboost"){
+    ratio <- 100/length(time)
     tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
                  eta = c(0.1))
     # tune <- list(ntrees = c(2000), max_depth = c(1),
@@ -67,7 +68,7 @@ stackSurv <- function(time,
                                 max_depth = max_depth, eta = eta,
                                 verbose = FALSE, nthread = 1,
                                 save_period = NULL, eval_metric = "logloss",
-                                subsample = 0.5)
+                                subsample = ratio)
         test <- as.matrix(stacked[cv_folds[[j]],])
         preds <- predict(fit, newdata = test[,-ncol(test)])
         preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
@@ -105,7 +106,7 @@ stackSurv <- function(time,
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                               max_depth = opt_max_depth, eta = opt_eta,
                               verbose = FALSE, nthread = 1,
-                              save_period = NULL, eval_metric = "logloss")
+                              save_period = NULL, eval_metric = "logloss", subsample = ratio)
 
       get_hazard_preds <- function(t){
         new_stacked <- as.matrix(data.frame(t = t, newX))
