@@ -78,6 +78,7 @@ f_y_stack_xgboost <- function(time,
         train_time <- time[-cv_folds[[j]]]
         train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
         ratio <- min(c(subsamp_size/nrow(train_stack), 1))
+        print(ratio)
         xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
