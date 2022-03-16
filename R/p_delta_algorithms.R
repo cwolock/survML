@@ -77,7 +77,7 @@ p_delta_xgboost <- function(event, X, V, tuning_params = NULL){
       xgmat <- xgboost::xgb.DMatrix(data = train_X, label = train_event)
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                               max_depth = max_depth, eta = eta,
-                              verbose = FALSE,
+                              verbose = FALSE, nthread = 1,
                               save_period = NULL, eval_metric = "logloss")
       test_X <- X[cv_folds[[j]],]
       test_event <- event[cv_folds[[j]]]
