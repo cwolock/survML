@@ -81,9 +81,9 @@ f_y_stack_xgboost <- function(time,
         xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
-                                verbose = FALSE,
-                                save_period = NULL, eval_metric = "logloss",
-                                subsample = subsample)
+                                verbose = FALSE, nthread = 1,
+                                save_period = NULL, eval_metric = "logloss")#,
+                                #subsample = subsample)
         test_X <- X[cv_folds[[j]],]
         test_time <- time[cv_folds[[j]]]
         test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
@@ -115,9 +115,9 @@ f_y_stack_xgboost <- function(time,
     xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
     fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                             max_depth = opt_max_depth, eta = opt_eta,
-                            verbose = FALSE,
-                            save_period = NULL, eval_metric = "logloss",
-                            subsample = opt_subsample)
+                            verbose = FALSE, nthread = 1,
+                            save_period = NULL, eval_metric = "logloss"),
+                            #subsample = opt_subsample)
   } else{
     get_CV_risk <- function(i){
       ntrees <- param_grid$ntrees[i]
