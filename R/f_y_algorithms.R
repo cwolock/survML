@@ -53,7 +53,7 @@ f_y_stack_xgboost <- function(time,
 
   if (is.null(tuning_params)){
     tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
-                 eta = c(0.1), subsamp_size = c(100))
+                 eta = c(0.1), subsample = c(0.5))
   } else{
     tune <- tuning_params
   }
@@ -62,7 +62,7 @@ f_y_stack_xgboost <- function(time,
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
                             eta = tune$eta,
-                            subsamp_size = tune$subsamp_size)
+                            subsample = tune$subsample)
 
   #ratio <- 100/length(time)
 
@@ -71,20 +71,19 @@ f_y_stack_xgboost <- function(time,
       ntrees <- param_grid$ntrees[i]
       max_depth <- param_grid$max_depth[i]
       eta <- param_grid$eta[i]
-      subsamp_size <- param_grid$subsamp_size[i]
+      subsample <- param_grid$subsample[i]
       risks <- rep(NA, V)
       for (j in 1:V){
         train_X <- X[-cv_folds[[j]],]
         train_time <- time[-cv_folds[[j]]]
         train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
-        ratio <- min(c(subsamp_size/nrow(train_stack), 1))
-        print(ratio)
+        #ratio <- min(c(subsamp_size/nrow(train_stack), 1))
         xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
                                 verbose = FALSE,
                                 save_period = NULL, eval_metric = "logloss",
-                                subsample = ratio)
+                                subsample = subsample)
         test_X <- X[cv_folds[[j]],]
         test_time <- time[cv_folds[[j]]]
         test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
@@ -107,10 +106,10 @@ f_y_stack_xgboost <- function(time,
     opt_ntrees <- param_grid$ntrees[opt_param_index]
     opt_max_depth <- param_grid$max_depth[opt_param_index]
     opt_eta <- param_grid$eta[opt_param_index]
-    opt_subsamp_size <- param_grid$subsamp_size[opt_param_index]
-    opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsamp_size = opt_subsamp_size)
+    opt_subsample <- param_grid$subsample[opt_param_index]
+    opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsample = opt_subsample)
     stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
-    ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
+    #ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
     Y <- stacked[,ncol(stacked)]
     X <- as.matrix(stacked[,-ncol(stacked)])
     xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
@@ -118,7 +117,7 @@ f_y_stack_xgboost <- function(time,
                             max_depth = opt_max_depth, eta = opt_eta,
                             verbose = FALSE,
                             save_period = NULL, eval_metric = "logloss",
-                            subsample = ratio)
+                            subsample = opt_subsample)
   } else{
     get_CV_risk <- function(i){
       ntrees <- param_grid$ntrees[i]
