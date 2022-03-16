@@ -116,7 +116,7 @@ f_y_stack_xgboost <- function(time,
     fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                             max_depth = opt_max_depth, eta = opt_eta,
                             verbose = FALSE, nthread = 1,
-                            save_period = NULL, eval_metric = "logloss"),
+                            save_period = NULL, eval_metric = "logloss")#,
                             #subsample = opt_subsample)
   } else{
     get_CV_risk <- function(i){
