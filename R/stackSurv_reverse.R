@@ -79,11 +79,13 @@ stackSurv_reverse <- function(time,
     }
 
     if (time_basis == "continuous"){
-      stacked <- conSurv:::stack_haz(time = time,
-                                     event = event,
-                                     X = X,
-                                     time_grid = time_grid,
-                                     entry = entry)
+      # stacked <- conSurv:::stack_haz(time = time,
+      #                                event = event,
+      #                                X = X,
+      #                                time_grid = time_grid,
+      #                                entry = entry)
+      stacked <- conSurv:::stack_haz(time = time, event = rep(1,length(time)),
+                                     X = X, time_grid = time_grid, entry = entry, direction = "reverse")
       # I guess for stacking, I can do cross validation on stacked dataset, rather than on individuals? shouldn't matter too
       # much I'd think
 
@@ -109,16 +111,19 @@ stackSurv_reverse <- function(time,
         return(preds)
       }
 
-      hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
+
+      hazard_preds <- apply(X = matrix(time_grid[-length(time_grid)]), FUN = get_hazard_preds, MARGIN = 1)
+      # don't estimate hazard at final time point (it's 0)
 
       get_surv_preds <- function(t){
-        if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
-          final_index <- max(which(time_grid[-1] <= t))
-          haz <- as.matrix(hazard_preds[,1:final_index])
+        if (sum(time_grid[-length(time_grid)] >= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- min(which(time_grid[-length(time_grid)] >= t))
+          haz <- as.matrix(hazard_preds[,final_index:(length(time_grid)-1)])
           anti_haz <- 1 - haz
           surv <- apply(anti_haz, MARGIN = 1, prod)
+          surv <- 1 - surv
         } else{
-          surv <- rep(1, nrow(hazard_preds))
+          surv <- rep(0, nrow(hazard_preds))
         }
         return(surv)
       }
