@@ -8,8 +8,8 @@ stack_entry <- function(time, entry, X, time_grid, direction){
   # we will treat time as continuous
   ncol_stacked <- ncol(X) + 2 # covariates, time, binary outcome
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
-  for (i in 1:(length(trunc_time_grid))){
-    if (direction == "forward"){
+  if (direction == "forward"){
+    for (i in 1:(length(trunc_time_grid))){
       #for (i in 1:(length(time_grid))){# can change this to not do anything in last time bin
       # if (i > 1){
       #   risk_set <- dat[dat$time > time_grid[i-1],]
@@ -24,17 +24,26 @@ stack_entry <- function(time, entry, X, time_grid, direction){
       t <- rep(time_grid[i + 1], nrow(risk_set_covariates))
       newdata <- as.matrix(cbind(t, risk_set_covariates, event_indicators))
       stacked <- rbind(stacked, newdata)
-    } else if (direction == "reverse"){
-      risk_set <- dat[dat$time < time_grid[i+1],]
+    }
+  }
+  else if (direction == "reverse"){
+    for (i in 1:(length(time_grid))){
+      if (i == length(time_grid)){
+        risk_set <- dat
+        event_indicators <- matrix(0, nrow = nrow(risk_set), ncol = 1)
+      } else{
+        risk_set <- dat[dat$time < time_grid[i+1],]
+        event_indicators <- matrix(ifelse(risk_set$entry >= time_grid[i ], 1, 0))
+      }
+
       risk_set_covariates <- risk_set[,1:ncol(X)]
       #event_indicators <- matrix(ifelse(risk_set$entry <= time_grid[i], 1, 0))
-      event_indicators <- matrix(ifelse(risk_set$entry >= time_grid[i ], 1, 0))
+
       #t <- rep(time_grid[i], nrow(risk_set_covariates))
       t <- rep(time_grid[i], nrow(risk_set_covariates))
       newdata <- as.matrix(cbind(t, risk_set_covariates, event_indicators))
       stacked <- rbind(stacked, newdata)
     }
-
   }
   stacked <- stacked[-1,]
   colnames(stacked)[ncol(stacked)] <- "event_indicators"

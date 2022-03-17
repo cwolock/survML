@@ -39,10 +39,19 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
 
   if (!is.null(bin_size)){
     time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+
+    if (direction == "reverse"){
+      time_grid <- c(time_grid, max(entry)) # manually set first point to 0, instead of first observed time
+    } else{
+      time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+    }
   } else{
     time_grid <- sort(unique(time))
-    time_grid <- c(0, time_grid)
+    if (direction == "reverse"){
+      time_grid <- c(time_grid, max(entry)) # manually set first point to 0, instead of first observed time
+    } else{
+      time_grid <- c(0, time_grid)
+    }
   }
   # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
@@ -378,9 +387,15 @@ predict.f_w_stack_gam <- function(fit, newX, newtimes){
 #' @return An object of class \code{f_w_stack_earth}
 #' @noRd
 f_w_stack_earth <- function(time, event, entry, X, censored, bin_size,time_basis = "continuous",
-                            direction = "forward", degree = 2,
-                            penalty = 3, nk = max(21, 2*ncol(X) + 1), pmethod = "backward",
-                            nfold = 0, ncross = 1, minspan = 0, endspan = 0){
+                            direction = "forward"){
+  degree = 2
+  penalty = 3
+  nk = max(21, 2*ncol(X) + 1)
+  pmethod = "backward"
+  nfold = 0
+  ncross = 1
+  minspan = 0
+  endspan = 0
 
   if (!is.null(censored)){
     if (censored == TRUE){

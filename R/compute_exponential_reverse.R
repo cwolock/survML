@@ -20,10 +20,15 @@ compute_exponential_reverse <- function(F_T_preds,
     dF_T <- c(diff(F_T_preds), 1-F_T_preds[length(F_T_preds)])
     #S_W_curr <- F_W_preds[curr_length:length(F_W_preds)]
     #S_W_preds_left <- c(1, 1 - F_W_preds[-length(F_W_preds)])
-    F_T_curr <- c(F_T_preds[(curr_length + 1):length(F_T_preds)], 1) # prob of being at risk at time t
+    F_T_preds_left <- c(F_T_preds[-1], 1)
+    F_T_curr <- F_T_preds[curr_length:length(F_T_preds)]
+    #F_T_curr <- c(F_T_preds[(curr_length + 1):length(F_T_preds)], 1) # prob of being at risk at time t
     dF_T_curr <- dF_T[curr_length:length(F_T_preds)] # change in cdf at time t
     #S_W_curr <- S_W_preds_left[curr_length:length(S_W_preds_left)]
     S_W_curr <- F_W_preds[curr_length:length(F_W_preds)]
+    #print(length(dF_T_curr))
+    #print(length(F_T_curr))
+    #print(length(S_W_curr))
     S_T_complement <- exp(-sum(dF_T_curr/(F_T_curr*S_W_curr)))
     S_T_est <- 1 - S_T_complement
     return(S_T_est)
