@@ -15,7 +15,8 @@ stackSurv(
   time_basis = "continuous",
   algorithm = "xgboost",
   entry = NULL,
-  direction = "forward"
+  direction = "forward",
+  tuning_params = NULL
 )
 }
 \arguments{

@@ -10,5 +10,5 @@
 Invisible character vector with the requested functions.
 }
 \description{
-This function lists all prediction algorithms built into the \code{conSurv} package.
+This function lists all prediction algorithms built into the \code{survML} package.
 }

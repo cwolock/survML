@@ -6,7 +6,6 @@
 \usage{
 stackSurv_reverse(
   time,
-  event,
   X,
   newX,
   newtimes,
@@ -20,8 +19,6 @@ stackSurv_reverse(
 \arguments{
 \item{time}{Observed time}
 
-\item{event}{Indicator of event (vs censoring)}
-
 \item{X}{Covariate matrix}
 
 \item{newX}{Values of covariates at which to make a prediction}
@@ -29,6 +26,8 @@ stackSurv_reverse(
 \item{newtimes}{Times at which to make the survival function prediction}
 
 \item{bin_size}{Quantiles on which to grid times. If NULL, defaults to every observed time}
+
+\item{event}{Indicator of event (vs censoring)}
 
 \item{SL.library}{SuperLearner library}
 }

@@ -17,7 +17,8 @@ gridSurv(
   V = 10,
   entry = NULL,
   time_basis,
-  surv_form = "PI"
+  surv_form = "PI",
+  tuning_params = NULL
 )
 }
 \arguments{
