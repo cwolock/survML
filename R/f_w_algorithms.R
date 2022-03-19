@@ -73,7 +73,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
       train_X <- X[-cv_folds[[j]],,drop=FALSE]
       train_time <- time[-cv_folds[[j]]]
       train_entry <- entry[-cv_folds[[j]]]
-      train_stack <- conSurv:::stack_entry(time = train_time, entry = train_entry, X = train_X, time_grid = time_grid,
+      train_stack <- survML:::stack_entry(time = train_time, entry = train_entry, X = train_X, time_grid = time_grid,
                                            direction = direction)
       xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
@@ -84,7 +84,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
       test_X <- X[cv_folds[[j]],,drop=FALSE]
       test_time <- time[cv_folds[[j]]]
       test_entry <- entry[cv_folds[[j]]]
-      test_stack <- conSurv:::stack_entry(time = test_time, entry = test_entry, X = test_X, time_grid = time_grid,
+      test_stack <- survML:::stack_entry(time = test_time, entry = test_entry, X = test_X, time_grid = time_grid,
                                           direction = direction)
       preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)])
       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
@@ -106,7 +106,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
   opt_max_depth <- param_grid$max_depth[opt_param_index]
   opt_eta <- param_grid$eta[opt_param_index]
   opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
-  stacked <- conSurv:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, direction = direction)
+  stacked <- survML:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, direction = direction)
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
   xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
@@ -206,7 +206,7 @@ f_w_stack_ranger <- function(time, event, entry, X, censored, bin_size, V, time_
       train_X <- X[-cv_folds[[j]],]
       train_time <- time[-cv_folds[[j]]]
       train_entry <- entry[-cv_folds[[j]]]
-      train_stack <- conSurv:::stack_entry(time = train_time, entry = train_entry, X = train_X, time_grid = time_grid,
+      train_stack <- survML:::stack_entry(time = train_time, entry = train_entry, X = train_X, time_grid = time_grid,
                                            direction = direction)
       fit <- ranger::ranger(formula = event_indicators ~ .,
                             data = train_stack,
@@ -217,7 +217,7 @@ f_w_stack_ranger <- function(time, event, entry, X, censored, bin_size, V, time_
       test_X <- X[cv_folds[[j]],]
       test_time <- time[cv_folds[[j]]]
       test_entry <- entry[cv_folds[[j]]]
-      test_stack <- conSurv:::stack_entry(time = test_time, entry = test_entry, X = test_X, time_grid = time_grid,
+      test_stack <- survML:::stack_entry(time = test_time, entry = test_entry, X = test_X, time_grid = time_grid,
                                           direction = direction)
       preds <- predict(fit, data = test_stack[,-ncol(test_stack)])$predictions
       preds <- preds[,2] # I think this is choosing the correct column but the output is not labeled...
@@ -240,7 +240,7 @@ f_w_stack_ranger <- function(time, event, entry, X, censored, bin_size, V, time_
   opt_max.depth <- param_grid$max.depth[opt_param_index]
   opt_mtry <- param_grid$mtry[opt_param_index]
   opt_params <- list(ntrees = opt_num.trees, max_depth = opt_max.depth, mtry = opt_mtry)
-  stacked <- conSurv:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid,
+  stacked <- survML:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid,
                                    direction = direction)
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
@@ -326,7 +326,7 @@ f_w_stack_gam <- function(time, event, entry, X, censored, bin_size, deg.gam = 2
   time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  stacked <- conSurv:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, diretion = direction)
+  stacked <- survML:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, diretion = direction)
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
   cts.x <- apply(X, 2, function(x) (length(unique(x)) > cts.num))
@@ -430,7 +430,7 @@ f_w_stack_earth <- function(time, event, entry, X, censored, bin_size,time_basis
   # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  stacked <- conSurv:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, direction = direction)
+  stacked <- survML:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, direction = direction)
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
   X <- as.data.frame(X)

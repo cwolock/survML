@@ -76,7 +76,7 @@ f_y_stack_xgboost <- function(time,
       for (j in 1:V){
         train_X <- X[-cv_folds[[j]],]
         train_time <- time[-cv_folds[[j]]]
-        train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
+        train_stack <- survML:::stack(time = train_time, X = train_X, time_grid = time_grid)
         #ratio <- min(c(subsamp_size/nrow(train_stack), 1))
         xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
@@ -86,7 +86,7 @@ f_y_stack_xgboost <- function(time,
                                 subsample = subsample)
         test_X <- X[cv_folds[[j]],]
         test_time <- time[cv_folds[[j]]]
-        test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
+        test_stack <- survML:::stack(time = test_time, X = test_X, time_grid = time_grid)
         preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)])
         preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
         truth <- test_stack[,ncol(test_stack)]
@@ -108,7 +108,7 @@ f_y_stack_xgboost <- function(time,
     opt_eta <- param_grid$eta[opt_param_index]
     opt_subsample <- param_grid$subsample[opt_param_index]
     opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsample = opt_subsample)
-    stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+    stacked <- survML:::stack(time = time, X = X, time_grid = time_grid)
     #ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
     Y <- stacked[,ncol(stacked)]
     X <- as.matrix(stacked[,-ncol(stacked)])
@@ -127,7 +127,7 @@ f_y_stack_xgboost <- function(time,
       for (j in 1:V){
         train_X <- X[-cv_folds[[j]],]
         train_time <- time[-cv_folds[[j]]]
-        train_stack <- conSurv:::stack_dummy(time = train_time, X = train_X, time_grid = time_grid)
+        train_stack <- survML:::stack_dummy(time = train_time, X = train_X, time_grid = time_grid)
         xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]), label = as.matrix(train_stack[,ncol(train_stack)]))
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
@@ -135,7 +135,7 @@ f_y_stack_xgboost <- function(time,
                                 save_period = NULL, eval_metric = "logloss")
         test_X <- X[cv_folds[[j]],]
         test_time <- time[cv_folds[[j]]]
-        test_stack <- conSurv:::stack_dummy(time = test_time, X = test_X, time_grid = time_grid)
+        test_stack <- survML:::stack_dummy(time = test_time, X = test_X, time_grid = time_grid)
         preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
         preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
         truth <- test_stack[,ncol(test_stack)]
@@ -154,7 +154,7 @@ f_y_stack_xgboost <- function(time,
     opt_max_depth <- param_grid$max_depth[opt_param_index]
     opt_eta <- param_grid$eta[opt_param_index]
     opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
-    stacked <- conSurv:::stack_dummy(time = time, X = X, time_grid = time_grid)
+    stacked <- survML:::stack_dummy(time = time, X = X, time_grid = time_grid)
     Y <- stacked[,ncol(stacked)]
     X <- as.matrix(stacked[,-ncol(stacked)])
     xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
@@ -279,7 +279,7 @@ f_y_stack_ranger <- function(time, event, X, censored, bin_size, isotonize = TRU
     for (j in 1:V){
       train_X <- X[-cv_folds[[j]],]
       train_time <- time[-cv_folds[[j]]]
-      train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
+      train_stack <- survML:::stack(time = train_time, X = train_X, time_grid = time_grid)
       fit <- ranger::ranger(formula = event_indicators ~ .,
                             data = train_stack,
                             num.trees = num.trees,
@@ -288,7 +288,7 @@ f_y_stack_ranger <- function(time, event, X, censored, bin_size, isotonize = TRU
                             probability = TRUE)
       test_X <- X[cv_folds[[j]],]
       test_time <- time[cv_folds[[j]]]
-      test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
+      test_stack <- survML:::stack(time = test_time, X = test_X, time_grid = time_grid)
       preds <- predict(fit, data = test_stack[,-ncol(test_stack)])$predictions
       preds <- preds[,2] # I think this is choosing the correct column but the output is not labeled...
       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
@@ -310,7 +310,7 @@ f_y_stack_ranger <- function(time, event, X, censored, bin_size, isotonize = TRU
   opt_max.depth <- param_grid$max.depth[opt_param_index]
   opt_mtry <- param_grid$mtry[opt_param_index]
   opt_params <- list(ntrees = opt_num.trees, max_depth = opt_max.depth, mtry = opt_mtry)
-  stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+  stacked <- survML:::stack(time = time, X = X, time_grid = time_grid)
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
   fit <- ranger::ranger(formula = event_indicators ~ .,
@@ -403,9 +403,9 @@ f_y_stack_gam <- function(time, event, X, censored, bin_size, deg.gam = 2,isoton
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   if (time_basis == "continuous"){
-    stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+    stacked <- survML:::stack(time = time, X = X, time_grid = time_grid)
   } else{
-    stacked <- conSurv:::stack_dummy(time = time, X = X, time_grid = time_grid)
+    stacked <- survML:::stack_dummy(time = time, X = X, time_grid = time_grid)
   }
 
   Y <- stacked[,ncol(stacked)]
@@ -540,7 +540,7 @@ f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE
   #     for (j in 1:V){
   #       train_X <- X[-cv_folds[[j]],]
   #       train_time <- time[-cv_folds[[j]]]
-  #       train_stack <- conSurv:::stack(time = train_time, X = train_X, time_grid = time_grid)
+  #       train_stack <- survML:::stack(time = train_time, X = train_X, time_grid = time_grid)
   #       .Y <- train_stack[,ncol(train_stack)]
   #       .X <- train_stack[,-ncol(train_stack)]
   #       .X <- as.data.frame(.X)
@@ -549,7 +549,7 @@ f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE
   #                           glm = list(family = binomial))
   #       test_X <- X[cv_folds[[j]],]
   #       test_time <- time[cv_folds[[j]]]
-  #       test_stack <- conSurv:::stack(time = test_time, X = test_X, time_grid = time_grid)
+  #       test_stack <- survML:::stack(time = test_time, X = test_X, time_grid = time_grid)
   #       preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)], type = "response")
   #       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
   #       truth <- test_stack[,ncol(test_stack)]
@@ -570,7 +570,7 @@ f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE
   #     for (j in 1:V){
   #       train_X <- X[-cv_folds[[j]],]
   #       train_time <- time[-cv_folds[[j]]]
-  #       train_stack <- conSurv:::stack_dummy(time = train_time, X = train_X, time_grid = time_grid)
+  #       train_stack <- survML:::stack_dummy(time = train_time, X = train_X, time_grid = time_grid)
   #       .Y <- train_stack[,ncol(train_stack)]
   #       .X <- train_stack[,-ncol(train_stack)]
   #       .X <- as.data.frame(X)
@@ -579,7 +579,7 @@ f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE
   #                           glm = list(family = binomial))
   #       test_X <- X[cv_folds[[j]],]
   #       test_time <- time[cv_folds[[j]]]
-  #       test_stack <- conSurv:::stack_dummy(time = test_time, X = test_X, time_grid = time_grid)
+  #       test_stack <- survML:::stack_dummy(time = test_time, X = test_X, time_grid = time_grid)
   #       preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]), type = "response")
   #       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
   #       truth <- test_stack[,ncol(test_stack)]
@@ -602,9 +602,9 @@ f_y_stack_earth <- function(time, event, X, censored, bin_size, isotonize = TRUE
   # print(opt_nprune)
 
   if (time_basis == "continuous"){
-    stacked <- conSurv:::stack(time = time, X = X, time_grid = time_grid)
+    stacked <- survML:::stack(time = time, X = X, time_grid = time_grid)
   } else{
-    stacked <- conSurv:::stack_dummy(time = time, X = X, time_grid = time_grid)
+    stacked <- survML:::stack_dummy(time = time, X = X, time_grid = time_grid)
   }
 
   Y <- stacked[,ncol(stacked)]

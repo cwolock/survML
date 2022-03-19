@@ -13,12 +13,12 @@
 #' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
 #' @param SL.library SuperLearner library
 #'
-#' @return An object of class \code{conSurv}
+#' @return An object of class \code{survML}
 #'
 #' @export
 #'
 #' @examples
-conSurv <- function(time,
+survML <- function(time,
                     event,
                     X,
                     newX,
@@ -114,6 +114,6 @@ conSurv <- function(time,
               P_Delta_algo = P_Delta_opt,
               F_Y_1_algo = S_Y_1_opt,
               F_Y_0_algo = S_Y_0_opt)
-  class(res) <- "conSurv"
+  class(res) <- "survML"
   return(res)
 }

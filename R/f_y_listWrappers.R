@@ -1,6 +1,6 @@
 #' List wrappers for f_y prediction
 #'
-#' This function lists all prediction algorithms built into the \code{conSurv} package.
+#' This function lists all prediction algorithms built into the \code{survML} package.
 #'
 #' @usage \code{f_y_listWrappers()}
 #'
@@ -9,8 +9,8 @@
 #' @export
 
 f_y_listWrappers <- function() {
-  everything <- sort(unclass(lsf.str(envir = asNamespace("conSurv"), all.names = T)))
-  message("All prediction algorithm wrappers in conSurv:\n")
+  everything <- sort(unclass(lsf.str(envir = asNamespace("survML"), all.names = T)))
+  message("All prediction algorithm wrappers in survML:\n")
   funs <- everything[grepl(pattern = "^f_y", everything)]
   funs <- funs[!funs %in% c("f_y_listWrappers")]
   print(funs)

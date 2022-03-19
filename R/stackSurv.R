@@ -89,7 +89,7 @@ stackSurv <- function(time,
     }
 
     if (time_basis == "continuous"){
-      stacked <- conSurv:::stack_haz(time = time,
+      stacked <- survML:::stack_haz(time = time,
                                      event = event,
                                      X = X,
                                      time_grid = time_grid,
@@ -105,7 +105,7 @@ stackSurv <- function(time,
       opt_eta <- param_grid$eta[opt_param_index]
       opt_subsample <- param_grid$subsample[opt_param_index]
       opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsampe = opt_subsample)
-      #stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
+      #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
       Y2 <- stacked[,ncol(stacked)]
       X2 <- as.matrix(stacked[,-ncol(stacked)])
       xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
@@ -167,7 +167,7 @@ stackSurv <- function(time,
       opt_max_depth <- param_grid$max_depth[opt_param_index]
       opt_eta <- param_grid$eta[opt_param_index]
       opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
-      #stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
+      #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
       Y1 <- stacked[,ncol(stacked)]
       X1 <- as.matrix(stacked[,-ncol(stacked)])
       xgmat <- xgboost::xgb.DMatrix(data = X1, label = Y1)
@@ -383,7 +383,7 @@ stackSurv <- function(time,
       #colnames(stacked)[1] <- "time"
       #stacked <- data.frame(stacked)
       # make sure the two ways of stacking agree
-      stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid, entry = entry)
+      stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid, entry = entry)
       Y <- stacked[,ncol(stacked)]
       X <- stacked[,-ncol(stacked)]
 
@@ -507,7 +507,7 @@ stackSurv <- function(time,
       # continuous time
 
       # make sure the two ways of stacking agree
-      stacked <- conSurv:::stack_haz(time = time, event = event, X = X, time_grid = time_grid, entry = entry)
+      stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid, entry = entry)
       Y <- stacked[,ncol(stacked)]
       X <- stacked[,-ncol(stacked)]
       X <- as.data.frame(X)
