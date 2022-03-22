@@ -71,7 +71,7 @@ stackSurv <- function(time,
         #ratio <- min(c(subsamp_size/nrow(train), 1))
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
-                                verbose = FALSE,
+                                verbose = FALSE, nthread = 1,
                                 save_period = NULL, eval_metric = "logloss",
                                 subsample = subsample)
         test <- as.matrix(stacked[cv_folds[[j]],])
@@ -112,7 +112,7 @@ stackSurv <- function(time,
       #ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                               max_depth = opt_max_depth, eta = opt_eta,
-                              verbose = FALSE,
+                              verbose = FALSE, nthread = 1,
                               save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
 
       get_hazard_preds <- function(t){
