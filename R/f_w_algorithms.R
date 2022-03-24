@@ -40,7 +40,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
   if (!is.null(bin_size)){
     #time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
 
-    time_grid <- quantile(c(dat$entry, dat$time), probs = seq(0, 1, by = bin_size))
+    time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
     if (direction == "reverse"){
       time_grid <- c(time_grid, max(entry)) # manually set first point to 0, instead of first observed time
     } else{
