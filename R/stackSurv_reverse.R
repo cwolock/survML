@@ -21,7 +21,8 @@ stackSurv_reverse <- function(time,
                       V = 10,
                       time_basis = "continuous",
                       algorithm = "xgboost",
-                      entry = NULL){
+                      entry = NULL,
+                      tuning_params = NULL){
 
   cts.num <- 4
   deg.gam <- 2
@@ -42,20 +43,24 @@ stackSurv_reverse <- function(time,
   trunc_time_grid <- time_grid[-length(time_grid)]
 
   if (algorithm == "xgboost"){
-    tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
-                 eta = c(0.1))
-    # tune <- list(ntrees = c(2000), max_depth = c(1),
-    #               eta = c(0.01))
+    if (is.null(tuning_params)){
+      tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
+                   eta = c(0.1), subsample = c(0.5))
+    } else{
+      tune <- tuning_params
+    }
 
     param_grid <- expand.grid(ntrees = tune$ntrees,
                               max_depth = tune$max_depth,
-                              eta = tune$eta)
+                              eta = tune$eta,
+                              subsample = tune$subsample)
     cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
 
     get_CV_risk <- function(i){
       ntrees <- param_grid$ntrees[i]
       max_depth <- param_grid$max_depth[i]
       eta <- param_grid$eta[i]
+      subsample <- param_grid$subsample[i]
       risks <- rep(NA, V)
       for (j in 1:V){
         train <- stacked[-cv_folds[[j]],]
@@ -63,7 +68,7 @@ stackSurv_reverse <- function(time,
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
                                 verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss", subsample = 0.5)
+                                save_period = NULL, eval_metric = "logloss", subsample = subsample)
         test <- as.matrix(stacked[cv_folds[[j]],])
         preds <- predict(fit, newdata = test[,-ncol(test)])
         preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
@@ -95,7 +100,9 @@ stackSurv_reverse <- function(time,
       opt_ntrees <- param_grid$ntrees[opt_param_index]
       opt_max_depth <- param_grid$max_depth[opt_param_index]
       opt_eta <- param_grid$eta[opt_param_index]
-      opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
+      opt_subsample <- param_grid$subsample[opt_param_index]
+      opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta,
+                         subsample = opt_subsample)
       #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
       Y2 <- stacked[,ncol(stacked)]
       X2 <- as.matrix(stacked[,-ncol(stacked)])
@@ -103,7 +110,7 @@ stackSurv_reverse <- function(time,
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                               max_depth = opt_max_depth, eta = opt_eta,
                               verbose = FALSE, nthread = 1,
-                              save_period = NULL, eval_metric = "logloss", subsample = 0.5)
+                              save_period = NULL, eval_metric = "logloss", subsample = opt_Subsample)
 
       get_hazard_preds <- function(t){
         new_stacked <- as.matrix(data.frame(t = t, newX))

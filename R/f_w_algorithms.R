@@ -12,7 +12,8 @@
 #' @return An object of class \code{f_w_stack_xgboost}
 #' @noRd
 f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
-                              time_basis = "continuous", direction = "forward"){
+                              time_basis = "continuous", direction = "forward",
+                              tuning_params = NULL){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -57,17 +58,23 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
   # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
-              eta = c(0.1))
+  if (is.null(tuning_params)){
+    tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
+                 eta = c(0.1), subsample = c(0.5))
+  } else{
+    tune <- tuning_params
+  }
 
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
-                            eta = tune$eta)
+                            eta = tune$eta,
+                            subsample = tune$subsample)
 
   get_CV_risk <- function(i){
     ntrees <- param_grid$ntrees[i]
     max_depth <- param_grid$max_depth[i]
     eta <- param_grid$eta[i]
+    subsample <- param_grid$subsample[i]
     risks <- rep(NA, V)
     for (j in 1:V){
       train_X <- X[-cv_folds[[j]],,drop=FALSE]
@@ -80,7 +87,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
                        max_depth = max_depth, eta = eta,
                        verbose = FALSE, nthread = 1,
                        save_period = NULL, eval_metric = "logloss",
-                       subsample = 1)
+                       subsample = subsample)
       test_X <- X[cv_folds[[j]],,drop=FALSE]
       test_time <- time[cv_folds[[j]]]
       test_entry <- entry[cv_folds[[j]]]
@@ -105,7 +112,8 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
   opt_ntrees <- param_grid$ntrees[opt_param_index]
   opt_max_depth <- param_grid$max_depth[opt_param_index]
   opt_eta <- param_grid$eta[opt_param_index]
-  opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
+  opt_subsample <- param_grid$subsample[opt_param_index]
+  opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsample = opt_subsample)
   stacked <- survML:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, direction = direction)
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
@@ -113,7 +121,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
   fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                           max_depth = opt_max_depth, eta = opt_eta,
                           verbose = FALSE, nthread = 1,
-                          save_period = NULL, eval_metric = "logloss")
+                          save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
 
   print(censored)
   print(CV_risks)

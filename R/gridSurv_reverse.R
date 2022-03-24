@@ -28,7 +28,8 @@ gridSurv_reverse <- function(time,
                              algorithm = "xgboost",
                              V = 10,
                              time_basis,
-                             surv_form = "PI"){
+                             surv_form = "PI",
+                             tuning_params = NULL){
 
 
   if (algorithm == "xgboost"){ # do xgboost if speed not a concern
@@ -39,7 +40,8 @@ gridSurv_reverse <- function(time,
                                  censored = NULL,
                                  bin_size = bin_size,
                                  V = V,
-                                 time_basis = time_basis)
+                                 time_basis = time_basis,
+                                 tuning_params = tuning_params)
     S_Y_opt_preds <- predict(S_Y_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
@@ -52,7 +54,8 @@ gridSurv_reverse <- function(time,
                                 V = V,
                                 entry = entry,
                                 time_basis = time_basis,
-                                direction = "reverse")
+                                direction = "reverse",
+                                tuning_params = tuning_params)
     F_W_opt_preds <- predict(F_W_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
