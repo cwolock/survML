@@ -80,7 +80,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
                        max_depth = max_depth, eta = eta,
                        verbose = FALSE, nthread = 1,
                        save_period = NULL, eval_metric = "logloss",
-                       subsample = 0.5)
+                       subsample = 1)
       test_X <- X[cv_folds[[j]],,drop=FALSE]
       test_time <- time[cv_folds[[j]]]
       test_entry <- entry[cv_folds[[j]]]
