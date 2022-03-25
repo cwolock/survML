@@ -110,7 +110,7 @@ stackSurv_reverse <- function(time,
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                               max_depth = opt_max_depth, eta = opt_eta,
                               verbose = FALSE, nthread = 1,
-                              save_period = NULL, eval_metric = "logloss", subsample = opt_Subsample)
+                              save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
 
       get_hazard_preds <- function(t){
         new_stacked <- as.matrix(data.frame(t = t, newX))
