@@ -6,19 +6,21 @@
 #' @param newX Values of covariates at which to make a prediction
 #' @param newtimes Times at which to make the survival function prediction
 #' @param time_grid_approx Grid of time points on which to approximate PL integral
-#' @param test_time Observed times to evaluate against
-#' @param test_event Event indicators to test against
-#' @param test_X Covariates corresponding to \code{test_times} and \code{test_event}
+#' @param bin_size Size of time bin on which to discretize for estimation
+#' @param denom_method Stratified or marginal denominator
+#' @param algorithm Which binary classification algorithm to use
 #' @param V CV fold number, required for tuned algorithms (xgboost, ranger)
-#' @param entry Variable indicating time of entry into the study (truncation variable)
-#' @param algorithm Which binary classification algorithm to use (xgboost, ranger, gam with smoothing splines)
+#' @param entry Variable indicating time of entry into the study (truncation variable) if applicable
+#' @param time_basis How to treat time (continuous or dummy)
+#' @param surv_form Product integral or exponential mapping
+#' @param tuning_params Tuning parameters for binary classification
 #'
-#' @return An object of class \code{gridSurv}
+#' @return An object of class \code{survMLc}
 #'
 #' @export
 #'
 #' @examples
-gridSurv <- function(time,
+survMLc <- function(time,
                      event,
                      X,
                      newX,
@@ -434,9 +436,7 @@ gridSurv <- function(time,
                                       denom_method = denom_method,
                                       truncation = FALSE)
         }
-
       }
-
     }
 
     return(S_T_ests)
@@ -445,45 +445,8 @@ gridSurv <- function(time,
   S_T_preds <- t(apply(X = as.matrix(seq(1, nrow(newX))),
                        MARGIN = 1,
                        FUN = estimate_S_T))
-  #
-  #   estimate_S_C <- function(i){
-  #     # get S_Y estimates up to t
-  #     S_Y_1_curr <- S_Y_1_opt_preds[i,]
-  #     S_Y_0_curr <- S_Y_0_opt_preds[i,]
-  #     #S_Y_curr <- S_Y_opt_preds[i,]
-  #     pi_curr <- P_Delta_opt_preds[i]
-  #
-  #
-  #
-  #
-  #     # switch roles of T and C for estimating S_C
-  #     S_T_ests <- compute_prodint(cdf_uncens = S_Y_0_curr,
-  #                                 cdf_cens = S_Y_1_curr,
-  #                                 #cdf_marg = S_Y_curr,
-  #                                 p_uncens = 1-pi_curr,
-  #                                 newtimes = newtimes,
-  #                                 time_grid = time_grid_approx,
-  #                                 denom_method = denom_method)
-  #
-  #     return(S_T_ests)
-  #   }
-  #
-  #   S_C_preds <- t(apply(X = as.matrix(seq(1, nrow(newX))),
-  #                        MARGIN = 1,
-  #                        FUN = estimate_S_C))
 
-  res <- list(S_T_preds = S_T_preds,
-              S_C_preds = NA)
-  # P_Delta_preds = P_Delta_opt_preds,
-  # F_Y_1_preds = S_Y_1_opt_preds,
-  # F_Y_0_preds = S_Y_0_opt_preds,
-  # #F_W_1_preds = F_W_1_opt_preds,
-  # #F_W_0_preds = F_W_0_opt_preds,
-  # P_Delta_algo = P_Delta_opt,
-  # F_Y_1_algo = S_Y_1_opt,
-  # F_Y_0_algo = S_Y_0_opt)
-  #F_W_1_algo = F_W_1_opt,
-  #F_W_0_algo = F_W_0_opt)
-  class(res) <- "gridSurv"
+  res <- list(S_T_preds = S_T_preds)
+  class(res) <- "survMLc"
   return(res)
 }
