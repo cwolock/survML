@@ -48,8 +48,6 @@ f_y_stack_xgboost <- function(time,
     time_grid <- sort(unique(time))
     time_grid <- c(0, time_grid)
   }
-  # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   if (is.null(tuning_params)){
     tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
@@ -58,13 +56,10 @@ f_y_stack_xgboost <- function(time,
     tune <- tuning_params
   }
 
-
   param_grid <- expand.grid(ntrees = tune$ntrees,
                             max_depth = tune$max_depth,
                             eta = tune$eta,
                             subsample = tune$subsample)
-
-  #ratio <- 100/length(time)
 
   if (time_basis == "continuous"){
     get_CV_risk <- function(i){
@@ -77,7 +72,6 @@ f_y_stack_xgboost <- function(time,
         train_X <- X[-cv_folds[[j]],]
         train_time <- time[-cv_folds[[j]]]
         train_stack <- survML:::stack(time = train_time, X = train_X, time_grid = time_grid)
-        #ratio <- min(c(subsamp_size/nrow(train_stack), 1))
         xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
         fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                 max_depth = max_depth, eta = eta,
@@ -109,7 +103,6 @@ f_y_stack_xgboost <- function(time,
     opt_subsample <- param_grid$subsample[opt_param_index]
     opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsample = opt_subsample)
     stacked <- survML:::stack(time = time, X = X, time_grid = time_grid)
-    #ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
     Y <- stacked[,ncol(stacked)]
     X <- as.matrix(stacked[,-ncol(stacked)])
     xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
@@ -164,11 +157,9 @@ f_y_stack_xgboost <- function(time,
                             save_period = NULL, eval_metric = "logloss")
   }
 
-  print(censored)
-  print(CV_risks)
-  print(fit$params)
-  print(fit$niter)
-  fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
+  CV_mat <- cbind(param_grid, CV_risks)
+
+  fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis, CV_mat = CV_mat)
   class(fit) <- c("f_y_stack_xgboost")
   return(fit)
 }
@@ -262,8 +253,6 @@ f_y_stack_ranger <- function(time, event, X, censored, bin_size, isotonize = TRU
     time_grid <- sort(unique(time))
     time_grid <- c(0, time_grid)
   }
-  # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
   tune <- list(num.trees = c(250, 500, 1000), max.depth = c(1,2,3,4), mtry = c(1,2,3))
 
@@ -320,11 +309,6 @@ f_y_stack_ranger <- function(time, event, X, censored, bin_size, isotonize = TRU
                         mtry = opt_mtry,
                         probability = TRUE)
 
-  print(censored)
-  print(CV_risks)
-  print(opt_max.depth)
-  print(fit$num.trees)
-  print(opt_mtry)
   fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
   class(fit) <- c("f_y_stackCVranger")
   return(fit)
