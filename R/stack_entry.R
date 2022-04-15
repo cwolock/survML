@@ -2,12 +2,15 @@
 #'
 #' @return A stacked dataset
 #' @noRd
-stack_entry <- function(time, entry, X, time_grid, direction){
+stack_entry <- function(time, entry, X, time_grid, direction, ids = FALSE){
   trunc_time_grid <- time_grid[-length(time_grid)] # do I need to truncate if treating time as continuous? look at this later
   dat <- data.frame(X, time = time, entry = entry)
   # we will treat time as continuous
   ncol_stacked <- ncol(X) + 2 # covariates, time, binary outcome
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
+  if (ids){
+    id_vec <- NA
+  }
   if (direction == "forward"){
     for (i in 1:(length(trunc_time_grid))){
       #for (i in 1:(length(time_grid))){# can change this to not do anything in last time bin
@@ -17,6 +20,10 @@ stack_entry <- function(time, entry, X, time_grid, direction){
       #   risk_set <- dat
       # }
       risk_set <- dat[dat$time > time_grid[i],]# maybe this should be >= i+1? Need to think more carefully about this. obv in the limit, doesn't matter
+      if (ids){
+        id_i <- which(dat$time > time_grid[i])
+        id_vec <- c(id_vec, id_i)
+      }
       risk_set_covariates <- risk_set[,1:ncol(X)]
       #event_indicators <- matrix(ifelse(risk_set$entry <= time_grid[i], 1, 0))
       event_indicators <- matrix(ifelse(risk_set$entry <= time_grid[i + 1 ], 1, 0))
@@ -29,10 +36,18 @@ stack_entry <- function(time, entry, X, time_grid, direction){
   else if (direction == "reverse"){
     for (i in 1:(length(time_grid))){
       if (i == length(time_grid)){
+        if (ids){
+          id_i <- 1:nrow(dat)
+          id_vec <- c(id_vec, id_i)
+        }
         risk_set <- dat
         event_indicators <- matrix(0, nrow = nrow(risk_set), ncol = 1)
       } else{
         risk_set <- dat[dat$time < time_grid[i+1],]
+        if (ids){
+          id_i <- which(dat$time < time_grid[i+1])
+          id_vec <- c(id_vec, id_i)
+        }
         event_indicators <- matrix(ifelse(risk_set$entry >= time_grid[i ], 1, 0))
       }
 
@@ -47,6 +62,9 @@ stack_entry <- function(time, entry, X, time_grid, direction){
   }
   stacked <- stacked[-1,]
   colnames(stacked)[ncol(stacked)] <- "event_indicators"
-  return(stacked)
+  if (ids){
+    ids <- id_vec
+  }
+  return(list(stacked = stacked, ids = ids))
 }
 

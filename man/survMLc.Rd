@@ -10,7 +10,7 @@ survMLc(
   X,
   newX,
   newtimes,
-  time_grid_approx,
+  time_grid_approx = sort(unique(time)),
   bin_size = NULL,
   denom_method = "stratified",
   algorithm = "xgboost",
@@ -19,7 +19,8 @@ survMLc(
   time_basis,
   surv_form = "PI",
   tuning_params = NULL,
-  direction = "prospective"
+  direction = "prospective",
+  SL.library = NULL
 )
 }
 \arguments{
@@ -33,7 +34,7 @@ survMLc(
 
 \item{newtimes}{Times at which to make the survival function prediction}
 
-\item{time_grid_approx}{Grid of time points on which to approximate PL integral}
+\item{time_grid_approx}{Grid of time points on which to approximate PL integral or cumulative hazard. Defaults to observed times}
 
 \item{bin_size}{Size of time bin on which to discretize for estimation}
 

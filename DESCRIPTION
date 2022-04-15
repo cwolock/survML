@@ -15,9 +15,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports: 
     stats,
-    np,
     survival,
-    ranger,
-    randomForest,
     SuperLearner,
-    gam
+    xgboost
