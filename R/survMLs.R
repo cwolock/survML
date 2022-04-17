@@ -12,6 +12,7 @@
 #' @param entry Study entry variable, if applicable
 #' @param direction Prospective or retrospective study
 #' @param tuning_params Tuning parameters to be passed to algorithm for tuning
+#' @param SL.library SuperLearner library
 #'
 #' @return An object of class \code{survMLs}
 #'
@@ -28,8 +29,9 @@ survMLs <- function(time,
                     time_basis = "continuous",
                     algorithm = "xgboost",
                     entry = NULL,
-                    direction = "forward",
-                    tuning_params = NULL){
+                    direction = "prospective",
+                    tuning_params = NULL,
+                    SL.library = NULL){
 
   if (direction == "prospective"){
     X <- as.matrix(X)
@@ -70,7 +72,8 @@ survMLs <- function(time,
         risks <- rep(NA, V)
         for (j in 1:V){
           train <- stacked[-cv_folds[[j]],]
-          xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train[,-ncol(train)]), label = as.matrix(train[,ncol(train)]))
+          xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train[,-ncol(train)]),
+                                        label = as.matrix(train[,ncol(train)]))
           #ratio <- min(c(subsamp_size/nrow(train), 1))
           fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                                   max_depth = max_depth, eta = eta,
@@ -217,7 +220,7 @@ survMLs <- function(time,
                                           SL.library = SL.library,
                                           family = binomial(),
                                           method = 'method.NNLS',
-                                          verbose = TRUE,
+                                          verbose = FALSE,
                                           cvControl = list(V = V))
 
         get_hazard_preds <- function(t){

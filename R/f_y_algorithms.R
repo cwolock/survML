@@ -72,7 +72,8 @@ f_y_stack_xgboost <- function(time,
       train_X <- X[-cv_folds[[j]],]
       train_time <- time[-cv_folds[[j]]]
       train_stack <- survML:::stack_cdf(time = train_time, X = train_X, time_grid = time_grid, time_basis = time_basis)$stacked
-      xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
+      xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]),
+                                    label = as.matrix(train_stack[,ncol(train_stack)]))
       fit <- xgboost::xgboost(data = xgmat,
                               objective="binary:logistic",
                               nrounds = ntrees,
@@ -85,8 +86,11 @@ f_y_stack_xgboost <- function(time,
                               subsample = subsample)
       test_X <- X[cv_folds[[j]],]
       test_time <- time[cv_folds[[j]]]
-      test_stack <- survML:::stack_cdf(time = test_time, X = test_X, time_grid = time_grid, time_basis = time_basis)$stacked
-      preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)])
+      test_stack <- survML:::stack_cdf(time = test_time,
+                                       X = test_X,
+                                       time_grid = time_grid,
+                                       time_basis = time_basis)$stacked
+      preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
       truth <- test_stack[,ncol(test_stack)]
       log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
@@ -109,7 +113,10 @@ f_y_stack_xgboost <- function(time,
                      max_depth = opt_max_depth,
                      eta = opt_eta,
                      subsample = opt_subsample)
-  stacked <- survML:::stack_cdf(time = time, X = X, time_grid = time_grid, time_basis = time_basis)$stacked
+  stacked <- survML:::stack_cdf(time = time,
+                                X = X,
+                                time_grid = time_grid,
+                                time_basis = time_basis)$stacked
   Y <- stacked[,ncol(stacked)]
   X <- as.matrix(stacked[,-ncol(stacked)])
   xgmat <- xgboost::xgb.DMatrix(data = X, label = Y)
