@@ -63,8 +63,10 @@ stack_entry <- function(time, entry, X, time_grid, direction, ids = FALSE){
   stacked <- stacked[-1,]
   colnames(stacked)[ncol(stacked)] <- "event_indicators"
   if (ids){
+    id_vec <- id_vec[-1]
     ids <- id_vec
   }
+  stacked <- data.frame(stacked)
   return(list(stacked = stacked, ids = ids))
 }
 

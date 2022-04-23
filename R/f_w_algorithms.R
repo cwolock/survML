@@ -82,7 +82,8 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
       train_entry <- entry[-cv_folds[[j]]]
       train_stack <- survML:::stack_entry(time = train_time, entry = train_entry, X = train_X, time_grid = time_grid,
                                            direction = direction)$stacked
-      xgmat <- xgboost::xgb.DMatrix(data = train_stack[,-ncol(train_stack)], label = train_stack[,ncol(train_stack)])
+      xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]),
+                                    label = as.matrix(train_stack[,ncol(train_stack)]))
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
                        max_depth = max_depth, eta = eta,
                        verbose = FALSE, nthread = 1,
@@ -93,7 +94,7 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
       test_entry <- entry[cv_folds[[j]]]
       test_stack <- survML:::stack_entry(time = test_time, entry = test_entry, X = test_X, time_grid = time_grid,
                                           direction = direction)$stacked
-      preds <- predict(fit, newdata = test_stack[,-ncol(test_stack)])
+      preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
       truth <- test_stack[,ncol(test_stack)]
       log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
@@ -217,11 +218,16 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
   # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  stacked_list <- survML:::stack_entry(time = time, entry = entry, X = X, time_grid = time_grid, direction = direction, ids = TRUE)
+  stacked_list <- survML:::stack_entry(time = time,
+                                       entry = entry,
+                                       X = X,
+                                       time_grid = time_grid,
+                                       direction = direction,
+                                       ids = TRUE)
   stacked <- stacked_list$stacked
   stacked_ids <- stacked_list$ids
   .Y <- stacked[,ncol(stacked)]
-  .X <- as.matrix(stacked[,-ncol(stacked)])
+  .X <- stacked[,-ncol(stacked)]
 
   get_validRows <- function(fold_sample_ids){
     validRows <- which(stacked_ids %in% fold_sample_ids)
