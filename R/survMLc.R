@@ -251,7 +251,8 @@ survMLc <- function(time,
                          V = V,
                          time_basis = time_basis,
                          tuning_params = tuning_params,
-                         algorithm= algorithm)
+                         algorithm= algorithm,
+                         SL.library = SL.library)
     S_Y_opt_preds <- predict(S_Y_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
