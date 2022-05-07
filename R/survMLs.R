@@ -328,7 +328,7 @@ survMLs <- function(time,
         }
         return(surv)
       }
-
+      print(hazard_preds)
       surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
     }
   }
