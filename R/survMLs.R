@@ -94,212 +94,96 @@ survMLs <- function(time,
         return(sum(risks))
       }
 
-      if (time_basis == "continuous"){
-        stacked <- survML:::stack_haz(time = time,
-                                      event = event,
-                                      X = X,
-                                      time_grid = time_grid,
-                                      entry = entry)
-        # I guess for stacking, I can do cross validation on stacked dataset, rather than on individuals? shouldn't matter too
-        # much I'd think
+      stacked <- survML:::stack_haz(time = time,
+                                    event = event,
+                                    X = X,
+                                    time_grid = time_grid,
+                                    entry = entry)
+      # I guess for stacking, I can do cross validation on stacked dataset, rather than on individuals? shouldn't matter too
+      # much I'd think
 
-        CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
+      CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
 
-        opt_param_index <- which.min(CV_risks)
-        opt_ntrees <- param_grid$ntrees[opt_param_index]
-        opt_max_depth <- param_grid$max_depth[opt_param_index]
-        opt_eta <- param_grid$eta[opt_param_index]
-        opt_subsample <- param_grid$subsample[opt_param_index]
-        opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsampe = opt_subsample)
-        #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
-        Y2 <- stacked[,ncol(stacked)]
-        X2 <- as.matrix(stacked[,-ncol(stacked)])
-        xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
-        #ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
-        fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
-                                max_depth = opt_max_depth, eta = opt_eta,
-                                verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
+      opt_param_index <- which.min(CV_risks)
+      opt_ntrees <- param_grid$ntrees[opt_param_index]
+      opt_max_depth <- param_grid$max_depth[opt_param_index]
+      opt_eta <- param_grid$eta[opt_param_index]
+      opt_subsample <- param_grid$subsample[opt_param_index]
+      opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsampe = opt_subsample)
+      #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
+      Y2 <- stacked[,ncol(stacked)]
+      X2 <- as.matrix(stacked[,-ncol(stacked)])
+      xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
+      #ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
+      fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
+                              max_depth = opt_max_depth, eta = opt_eta,
+                              verbose = FALSE, nthread = 1,
+                              save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
 
-        get_hazard_preds <- function(t){
-          new_stacked <- as.matrix(data.frame(t = t, newX))
-          preds <- predict(fit, newdata=new_stacked)
-          return(preds)
-        }
+      get_hazard_preds <- function(t){
+        new_stacked <- as.matrix(data.frame(t = t, newX))
+        preds <- predict(fit, newdata=new_stacked)
+        return(preds)
+      }
 
-        hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
+      hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
 
-        get_surv_preds <- function(t){
-          if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
-            final_index <- max(which(time_grid[-1] <= t))
-            haz <- as.matrix(hazard_preds[,1:final_index])
-            anti_haz <- 1 - haz
-            surv <- apply(anti_haz, MARGIN = 1, prod)
-          } else{
-            surv <- rep(1, nrow(hazard_preds))
-          }
-          return(surv)
-        }
-
-        surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
-      } else if (time_basis == "dummy"){
-        # time dummies
-        ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
-        stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
-        for (i in 1:(length(trunc_time_grid))){
-          if (is.null(entry)){
-            risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
-          } else{
-            risk_set <- dat[dat$time > time_grid[i] & entry <= time_grid[i+1],] # should this be <= rather than <??
-          }
-          risk_set_covariates <- risk_set[,1:ncol(X)]
-          event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
-          dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
-          dummies[,i] <- 1
-          newdata <- as.matrix(cbind(dummies, risk_set_covariates, event_indicators))
-          stacked <- rbind(stacked, newdata)
-        }
-
-        stacked <- stacked[-1,]
-        risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-        colnames(stacked)[1:(length(trunc_time_grid))] <- risk_set_names
-        stacked <- data.frame(stacked)
-        CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
-        opt_param_index <- which.min(CV_risks)
-        opt_ntrees <- param_grid$ntrees[opt_param_index]
-        opt_max_depth <- param_grid$max_depth[opt_param_index]
-        opt_eta <- param_grid$eta[opt_param_index]
-        opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
-        #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
-        Y1 <- stacked[,ncol(stacked)]
-        X1 <- as.matrix(stacked[,-ncol(stacked)])
-        xgmat <- xgboost::xgb.DMatrix(data = X1, label = Y1)
-        fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
-                                max_depth = opt_max_depth, eta = opt_eta,
-                                verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss")
-        get_hazard_preds <- function(t){
-          dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
-          index <- max(which(trunc_time_grid <= t))
-          dummies[,index] <- 1
-          new_stacked <- cbind(dummies, newX)
-          risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-          colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
-          new_stacked <- as.matrix(new_stacked)
-          preds <- predict(fit, newdata=new_stacked)
-          return(preds)
-        }
-
-        hazard_preds <- apply(X = matrix(trunc_time_grid), FUN = get_hazard_preds, MARGIN = 1)
-
-        get_surv_preds <- function(t){
-          final_index <- max(which(trunc_time_grid <= t))
+      get_surv_preds <- function(t){
+        if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- max(which(time_grid[-1] <= t))
           haz <- as.matrix(hazard_preds[,1:final_index])
           anti_haz <- 1 - haz
           surv <- apply(anti_haz, MARGIN = 1, prod)
-          return(surv)
+        } else{
+          surv <- rep(1, nrow(hazard_preds))
         }
-
-        surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+        return(surv)
       }
+
+      surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+
     } else if (algorithm == "SuperLearner"){
 
       cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
 
-      if (time_basis == "continuous"){
-        stacked <- survML:::stack_haz(time = time,
-                                      event = event,
-                                      X = X,
-                                      time_grid = time_grid,
-                                      entry = entry)
+      stacked <- survML:::stack_haz(time = time,
+                                    event = event,
+                                    X = X,
+                                    time_grid = time_grid,
+                                    entry = entry)
 
-        .Y <- stacked[,ncol(stacked)]
-        .X <- data.frame(stacked[,-ncol(stacked)])
-        fit <- SuperLearner::SuperLearner(Y = .Y,
-                                          X = .X,
-                                          SL.library = SL.library,
-                                          family = binomial(),
-                                          method = 'method.NNLS',
-                                          verbose = FALSE,
-                                          cvControl = list(V = V))
+      .Y <- stacked[,ncol(stacked)]
+      .X <- data.frame(stacked[,-ncol(stacked)])
+      fit <- SuperLearner::SuperLearner(Y = .Y,
+                                        X = .X,
+                                        SL.library = SL.library,
+                                        family = binomial(),
+                                        method = 'method.NNLS',
+                                        verbose = FALSE,
+                                        cvControl = list(V = V))
 
-        get_hazard_preds <- function(t){
-          new_stacked <- data.frame(t = t, newX)
-          preds <- predict(fit, newdata=new_stacked)$pred
-          return(preds)
-        }
+      get_hazard_preds <- function(t){
+        new_stacked <- data.frame(t = t, newX)
+        preds <- predict(fit, newdata=new_stacked)$pred
+        return(preds)
+      }
 
-        hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
+      hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
 
-        get_surv_preds <- function(t){
-          if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
-            final_index <- max(which(time_grid[-1] <= t))
-            haz <- as.matrix(hazard_preds[,1:final_index])
-            anti_haz <- 1 - haz
-            surv <- apply(anti_haz, MARGIN = 1, prod)
-          } else{
-            surv <- rep(1, nrow(hazard_preds))
-          }
-          return(surv)
-        }
-
-        surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
-      } else if (time_basis == "dummy"){
-        # time dummies
-        ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
-        stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
-        for (i in 1:(length(trunc_time_grid))){
-          if (is.null(entry)){
-            risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
-          } else{
-            risk_set <- dat[dat$time > time_grid[i] & entry <= time_grid[i+1],] # should this be <= rather than <??
-          }
-          risk_set_covariates <- risk_set[,1:ncol(X)]
-          event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
-          dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
-          dummies[,i] <- 1
-          newdata <- as.matrix(cbind(dummies, risk_set_covariates, event_indicators))
-          stacked <- rbind(stacked, newdata)
-        }
-
-        stacked <- stacked[-1,]
-        risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-        colnames(stacked)[1:(length(trunc_time_grid))] <- risk_set_names
-        stacked <- data.frame(stacked)
-        .Y <- stacked[,ncol(stacked)]
-        .X <- stacked[,-ncol(stacked)]
-        fit <- SuperLearner::SuperLearner(Y = .Y,
-                                          X = .X,
-                                          SL.library = SL.library,
-                                          family = binomial(),
-                                          method = 'method.NNLS',
-                                          verbose = TRUE,
-                                          cvControl = list(V = V))
-
-        get_hazard_preds <- function(t){
-          dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
-          index <- max(which(trunc_time_grid <= t))
-          dummies[,index] <- 1
-          new_stacked <- cbind(dummies, newX)
-          risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-          colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
-          new_stacked <- as.matrix(new_stacked)
-          preds <- predict(fit, newdata=new_stacked)$pred
-          return(preds)
-        }
-
-        hazard_preds <- apply(X = matrix(trunc_time_grid), FUN = get_hazard_preds, MARGIN = 1)
-
-        get_surv_preds <- function(t){
-          final_index <- max(which(trunc_time_grid <= t))
+      get_surv_preds <- function(t){
+        if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- max(which(time_grid[-1] <= t))
           haz <- as.matrix(hazard_preds[,1:final_index])
           anti_haz <- 1 - haz
           surv <- apply(anti_haz, MARGIN = 1, prod)
-          return(surv)
+        } else{
+          surv <- rep(1, nrow(hazard_preds))
         }
-
-        surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+        return(surv)
       }
+
+      surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+
     }
   } else if (direction == "retrospective"){
     X <- as.matrix(X)
@@ -358,118 +242,94 @@ survMLs <- function(time,
         return(sum(risks))
       }
 
-      if (time_basis == "continuous"){
-        stacked <- survML:::stack_haz(time = time, event = rep(1,length(time)),
-                                      X = X, time_grid = time_grid, entry = entry, direction = "reverse")
+      stacked <- survML:::stack_haz(time = time, event = rep(1,length(time)),
+                                    X = X, time_grid = time_grid, entry = entry, direction = "reverse")
 
-        CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
+      CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
 
-        opt_param_index <- which.min(CV_risks)
-        opt_ntrees <- param_grid$ntrees[opt_param_index]
-        opt_max_depth <- param_grid$max_depth[opt_param_index]
-        opt_eta <- param_grid$eta[opt_param_index]
-        opt_subsample <- param_grid$subsample[opt_param_index]
-        opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta,
-                           subsample = opt_subsample)
-        #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
-        Y2 <- stacked[,ncol(stacked)]
-        X2 <- as.matrix(stacked[,-ncol(stacked)])
-        xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
-        fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
-                                max_depth = opt_max_depth, eta = opt_eta,
-                                verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
+      opt_param_index <- which.min(CV_risks)
+      opt_ntrees <- param_grid$ntrees[opt_param_index]
+      opt_max_depth <- param_grid$max_depth[opt_param_index]
+      opt_eta <- param_grid$eta[opt_param_index]
+      opt_subsample <- param_grid$subsample[opt_param_index]
+      opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta,
+                         subsample = opt_subsample)
+      #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
+      Y2 <- stacked[,ncol(stacked)]
+      X2 <- as.matrix(stacked[,-ncol(stacked)])
+      xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
+      fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
+                              max_depth = opt_max_depth, eta = opt_eta,
+                              verbose = FALSE, nthread = 1,
+                              save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
 
-        get_hazard_preds <- function(t){
-          new_stacked <- as.matrix(data.frame(t = t, newX))
-          preds <- predict(fit, newdata=new_stacked)
-          return(preds)
-        }
+      get_hazard_preds <- function(t){
+        new_stacked <- as.matrix(data.frame(t = t, newX))
+        preds <- predict(fit, newdata=new_stacked)
+        return(preds)
+      }
 
 
-        hazard_preds <- apply(X = matrix(time_grid[-length(time_grid)]), FUN = get_hazard_preds, MARGIN = 1)
-        # don't estimate hazard at final time point (it's 0)
+      hazard_preds <- apply(X = matrix(time_grid[-length(time_grid)]), FUN = get_hazard_preds, MARGIN = 1)
+      # don't estimate hazard at final time point (it's 0)
 
-        get_surv_preds <- function(t){
-          if (sum(time_grid[-length(time_grid)] >= t) != 0){ # if you don't fall before the first time in the grid
-            final_index <- min(which(time_grid[-length(time_grid)] >= t))
-            haz <- as.matrix(hazard_preds[,final_index:(length(time_grid)-1)])
-            anti_haz <- 1 - haz
-            surv <- apply(anti_haz, MARGIN = 1, prod)
-            surv <- 1 - surv
-          } else{
-            surv <- rep(0, nrow(hazard_preds))
-          }
-          return(surv)
-        }
-
-        surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
-        print(CV_risks)
-        print(fit$params)
-        print(fit$niter)
-      } else if (time_basis == "dummy"){
-        # time dummies
-        ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
-        stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
-        for (i in 1:(length(trunc_time_grid))){
-          if (is.null(entry)){
-            risk_set <- dat[dat$time > time_grid[i],] # should this be <= rather than <??
-          } else{
-            risk_set <- dat[dat$time > time_grid[i] & entry <= time_grid[i+1],] # should this be <= rather than <??
-          }
-          risk_set_covariates <- risk_set[,1:ncol(X)]
-          event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
-          dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
-          dummies[,i] <- 1
-          newdata <- as.matrix(cbind(dummies, risk_set_covariates, event_indicators))
-          stacked <- rbind(stacked, newdata)
-        }
-
-        stacked <- stacked[-1,]
-        risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-        colnames(stacked)[1:(length(trunc_time_grid))] <- risk_set_names
-        stacked <- data.frame(stacked)
-        CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
-        opt_param_index <- which.min(CV_risks)
-        opt_ntrees <- param_grid$ntrees[opt_param_index]
-        opt_max_depth <- param_grid$max_depth[opt_param_index]
-        opt_eta <- param_grid$eta[opt_param_index]
-        opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta)
-        #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
-        Y1 <- stacked[,ncol(stacked)]
-        X1 <- as.matrix(stacked[,-ncol(stacked)])
-        xgmat <- xgboost::xgb.DMatrix(data = X1, label = Y1)
-        fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
-                                max_depth = opt_max_depth, eta = opt_eta,
-                                verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss")
-        get_hazard_preds <- function(t){
-          dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
-          index <- max(which(trunc_time_grid <= t))
-          dummies[,index] <- 1
-          new_stacked <- cbind(dummies, newX)
-          risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-          colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
-          new_stacked <- as.matrix(new_stacked)
-          preds <- predict(fit, newdata=new_stacked)
-          return(preds)
-        }
-
-        hazard_preds <- apply(X = matrix(trunc_time_grid), FUN = get_hazard_preds, MARGIN = 1)
-
-        get_surv_preds <- function(t){
-          final_index <- max(which(trunc_time_grid <= t))
-          haz <- as.matrix(hazard_preds[,1:final_index])
+      get_surv_preds <- function(t){
+        if (sum(time_grid[-length(time_grid)] >= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- min(which(time_grid[-length(time_grid)] >= t))
+          haz <- as.matrix(hazard_preds[,final_index:(length(time_grid)-1)])
           anti_haz <- 1 - haz
           surv <- apply(anti_haz, MARGIN = 1, prod)
-          return(surv)
+          surv <- 1 - surv
+        } else{
+          surv <- rep(0, nrow(hazard_preds))
         }
-
-        surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
-        print(CV_risks)
-        print(fit$params)
-        print(fit$niter)
+        return(surv)
       }
+
+      surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+      print(CV_risks)
+      print(fit$params)
+      print(fit$niter)
+
+    } else if (algorithm == "SuperLearner"){ # retrospective SuperLearner
+
+      stacked <- survML:::stack_haz(time = time, event = rep(1,length(time)),
+                                    X = X, time_grid = time_grid, entry = entry, direction = "reverse")
+
+      .Y <- stacked[,ncol(stacked)]
+      .X <- data.frame(stacked[,-ncol(stacked)])
+      fit <- SuperLearner::SuperLearner(Y = .Y,
+                                        X = .X,
+                                        SL.library = SL.library,
+                                        family = binomial(),
+                                        method = 'method.NNLS',
+                                        verbose = FALSE,
+                                        cvControl = list(V = V))
+
+      get_hazard_preds <- function(t){
+        new_stacked <- data.frame(t = t, newX)
+        preds <- predict(fit, newdata=new_stacked)$pred
+        return(preds)
+      }
+
+
+      hazard_preds <- apply(X = matrix(time_grid[-length(time_grid)]), FUN = get_hazard_preds, MARGIN = 1)
+      # don't estimate hazard at final time point (it's 0)
+
+      get_surv_preds <- function(t){
+        if (sum(time_grid[-length(time_grid)] >= t) != 0){ # if you don't fall before the first time in the grid
+          final_index <- min(which(time_grid[-length(time_grid)] >= t))
+          haz <- as.matrix(hazard_preds[,final_index:(length(time_grid)-1)])
+          anti_haz <- 1 - haz
+          surv <- apply(anti_haz, MARGIN = 1, prod)
+          surv <- 1 - surv
+        } else{
+          surv <- rep(0, nrow(hazard_preds))
+        }
+        return(surv)
+      }
+
+      surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
     }
   }
 
