@@ -44,7 +44,7 @@ survMLs <- function(time,
       time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
       time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
     } else{
-      time_grid <- sort(unique(time))
+      time_grid <- sort(unique(dat$time))
       time_grid <- c(0, time_grid)
     }
 
@@ -195,7 +195,7 @@ survMLs <- function(time,
       time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
       time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
     } else{
-      time_grid <- sort(unique(time))
+      time_grid <- sort(unique(dat$time))
       time_grid <- c(0, time_grid)
     }
 
