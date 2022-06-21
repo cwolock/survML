@@ -15,8 +15,9 @@ survMLs(
   time_basis = "continuous",
   algorithm = "xgboost",
   entry = NULL,
-  direction = "forward",
-  tuning_params = NULL
+  direction = "prospective",
+  tuning_params = NULL,
+  SL.library = NULL
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ survMLs(
 \item{direction}{Prospective or retrospective study}
 
 \item{tuning_params}{Tuning parameters to be passed to algorithm for tuning}
+
+\item{SL.library}{SuperLearner library}
 }
 \value{
 An object of class \code{survMLs}
