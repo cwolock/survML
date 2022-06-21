@@ -47,7 +47,7 @@ survMLc <- function(time,
     entry <- tau - time
     event <- rep(1, length(time))
     newtimes <- tau - newtimes
-    approx_times <- tau - approx_times
+    time_grid_approx <- tau - time_grid_approx
     denom_method <- "marginal"
     P_Delta_opt_preds <- rep(1, nrow(newX))
   }
