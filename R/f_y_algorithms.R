@@ -256,7 +256,7 @@ f_y_stack_SuperLearner <- function(time,
                                     SL.library = SL.library,
                                     family = binomial(),
                                     method = 'method.NNLS',
-                                    verbose = TRUE,
+                                    verbose = FALSE,
                                     cvControl = list(V = V,
                                                      validRows = validRows))
 

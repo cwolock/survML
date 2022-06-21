@@ -241,7 +241,7 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
                                     SL.library = SL.library,
                                     family = binomial(),
                                     method = 'method.NNLS',
-                                    verbose = TRUE,
+                                    verbose = FALSE,
                                     cvControl = list(V = V,
                                                      validRows = validRows))
 

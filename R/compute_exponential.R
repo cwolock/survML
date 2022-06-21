@@ -28,7 +28,6 @@ compute_exponential <- function(cdf_uncens,
     # get S_Y estimates up to t
     S_Y_1_curr <- cdf_uncens[1:curr_length]
 
-
     dF_Y_1_pred <- c(S_Y_1_curr[1], diff(S_Y_1_curr))
 
     S_Y_1_pred_left <- c(1, 1-S_Y_1_curr[-length(S_Y_1_curr)])# probability of being "at risk" at time t
@@ -79,7 +78,9 @@ compute_exponential <- function(cdf_uncens,
       }
     }
 
-
+    if (curr_length == 0){
+      S_T_est <- 1
+    }
     return(S_T_est)
   }
 
