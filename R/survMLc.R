@@ -38,19 +38,27 @@ survMLc <- function(time,
                     direction = "prospective",
                     SL.library = NULL,
                     tau = NULL){
+  P_Delta_opt <- NULL
+  S_Y_opt <- NULL
+  S_Y_1_opt <- NULL
+  S_Y_0_opt <- NULL
+  F_W_1_opt <- NULL
+  F_W_0_opt <- NULL
+  F_W_opt <- NULL
 
   if (direction == "retrospective"){
     if (is.null(tau)){
-      tau <- max(time)
+      tau <- max(entry)
     }
     time <- tau - time
-    entry <- tau - time
+    entry <- tau - entry
     event <- rep(1, length(time))
     newtimes <- tau - newtimes
-    time_grid_approx <- tau - time_grid_approx
+    time_grid_approx <- sort(tau - time_grid_approx)
     denom_method <- "marginal"
     P_Delta_opt_preds <- rep(1, nrow(newX))
   }
+  print(time_grid_approx)
 
   # if there is a censoring probability to estimate, i.e. if there is censoring
   if (sum(event == 0) != 0){
@@ -268,7 +276,14 @@ survMLc <- function(time,
     S_T_preds <- 1 - S_T_preds
   }
 
-  res <- list(S_T_preds = S_T_preds)
+  res <- list(S_T_preds = S_T_preds,
+              P_Delta = P_Delta_opt,
+              S_Y_1 = S_Y_1_opt,
+              S_Y_0 = S_Y_0_opt,
+              S_Y = S_Y_opt,
+              F_W_1 = F_W_1_opt,
+              F_W_0 = F_W_0_opt,
+              F_W = F_W_opt)
   class(res) <- "survMLc"
   return(res)
 }
