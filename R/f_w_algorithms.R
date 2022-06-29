@@ -81,19 +81,19 @@ f_w_stack_xgboost <- function(time, event, entry, X, censored, bin_size, V,
       train_time <- time[-cv_folds[[j]]]
       train_entry <- entry[-cv_folds[[j]]]
       train_stack <- survML:::stack_entry(time = train_time, entry = train_entry, X = train_X, time_grid = time_grid,
-                                           direction = direction)$stacked
+                                          direction = direction)$stacked
       xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]),
                                     label = as.matrix(train_stack[,ncol(train_stack)]))
       fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
-                       max_depth = max_depth, eta = eta,
-                       verbose = FALSE, nthread = 1,
-                       save_period = NULL, eval_metric = "logloss",
-                       subsample = subsample)
+                              max_depth = max_depth, eta = eta,
+                              verbose = FALSE, nthread = 1,
+                              save_period = NULL, eval_metric = "logloss",
+                              subsample = subsample)
       test_X <- X[cv_folds[[j]],,drop=FALSE]
       test_time <- time[cv_folds[[j]]]
       test_entry <- entry[cv_folds[[j]]]
       test_stack <- survML:::stack_entry(time = test_time, entry = test_entry, X = test_X, time_grid = time_grid,
-                                          direction = direction)$stacked
+                                         direction = direction)$stacked
       preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
       preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
       truth <- test_stack[,ncol(test_stack)]
@@ -172,8 +172,8 @@ predict.f_w_stack_xgboost <- function(fit, newX, newtimes){
 #' @return An object of class \code{f_w_stack_SuperLearner}
 #' @noRd
 f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
-                              time_basis = "continuous", direction = "forward",
-                              SL.library){
+                                   time_basis = "continuous", direction = "forward",
+                                   SL.library){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -200,20 +200,12 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
 
   if (!is.null(bin_size)){
     #time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-
     time_grid <- quantile(time, probs = seq(0, 1, by = bin_size))
-    if (direction == "reverse"){
-      time_grid <- c(time_grid, max(entry)) # manually set first point to 0, instead of first observed time
-    } else{
-      time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
-    }
+    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
   } else{
     time_grid <- sort(unique(time))
-    if (direction == "reverse"){
-      time_grid <- c(time_grid, max(entry)) # manually set first point to 0, instead of first observed time
-    } else{
-      time_grid <- c(0, time_grid)
-    }
+    time_grid <- c(0, time_grid)
+
   }
   # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
@@ -222,8 +214,8 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
                                        entry = entry,
                                        X = X,
                                        time_grid = time_grid,
-                                       direction = direction,
-                                       ids = TRUE)
+                                       ids = TRUE,
+                                       time_basis = time_basis)
   stacked <- stacked_list$stacked
   stacked_ids <- stacked_list$ids
   .Y <- stacked[,ncol(stacked)]
@@ -263,13 +255,29 @@ predict.f_w_stack_SuperLearner <- function(fit, newX, newtimes){
   time_grid <- fit$time_grid
   trunc_time_grid <- time_grid[-length(time_grid)]
 
-  get_stacked_pred <- function(t){
-    new_stacked <- data.frame(t = t, newX)
-    preds <- predict(fit$reg.object, newdata=new_stacked)$pred
-    return(preds)
-  }
+  if (fit$time_basis == "continuous"){
+    get_stacked_pred <- function(t){
+      new_stacked <- data.frame(t = t, newX)
+      preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+      return(preds)
+    }
 
-  predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+    predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+  } else if (fit$time_basis == "dummy"){
+    get_preds <- function(t){
+      dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
+      index <- max(which(time_grid <= t))
+      dummies[,index] <- 1
+      new_stacked <- cbind(dummies, newX)
+      risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+      colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
+      new_stacked <- data.frame(new_stacked)
+      preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+      return(preds)
+    }
+
+    predictions <- apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1)
+  }
 
   return(predictions)
 }

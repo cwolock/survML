@@ -49,10 +49,8 @@ survMLs <- function(time,
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
     time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
   } else{
     time_grid <- sort(unique(dat$time))
-    time_grid <- c(0, time_grid)
   }
 
   trunc_time_grid <- time_grid[-length(time_grid)]
@@ -78,7 +76,7 @@ survMLs <- function(time,
       subsample <- param_grid$subsample[i]
       risks <- rep(NA, V)
       for (j in 1:V){
-        train <- stacked[-cv_folds[[j]],]
+        train <- stacked[-cv_folds[[j]],] ### THIS IS A BUG - CV is not implemented properly
         xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train[,-ncol(train)]),
                                       label = as.matrix(train[,ncol(train)]))
         #ratio <- min(c(subsamp_size/nrow(train), 1))
@@ -121,7 +119,6 @@ survMLs <- function(time,
     Y2 <- stacked[,ncol(stacked)]
     X2 <- as.matrix(stacked[,-ncol(stacked)])
     xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
-    #ratio <- min(c(opt_subsamp_size/nrow(stacked), 1))
     fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
                             max_depth = opt_max_depth, eta = opt_eta,
                             verbose = FALSE, nthread = 1,
@@ -151,13 +148,12 @@ survMLs <- function(time,
 
   } else if (algorithm == "SuperLearner"){
 
-    cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
-
     stacked <- survML:::stack_haz(time = time,
                                   event = event,
                                   X = X,
                                   time_grid = time_grid,
-                                  entry = entry)
+                                  entry = entry,
+                                  time_basis = time_basis)
 
     .Y <- stacked[,ncol(stacked)]
     .X <- data.frame(stacked[,-ncol(stacked)])
@@ -169,17 +165,31 @@ survMLs <- function(time,
                                       verbose = FALSE,
                                       cvControl = list(V = V))
 
-    get_hazard_preds <- function(t){
-      new_stacked <- data.frame(t = t, newX)
-      preds <- predict(fit, newdata=new_stacked)$pred
-      return(preds)
+    if (time_basis == "continuous"){
+      get_hazard_preds <- function(t){
+        new_stacked <- data.frame(t = t, newX)
+        preds <- predict(fit, newdata=new_stacked)$pred
+        return(preds)
+      }
+    } else if (time_basis == "dummy"){
+      get_hazard_preds <- function(t){
+        dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
+        index <- max(which(time_grid <= t))
+        dummies[,index] <- 1
+        new_stacked <- cbind(dummies, newX)
+        risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+        colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
+        new_stacked <- data.frame(new_stacked)
+        preds <- predict(fit, newdata=new_stacked)$pred
+        return(preds)
+      }
     }
 
-    hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
+    hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
 
     get_surv_preds <- function(t){
-      if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
-        final_index <- max(which(time_grid[-1] <= t))
+      if (sum(time_grid <= t) != 0){ # if you don't fall before the first time in the grid
+        final_index <- max(which(time_grid <= t))
         haz <- as.matrix(hazard_preds[,1:final_index])
         anti_haz <- 1 - haz
         surv <- apply(anti_haz, MARGIN = 1, prod)
@@ -196,7 +206,8 @@ survMLs <- function(time,
     surv_preds <- 1 - surv_preds
   }
 
-  res <- list(S_T_preds = surv_preds)
+  res <- list(S_T_preds = surv_preds,
+              fit = fit)
   class(res) <- "survMLs"
   return(res)
 }

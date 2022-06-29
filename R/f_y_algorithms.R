@@ -71,7 +71,10 @@ f_y_stack_xgboost <- function(time,
     for (j in 1:V){
       train_X <- X[-cv_folds[[j]],]
       train_time <- time[-cv_folds[[j]]]
-      train_stack <- survML:::stack_cdf(time = train_time, X = train_X, time_grid = time_grid, time_basis = time_basis)$stacked
+      train_stack <- survML:::stack_cdf(time = train_time,
+                                        X = train_X,
+                                        time_grid = time_grid,
+                                        time_basis = time_basis)$stacked
       xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]),
                                     label = as.matrix(train_stack[,ncol(train_stack)]))
       fit <- xgboost::xgboost(data = xgmat,
@@ -133,7 +136,11 @@ f_y_stack_xgboost <- function(time,
 
   CV_mat <- cbind(param_grid, CV_risks)
 
-  fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis, CV_mat = CV_mat)
+  fit <- list(reg.object = fit,
+              time_grid = time_grid,
+              isotonize = isotonize,
+              time_basis = time_basis,
+              CV_mat = CV_mat)
   class(fit) <- c("f_y_stack_xgboost")
   return(fit)
 }
@@ -237,7 +244,11 @@ f_y_stack_SuperLearner <- function(time,
     time_grid <- c(0, time_grid)
   }
 
-  stacked_list <- survML:::stack_cdf(time = time, X = X, time_grid = time_grid, time_basis = time_basis, ids = TRUE)
+  stacked_list <- survML:::stack_cdf(time = time,
+                                     X = X,
+                                     time_grid = time_grid,
+                                     time_basis = time_basis,
+                                     ids = TRUE)
   stacked <- stacked_list$stacked
   stacked_ids <- stacked_list$ids
 
@@ -260,7 +271,10 @@ f_y_stack_SuperLearner <- function(time,
                                     cvControl = list(V = V,
                                                      validRows = validRows))
 
-  fit <- list(reg.object = fit, time_grid = time_grid, isotonize = isotonize, time_basis = time_basis)
+  fit <- list(reg.object = fit,
+              time_grid = time_grid,
+              isotonize = isotonize,
+              time_basis = time_basis)
   class(fit) <- c("f_y_stack_SuperLearner")
   return(fit)
 }

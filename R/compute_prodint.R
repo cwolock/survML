@@ -77,6 +77,10 @@ compute_prodint <- function(cdf_uncens,
       }
     }
 
+    if (curr_length == 0){
+      S_T_est <- 1
+    }
+
     return(S_T_est)
   }
 

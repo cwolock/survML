@@ -35,28 +35,6 @@ f_y_stack <- function(time,
                              V = V,
                              time_basis = time_basis,
                              tuning_params = tuning_params)
-  # } else if (algorithm == "ranger"){ # if speed is a concern, use ranger
-  #   fit <- f_y_stack_ranger(time = time,
-  #                           event = event,
-  #                           X = X,
-  #                           censored = censored,
-  #                           bin_size = bin_size,
-  #                           V = V,
-  #                           time_basis = time_basis)
-  # } else if (algorithm == "gam"){
-  #   fit <- f_y_stack_gam(time = time,
-  #                        event = event,
-  #                        X = X,
-  #                        censored = censored,
-  #                        bin_size = bin_size,
-  #                        time_basis = time_basis)
-  # } else if (algorithm == "earth"){
-  #   fit <- f_y_stack_earth(time = time,
-  #                          event = event,
-  #                          X = X,
-  #                          censored = censored,
-  #                          bin_size = bin_size,
-  #                          time_basis = time_basis)
   } else if (algorithm == "SuperLearner"){
     fit <- f_y_stack_SuperLearner(time = time,
                                   event = event,

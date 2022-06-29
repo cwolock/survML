@@ -277,13 +277,13 @@ survMLc <- function(time,
   }
 
   res <- list(S_T_preds = S_T_preds,
-              P_Delta = P_Delta_opt,
-              S_Y_1 = S_Y_1_opt,
-              S_Y_0 = S_Y_0_opt,
-              S_Y = S_Y_opt,
-              F_W_1 = F_W_1_opt,
-              F_W_0 = F_W_0_opt,
-              F_W = F_W_opt)
+              fits = list(P_Delta = P_Delta_opt,
+                          S_Y_1 = S_Y_1_opt,
+                          S_Y_0 = S_Y_0_opt,
+                          S_Y = S_Y_opt,
+                          F_W_1 = F_W_1_opt,
+                          F_W_0 = F_W_0_opt,
+                          F_W = F_W_opt))
   class(res) <- "survMLc"
   return(res)
 }
