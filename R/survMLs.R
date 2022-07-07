@@ -27,10 +27,13 @@ survMLs <- function(time,
                     time_basis = "continuous",
                     entry = NULL,
                     direction = "prospective",
-                    SL.library = NULL){
+                    SL.library = NULL,
+                    tau = NULL){
 
   if (direction == "retrospective"){
-    tau <- max(time)
+    if (is.null(tau)){
+      tau <- max(entry)
+    }
     time <- tau - time
     newtimes <- tau - newtimes
     entry <- tau - entry
