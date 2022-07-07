@@ -48,9 +48,11 @@ survMLs <- function(time,
 
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
-    time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+    time_grid <- quantile(dat$time[dat$event == 1], probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0
   } else{
-    time_grid <- sort(unique(dat$time))
+    time_grid <- sort(unique(dat$time[dat$event == 1]))
+    time_grid <- c(0, time_grid)
   }
 
   trunc_time_grid <- time_grid[-length(time_grid)]
