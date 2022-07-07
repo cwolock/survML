@@ -1,4 +1,4 @@
-#' Estimate a conditional survival function by binary regression on a grid
+#' Estimate a conditional survival function using cumulative probability estimator
 #'
 #' @param time Observed time
 #' @param event Indicator of event (vs censoring)

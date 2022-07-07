@@ -2,7 +2,7 @@
 % Please edit documentation in R/survMLc.R
 \name{survMLc}
 \alias{survMLc}
-\title{Estimate a conditional survival function by binary regression on a grid}
+\title{Estimate a conditional survival function using cumulative probability estimator}
 \usage{
 survMLc(
   time,
@@ -59,5 +59,5 @@ survMLc(
 An object of class \code{survMLc}
 }
 \description{
-Estimate a conditional survival function by binary regression on a grid
+Estimate a conditional survival function using cumulative probability estimator
 }
