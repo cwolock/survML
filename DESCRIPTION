@@ -16,5 +16,4 @@ RoxygenNote: 7.2.0
 Imports: 
     stats,
     survival,
-    SuperLearner,
-    xgboost
+    SuperLearner

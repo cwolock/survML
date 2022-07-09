@@ -11,36 +11,45 @@ f_w_stack(
   entry,
   censored,
   bin_size = NULL,
-  algorithm,
-  V = NULL,
-  SL.library = NULL,
-  time_basis,
-  tuning_params = NULL,
-  direction = "forward"
+  V = 10,
+  SL.library,
+  time_basis
 )
 }
 \arguments{
-\item{time}{Observed time}
+\item{time}{\code{n x 1} numeric vector of observed
+follow-up times If there is censoring, these are the minimum of the
+event and censoring times.}
 
-\item{event}{Indicator of event (vs censoring)}
+\item{event}{\code{n x 1} numeric vector of status indicators of
+whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 
-\item{X}{Covariate matrix}
+\item{X}{\code{n x p} data.frame of observed covariate values
+on which to train the estimator.}
 
-\item{entry}{Variable indicating time of entry into the study (truncation variable) if applicable}
+\item{entry}{Study entry variable, if applicable. Defaults to \code{NULL},
+indicating that there is no truncation.}
 
-\item{censored}{Logical, indicates whether to run regression on censored observations (vs uncensored)}
+\item{censored}{Logical, indicates whether to run regression on censored
+observations (\code{event == 0}) vs. uncensored (\code{event == 1}).}
 
-\item{bin_size}{Size of time bin on which to discretize for estimation}
+\item{bin_size}{Size of time bin on which to discretize for estimation
+of cumulative probability functions. Can be a number between 0 and 1,
+indicating the size of quantile grid (e.g. \code{0.1} estimates
+the cumulative probability functions on a grid based on deciles of
+observed \code{time}s). If \code{NULL}, creates a grid of
+all observed \code{time}s.}
 
-\item{algorithm}{Which binary classification algorithm to use}
+\item{V}{Number of cross validation folds on which to train the Super Learner
+classifier. Defaults to 10.}
 
-\item{V}{CV fold number, required for tuned algorithms (xgboost, ranger)}
+\item{SL.library}{Library of algorithms to include in the binary classification
+Super Learner. Should have the same structure as the \code{SL.library}
+argument to the \code{SuperLearner} function in the \code{SuperLearner} package.}
 
-\item{SL.library}{SuperLearner library}
-
-\item{time_basis}{How to treat time (continuous or dummy)}
-
-\item{tuning_params}{Tuning parameters for binary classification}
+\item{time_basis}{How to treat time for training the binary
+classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
+an indicator variable is included for each time in the time grid.}
 }
 \value{
 An fitted pooled binary regression for the truncation distribution

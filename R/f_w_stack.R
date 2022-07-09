@@ -1,57 +1,51 @@
 #' Wrapper for various f_w stacked algorithms
 #'
-#' @param time Observed time
-#' @param event Indicator of event (vs censoring)
-#' @param X Covariate matrix
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
+#' @param entry Study entry variable, if applicable. Defaults to \code{NULL},
+#' indicating that there is no truncation.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' on which to train the estimator.
+#' @param censored Logical, indicates whether to run regression on censored
+#' observations (\code{event == 0}) vs. uncensored (\code{event == 1}).
 #' @param bin_size Size of time bin on which to discretize for estimation
-#' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
-#' @param algorithm Which binary classification algorithm to use
-#' @param V CV fold number, required for tuned algorithms (xgboost, ranger)
-#' @param entry Variable indicating time of entry into the study (truncation variable) if applicable
-#' @param time_basis How to treat time (continuous or dummy)
-#' @param tuning_params Tuning parameters for binary classification
-#' @param SL.library SuperLearner library
+#' of cumulative probability functions. Can be a number between 0 and 1,
+#' indicating the size of quantile grid (e.g. \code{0.1} estimates
+#' the cumulative probability functions on a grid based on deciles of
+#' observed \code{time}s). If \code{NULL}, creates a grid of
+#' all observed \code{time}s.
+#' @param time_basis How to treat time for training the binary
+#' classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
+#' an indicator variable is included for each time in the time grid.
+#' @param SL.library Library of algorithms to include in the binary classification
+#' Super Learner. Should have the same structure as the \code{SL.library}
+#' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
+#' @param V Number of cross validation folds on which to train the Super Learner
+#' classifier. Defaults to 10.
 #'
 #' @return An fitted pooled binary regression for the truncation distribution
-#'
-#' @export
-#'
-#' @examples
 f_w_stack <- function(time,
                       event,
                       X,
                       entry,
                       censored,
                       bin_size = NULL,
-                      algorithm,
-                      V = NULL,
-                      SL.library = NULL,
-                      time_basis,
-                      tuning_params = NULL,
-                      direction = "forward"){
+                      V = 10,
+                      SL.library,
+                      time_basis){
 
-  if (algorithm == "xgboost"){ # do xgboost if speed not a concern
-    fit <- f_w_stack_xgboost(time = time,
-                             event = event,
-                             X = X,
-                             censored = censored,
-                             bin_size = bin_size,
-                             V = V,
-                             time_basis = time_basis,
-                             tuning_params = tuning_params,
-                             entry = entry,
-                             direction = direction)
-  } else if (algorithm == "SuperLearner"){
-    fit <- f_w_stack_SuperLearner(time = time,
-                                  event = event,
-                                  X = X,
-                                  censored = censored,
-                                  bin_size = bin_size,
-                                  time_basis = time_basis,
-                                  SL.library = SL.library,
-                                  V = V,
-                                  entry = entry,
-                                  direction = direction)
-  }
+  fit <- f_w_stack_SuperLearner(time = time,
+                                event = event,
+                                X = X,
+                                censored = censored,
+                                bin_size = bin_size,
+                                time_basis = time_basis,
+                                SL.library = SL.library,
+                                V = V,
+                                entry = entry)
+
   return(fit)
 }

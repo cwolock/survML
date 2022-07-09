@@ -1,42 +1,67 @@
 #' Estimate a conditional survival function using cumulative probability estimator
 #'
-#' @param time Observed time
-#' @param event Indicator of event (vs censoring)
-#' @param X Covariate matrix
-#' @param newX Values of covariates at which to make a prediction
-#' @param newtimes Times at which to make the survival function prediction
-#' @param time_grid_approx Grid of time points on which to approximate PL integral or cumulative hazard. Defaults to observed times
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
+#' @param entry Study entry variable, if applicable. Defaults to \code{NULL},
+#' indicating that there is no truncation.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' on which to train the estimator.
+#' @param newX \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param newtimes \code{k x 1} numeric vector of times at which to obtain \code{k}
+#' predicted conditional survivals.
+#' @param direction Whether the data come from a prospective or retrospective study.
+#' This determines whether the data are treated as subject to left truncation and
+#' right censoring (\code{"prospective"}) or right truncation alone
+#' (\code{"retrospective"}).
 #' @param bin_size Size of time bin on which to discretize for estimation
-#' @param denom_method Stratified or marginal denominator
-#' @param algorithm Which binary classification algorithm to use
-#' @param V CV fold number, required for tuned algorithms (xgboost, ranger)
-#' @param entry Variable indicating time of entry into the study (truncation variable) if applicable
-#' @param time_basis How to treat time (continuous or dummy)
-#' @param surv_form Product integral or exponential mapping
-#' @param tuning_params Tuning parameters for binary classification
-#' @param direction Prospective or retrospective setting
+#' of cumulative probability functions. Can be a number between 0 and 1,
+#' indicating the size of quantile grid (e.g. \code{0.1} estimates
+#' the cumulative probability functions on a grid based on deciles of
+#' observed \code{time}s). If \code{NULL}, creates a grid of
+#' all observed \code{time}s.
+#' @param time_basis How to treat time for training the binary
+#' classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
+#' an indicator variable is included for each time in the time grid.
+#' @param time_grid_approx Numeric vector of times at which to
+#' approximate product integral or cumulative hazard interval.
+#' Defaults to \code{times} argument.
+#' @param denom_method Denominator form for the hazard identification. Can
+#' be either \code{"stratified"} (estimate the at-risk probability
+#' within strata of the \code{event} variable) or \code{"marginal"} (estimate
+#' the at-risk probability using all observations).
+#' @param surv_form Mapping from hazard estimate to survival estimate.
+#' Can be either \code{"PI"} (product integral mapping) or \code{"exponential"}
+#' (exponentiated cumulative hazard estimate).
+#' @param SL.library Library of algorithms to include in the binary classification
+#' Super Learner. Should have the same structure as the \code{SL.library}
+#' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
+#' @param V Number of cross validation folds on which to train the Super Learner
+#' classifier. Defaults to 10.
 #'
-#' @return An object of class \code{survMLc}
+#' @return A named list of class \code{survMLc}
 #'
 #' @export
 #'
 #' @examples
 survMLc <- function(time,
-                    event,
+                    event = rep(1, length(time)),
+                    entry = NULL,
                     X,
                     newX,
                     newtimes,
-                    time_grid_approx = sort(unique(time)),
-                    bin_size = NULL,
-                    denom_method = "stratified",
-                    algorithm = "xgboost",
-                    V = 10,
-                    entry = NULL,
-                    time_basis,
-                    surv_form = "PI",
-                    tuning_params = NULL,
                     direction = "prospective",
-                    SL.library = NULL,
+                    bin_size = NULL,
+                    time_basis,
+                    time_grid_approx = sort(unique(time)),
+                    denom_method = "stratified",
+                    surv_form = "PI",
+                    SL.library,
+                    V = 10,
                     tau = NULL){
   P_Delta_opt <- NULL
   S_Y_opt <- NULL

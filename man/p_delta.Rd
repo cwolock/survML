@@ -4,23 +4,25 @@
 \alias{p_delta}
 \title{Wrapper for various p_delta algorithms}
 \usage{
-p_delta(event, X, algorithm, V = NULL, SL.library = NULL, tuning_params = NULL)
+p_delta(event, X, V = 10, SL.library)
 }
 \arguments{
-\item{event}{Indicator of event (vs censoring)}
+\item{event}{\code{n x 1} numeric vector of status indicators of
+whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 
-\item{X}{Covariate matrix}
+\item{X}{\code{n x p} data.frame of observed covariate values
+on which to train the estimator.}
 
-\item{algorithm}{Which binary classification algorithm to use}
+\item{V}{Number of cross validation folds on which to train the Super Learner
+classifier. Defaults to 10.}
 
-\item{V}{CV fold number, required for tuned algorithms (xgboost, ranger)}
-
-\item{SL.library}{SuperLearner library}
-
-\item{tuning_params}{Tuning parameters for binary classification}
+\item{SL.library}{Library of algorithms to include in the binary classification
+Super Learner. Should have the same structure as the \code{SL.library}
+argument to the \code{SuperLearner} function in the \code{SuperLearner} package.}
 }
 \value{
-An fitted binary regression for (complement of) probability of censoring
+An fitted binary regression for (complement of)
+probability of censoring
 }
 \description{
 Wrapper for various p_delta algorithms

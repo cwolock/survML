@@ -6,57 +6,81 @@
 \usage{
 survMLc(
   time,
-  event,
+  event = rep(1, length(time)),
+  entry = NULL,
   X,
   newX,
   newtimes,
-  time_grid_approx = sort(unique(time)),
-  bin_size = NULL,
-  denom_method = "stratified",
-  algorithm = "xgboost",
-  V = 10,
-  entry = NULL,
-  time_basis,
-  surv_form = "PI",
-  tuning_params = NULL,
   direction = "prospective",
-  SL.library = NULL,
+  bin_size = NULL,
+  time_basis,
+  time_grid_approx = sort(unique(time)),
+  denom_method = "stratified",
+  surv_form = "PI",
+  SL.library,
+  V = 10,
   tau = NULL
 )
 }
 \arguments{
-\item{time}{Observed time}
+\item{time}{\code{n x 1} numeric vector of observed
+follow-up times If there is censoring, these are the minimum of the
+event and censoring times.}
 
-\item{event}{Indicator of event (vs censoring)}
+\item{event}{\code{n x 1} numeric vector of status indicators of
+whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 
-\item{X}{Covariate matrix}
+\item{entry}{Study entry variable, if applicable. Defaults to \code{NULL},
+indicating that there is no truncation.}
 
-\item{newX}{Values of covariates at which to make a prediction}
+\item{X}{\code{n x p} data.frame of observed covariate values
+on which to train the estimator.}
 
-\item{newtimes}{Times at which to make the survival function prediction}
+\item{newX}{\code{m x p} data.frame of new observed covariate
+values at which to obtain \code{m} predictions for the estimated algorithm.
+Must have the same names and structure as \code{X}.}
 
-\item{time_grid_approx}{Grid of time points on which to approximate PL integral or cumulative hazard. Defaults to observed times}
+\item{newtimes}{\code{k x 1} numeric vector of times at which to obtain \code{k}
+predicted conditional survivals.}
 
-\item{bin_size}{Size of time bin on which to discretize for estimation}
+\item{direction}{Whether the data come from a prospective or retrospective study.
+This determines whether the data are treated as subject to left truncation and
+right censoring (\code{"prospective"}) or right truncation alone
+(\code{"retrospective"}).}
 
-\item{denom_method}{Stratified or marginal denominator}
+\item{bin_size}{Size of time bin on which to discretize for estimation
+of cumulative probability functions. Can be a number between 0 and 1,
+indicating the size of quantile grid (e.g. \code{0.1} estimates
+the cumulative probability functions on a grid based on deciles of
+observed \code{time}s). If \code{NULL}, creates a grid of
+all observed \code{time}s.}
 
-\item{algorithm}{Which binary classification algorithm to use}
+\item{time_basis}{How to treat time for training the binary
+classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
+an indicator variable is included for each time in the time grid.}
 
-\item{V}{CV fold number, required for tuned algorithms (xgboost, ranger)}
+\item{time_grid_approx}{Numeric vector of times at which to
+approximate product integral or cumulative hazard interval.
+Defaults to \code{times} argument.}
 
-\item{entry}{Variable indicating time of entry into the study (truncation variable) if applicable}
+\item{denom_method}{Denominator form for the hazard identification. Can
+be either \code{"stratified"} (estimate the at-risk probability
+within strata of the \code{event} variable) or \code{"marginal"} (estimate
+the at-risk probability using all observations).}
 
-\item{time_basis}{How to treat time (continuous or dummy)}
+\item{surv_form}{Mapping from hazard estimate to survival estimate.
+Can be either \code{"PI"} (product integral mapping) or \code{"exponential"}
+(exponentiated cumulative hazard estimate).}
 
-\item{surv_form}{Product integral or exponential mapping}
+\item{SL.library}{Library of algorithms to include in the binary classification
+Super Learner. Should have the same structure as the \code{SL.library}
+argument to the \code{SuperLearner} function in the \code{SuperLearner} package.}
 
-\item{tuning_params}{Tuning parameters for binary classification}
-
-\item{direction}{Prospective or retrospective setting}
+\item{V}{Number of cross validation folds on which to train the Super Learner
+classifier. Defaults to 10.}
 }
 \value{
-An object of class \code{survMLc}
+A named list of class \code{survMLc}
 }
 \description{
 Estimate a conditional survival function using cumulative probability estimator

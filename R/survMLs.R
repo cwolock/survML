@@ -1,33 +1,57 @@
 #' Estimate a conditional survival function via stacking
 #'
-#' @param time Observed time
-#' @param event Indicator of event (vs censoring)
-#' @param X Covariate matrix
-#' @param newX Values of covariates at which to make a prediction
-#' @param newtimes Times at which to make the survival function prediction
-#' @param bin_size Quantiles on which to grid times. If NULL, defaults to every observed time
-#' @param V Number of cross validation folds
-#' @param time_basis How to treat time (continuous or dummy)
-#' @param entry Study entry variable, if applicable
-#' @param direction Prospective or retrospective study
-#' @param SL.library SuperLearner library
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
+#' @param entry Study entry variable, if applicable. Defaults to \code{NULL},
+#' indicating that there is no truncation.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' on which to train the estimator.
+#' @param newX \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param newtimes \code{k x 1} numeric vector of times at which to obtain \code{k}
+#' predicted conditional survivals.
+#' @param direction Whether the data come from a prospective or retrospective study.
+#' This determines whether the data are treated as subject to left truncation and
+#' right censoring (\code{"prospective"}) or right truncation alone
+#' (\code{"retrospective"}).
+#' @param bin_size Size of bins for the discretization of time.
+#' A value between 0 and 1 indicating the size of observed event time quantiles
+#' on which to grid times (e.g. 0.02 creates a grid of 50 times evenly spaced on the
+#' quantile scaled). If NULL, defaults to every observed event time.
+#' @param time_basis How to treat time for training the binary
+#' classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
+#' an indicator variable is included for each time in the time grid.
+#' @param SL.library Library of algorithms to include in the binary classification
+#' Super Learner. Should have the same structure as the \code{SL.library}
+#' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
+#' @param V Number of cross validation folds on which to train the Super Learner
+#' classifier. Defaults to 10.
 #'
-#' @return An object of class \code{survMLs}
+#' @return A named list of class \code{survMLs}.
+#' \item{S_T_preds}{An \code{m x k} matrix of estimated survival probabilites at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{fit}{The Super Learner fit for binary classification on the stacked
+#' dataset.}
 #'
 #' @export
 #'
 #' @examples
 survMLs <- function(time,
-                    event,
+                    event = rep(1, length(time)),
+                    entry = NULL,
                     X,
                     newX,
                     newtimes,
-                    bin_size = NULL,
-                    V = 10,
-                    time_basis = "continuous",
-                    entry = NULL,
                     direction = "prospective",
-                    SL.library = NULL,
+                    bin_size = NULL,
+                    time_basis = "continuous",
+                    SL.library,
+                    V = 10,
                     tau = NULL){
 
   if (direction == "retrospective"){
