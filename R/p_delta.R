@@ -16,17 +16,9 @@ p_delta <- function(event,
                     X,
                     V = 10,
                     SL.library){
-
-  if (algorithm == "xgboost"){ # do xgboost if speed not a concern
-    fit <- p_delta_xgboost(event = event,
-                           X = X,
-                           V = V,
-                           tuning_params = tuning_params)
-  } else if (algorithm == "SuperLearner"){
-    fit <- p_delta_SuperLearner(event = event,
-                                X = X,
-                                SL.library = SL.library,
-                                V = V)
-  }
+  fit <- p_delta_SuperLearner(event = event,
+                              X = X,
+                              SL.library = SL.library,
+                              V = V)
   return(fit)
 }

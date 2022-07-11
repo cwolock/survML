@@ -69,7 +69,7 @@ within strata of the \code{event} variable) or \code{"marginal"} (estimate
 the at-risk probability using all observations).}
 
 \item{surv_form}{Mapping from hazard estimate to survival estimate.
-Can be either \code{"PI"} (product integral mapping) or \code{"exponential"}
+Can be either \code{"PI"} (product integral mapping) or \code{"exp"}
 (exponentiated cumulative hazard estimate).}
 
 \item{SL.library}{Library of algorithms to include in the binary classification
@@ -78,10 +78,66 @@ argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
 
 \item{V}{Number of cross validation folds on which to train the Super Learner
 classifier. Defaults to 10.}
+
+\item{tau}{The maximum time of interest in a study, used for
+retrospective conditional survival estimation. Rather than dealing
+with right truncation separetely than left truncation, it is simpler to
+estimate the survival function of \code{tau - time}. Defaults to code{NULL},
+in which case the maximum study entry time is chosen as the
+refererence point.}
 }
 \value{
 A named list of class \code{survMLc}
 }
 \description{
 Estimate a conditional survival function using cumulative probability estimator
+}
+\examples{
+
+# This is a small simulation example
+set.seed(92)
+n <- 100
+X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+
+S0 <- function(t, x){
+  pexp(t, rate = exp(-2 + x[,1] - x[,2] + .5 * x[,1] * x[,2]), lower.tail = FALSE)
+}
+T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+
+G0 <- function(t, x) {
+  as.numeric(t < 15) * .9 * pexp(t, rate = exp(-2 -.5 * x[,1] - .25 * x[,2] + .5 * x[,1] * x[,2]), lower.tail=FALSE)
+}
+C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+C[C > 15] <- 15
+
+entry <- runif(n, 0, 15)
+
+time <- pmin(T, C)
+event <- as.numeric(T <= C)
+
+sampled <- which(time >= entry)
+X <- X[sampled,]
+time <- time[sampled]
+event <- event[sampled]
+entry <- entry[sampled]
+
+SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+
+fit <- survMLc(time = time,
+               event = event,
+               entry = entry,
+               X = X,
+               newX = X,
+               newtimes = seq(0, 15, .1),
+               direction = "prospective",
+               bin_size = 0.02,
+               time_basis = "continuous",
+               time_grid_approx = sort(unique(time)),
+               denom_method = "stratified",
+               surv_form = "exp",
+               SL.library = SL.library,
+               V = 5)
+
+plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
+abline(0,1,col='red')
 }

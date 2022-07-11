@@ -30,6 +30,12 @@
 #' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
 #' @param V Number of cross validation folds on which to train the Super Learner
 #' classifier. Defaults to 10.
+#' @param tau The maximum time of interest in a study, used for
+#' retrospective conditional survival estimation. Rather than dealing
+#' with right truncation separetely than left truncation, it is simpler to
+#' estimate the survival function of \code{tau - time}. Defaults to code{NULL},
+#' in which case the maximum study entry time is chosen as the
+#' refererence point.
 #'
 #' @return A named list of class \code{survMLs}.
 #' \item{S_T_preds}{An \code{m x k} matrix of estimated survival probabilites at the
@@ -41,6 +47,50 @@
 #' @export
 #'
 #' @examples
+#'
+#' # This is a small simulation example
+#' set.seed(92)
+#' n <- 100
+#' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+#'
+#' S0 <- function(t, x){
+#'   pexp(t, rate = exp(-2 + x[,1] - x[,2] + .5 * x[,1] * x[,2]), lower.tail = FALSE)
+#' }
+#' T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+#'
+#' G0 <- function(t, x) {
+#'   as.numeric(t < 15) * .9 * pexp(t, rate = exp(-2 -.5 * x[,1] - .25 * x[,2] + .5 * x[,1] * x[,2]), lower.tail=FALSE)
+#' }
+#' C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+#' C[C > 15] <- 15
+#'
+#' entry <- runif(n, 0, 15)
+#'
+#' time <- pmin(T, C)
+#' event <- as.numeric(T <= C)
+#'
+#' sampled <- which(time >= entry)
+#' X <- X[sampled,]
+#' time <- time[sampled]
+#' event <- event[sampled]
+#' entry <- entry[sampled]
+#'
+#' SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+#'
+#' fit <- survMLs(time = time,
+#'                event = event,
+#'                entry = entry,
+#'                X = X,
+#'                newX = X,
+#'                newtimes = seq(0, 15, .1),
+#'                direction = "prospective",
+#'                bin_size = 0.02,
+#'                time_basis = "continuous",
+#'                SL.library = SL.library,
+#'                V = 5)
+#'
+#' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
+#' abline(0,1,col='red')
 survMLs <- function(time,
                     event = rep(1, length(time)),
                     entry = NULL,
@@ -71,7 +121,7 @@ survMLs <- function(time,
 
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
-    time_grid <- quantile(dat$time[dat$event == 1], probs = seq(0, 1, by = bin_size))
+    time_grid <- stats::quantile(dat$time[dat$event == 1], probs = seq(0, 1, by = bin_size))
     time_grid[1] <- 0
   } else{
     time_grid <- sort(unique(dat$time[dat$event == 1]))
@@ -92,7 +142,7 @@ survMLs <- function(time,
   fit <- SuperLearner::SuperLearner(Y = .Y,
                                     X = .X,
                                     SL.library = SL.library,
-                                    family = binomial(),
+                                    family = stats::binomial(),
                                     method = 'method.NNLS',
                                     verbose = FALSE,
                                     cvControl = list(V = V))

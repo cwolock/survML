@@ -35,19 +35,72 @@
 #' within strata of the \code{event} variable) or \code{"marginal"} (estimate
 #' the at-risk probability using all observations).
 #' @param surv_form Mapping from hazard estimate to survival estimate.
-#' Can be either \code{"PI"} (product integral mapping) or \code{"exponential"}
+#' Can be either \code{"PI"} (product integral mapping) or \code{"exp"}
 #' (exponentiated cumulative hazard estimate).
 #' @param SL.library Library of algorithms to include in the binary classification
 #' Super Learner. Should have the same structure as the \code{SL.library}
 #' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
 #' @param V Number of cross validation folds on which to train the Super Learner
 #' classifier. Defaults to 10.
+#' @param tau The maximum time of interest in a study, used for
+#' retrospective conditional survival estimation. Rather than dealing
+#' with right truncation separetely than left truncation, it is simpler to
+#' estimate the survival function of \code{tau - time}. Defaults to code{NULL},
+#' in which case the maximum study entry time is chosen as the
+#' refererence point.
 #'
 #' @return A named list of class \code{survMLc}
 #'
 #' @export
 #'
 #' @examples
+#'
+#' # This is a small simulation example
+#' set.seed(92)
+#' n <- 100
+#' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+#'
+#' S0 <- function(t, x){
+#'   pexp(t, rate = exp(-2 + x[,1] - x[,2] + .5 * x[,1] * x[,2]), lower.tail = FALSE)
+#' }
+#' T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+#'
+#' G0 <- function(t, x) {
+#'   as.numeric(t < 15) * .9 * pexp(t, rate = exp(-2 -.5 * x[,1] - .25 * x[,2] + .5 * x[,1] * x[,2]), lower.tail=FALSE)
+#' }
+#' C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+#' C[C > 15] <- 15
+#'
+#' entry <- runif(n, 0, 15)
+#'
+#' time <- pmin(T, C)
+#' event <- as.numeric(T <= C)
+#'
+#' sampled <- which(time >= entry)
+#' X <- X[sampled,]
+#' time <- time[sampled]
+#' event <- event[sampled]
+#' entry <- entry[sampled]
+#'
+#' SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+#'
+#' fit <- survMLc(time = time,
+#'                event = event,
+#'                entry = entry,
+#'                X = X,
+#'                newX = X,
+#'                newtimes = seq(0, 15, .1),
+#'                direction = "prospective",
+#'                bin_size = 0.02,
+#'                time_basis = "continuous",
+#'                time_grid_approx = sort(unique(time)),
+#'                denom_method = "stratified",
+#'                surv_form = "exp",
+#'                SL.library = SL.library,
+#'                V = 5)
+#'
+#' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
+#' abline(0,1,col='red')
 survMLc <- function(time,
                     event = rep(1, length(time)),
                     entry = NULL,
@@ -83,15 +136,12 @@ survMLc <- function(time,
     denom_method <- "marginal"
     P_Delta_opt_preds <- rep(1, nrow(newX))
   }
-  print(time_grid_approx)
 
   # if there is a censoring probability to estimate, i.e. if there is censoring
   if (sum(event == 0) != 0){
     P_Delta_opt <- p_delta(event = event,
                            X = X,
                            V = V,
-                           tuning_params = tuning_params,
-                           algorithm = algorithm,
                            SL.library = SL.library)
     P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
 
@@ -103,8 +153,6 @@ survMLc <- function(time,
                              bin_size = bin_size,
                              V = V,
                              time_basis = time_basis,
-                             tuning_params = tuning_params,
-                             algorithm = algorithm,
                              SL.library = SL.library)
       S_Y_0_opt_preds <- predict(S_Y_0_opt,
                                  newX = newX,
@@ -117,8 +165,6 @@ survMLc <- function(time,
                            bin_size = bin_size,
                            V = V,
                            time_basis = time_basis,
-                           tuning_params = tuning_params,
-                           algorithm = algorithm,
                            SL.library = SL.library)
       S_Y_opt_preds <- predict(S_Y_opt,
                                newX = newX,
@@ -133,8 +179,6 @@ survMLc <- function(time,
                          bin_size = bin_size,
                          V = V,
                          time_basis = time_basis,
-                         tuning_params = tuning_params,
-                         algorithm = algorithm,
                          SL.library = SL.library)
 
   if (!is.null(entry)){ # if a truncation variable is given
@@ -147,8 +191,6 @@ survMLc <- function(time,
                              V = V,
                              entry = entry,
                              time_basis = time_basis,
-                             tuning_params = tuning_params,
-                             algorithm = algorithm,
                              SL.library = SL.library)
       F_W_1_opt_preds <- predict(F_W_1_opt,
                                  newX = newX,
@@ -161,8 +203,6 @@ survMLc <- function(time,
                              V = V,
                              entry = entry,
                              time_basis = time_basis,
-                             tuning_params = tuning_params,
-                             algorithm = algorithm,
                              SL.library = SL.library)
       F_W_0_opt_preds <- predict(F_W_0_opt,
                                  newX = newX,
@@ -176,8 +216,6 @@ survMLc <- function(time,
                           V = V,
                           entry = entry,
                           time_basis = time_basis,
-                          tuning_params = tuning_params,
-                          algorithm = algorithm,
                           SL.library = SL.library)
       F_W_opt_preds <- predict(F_W_opt,
                                newX = newX,
