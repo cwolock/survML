@@ -31,6 +31,6 @@ p_delta_SuperLearner <- function(event, X, SL.library, V = 10){
 #' @noRd
 predict.p_delta_SuperLearner <- function(fit, newX){
   X <- as.data.frame(newX)
-  preds <- predict(fit$reg.object, newdata = newX)$pred
+  preds <- stats::predict(fit$reg.object, newdata = newX)$pred
   return(preds)
 }

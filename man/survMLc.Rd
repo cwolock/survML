@@ -81,10 +81,10 @@ classifier. Defaults to 10.}
 
 \item{tau}{The maximum time of interest in a study, used for
 retrospective conditional survival estimation. Rather than dealing
-with right truncation separetely than left truncation, it is simpler to
+with right truncation separately than left truncation, it is simpler to
 estimate the survival function of \code{tau - time}. Defaults to code{NULL},
 in which case the maximum study entry time is chosen as the
-refererence point.}
+reference point.}
 }
 \value{
 A named list of class \code{survMLc}
@@ -105,7 +105,9 @@ S0 <- function(t, x){
 T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
 
 G0 <- function(t, x) {
-  as.numeric(t < 15) * .9 * pexp(t, rate = exp(-2 -.5 * x[,1] - .25 * x[,2] + .5 * x[,1] * x[,2]), lower.tail=FALSE)
+  as.numeric(t < 15) *.9*pexp(t,
+                              rate = exp(-2 -.5*x[,1]-.25*x[,2]+.5*x[,1]*x[,2]),
+                              lower.tail=FALSE)
 }
 C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
 C[C > 15] <- 15

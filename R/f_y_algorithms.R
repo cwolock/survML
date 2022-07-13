@@ -50,11 +50,11 @@ f_y_stack_SuperLearner <- function(time,
     time_grid <- c(0, time_grid)
   }
 
-  stacked_list <- survML:::stack_cdf(time = time,
-                                     X = X,
-                                     time_grid = time_grid,
-                                     time_basis = time_basis,
-                                     ids = TRUE)
+  stacked_list <- stack_cdf(time = time,
+                            X = X,
+                            time_grid = time_grid,
+                            time_basis = time_basis,
+                            ids = TRUE)
   stacked <- stacked_list$stacked
   stacked_ids <- stacked_list$ids
 
@@ -101,7 +101,7 @@ predict.f_y_stack_SuperLearner <- function(fit, newX, newtimes){
   if (fit$time_basis == "continuous"){
     get_stacked_pred <- function(t){
       new_stacked <- data.frame(t = t, newX)
-      preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+      preds <- stats::predict(fit$reg.object, newdata=new_stacked)$pred
       return(preds)
     }
 
@@ -115,7 +115,7 @@ predict.f_y_stack_SuperLearner <- function(fit, newX, newtimes){
       risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
       colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
       new_stacked <- data.frame(new_stacked)
-      preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+      preds <- stats::predict(fit$reg.object, newdata=new_stacked)$pred
       return(preds)
     }
 

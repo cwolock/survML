@@ -51,12 +51,12 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
   # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
   # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  stacked_list <- survML:::stack_entry(time = time,
-                                       entry = entry,
-                                       X = X,
-                                       time_grid = time_grid,
-                                       ids = TRUE,
-                                       time_basis = time_basis)
+  stacked_list <- stack_entry(time = time,
+                              entry = entry,
+                              X = X,
+                              time_grid = time_grid,
+                              ids = TRUE,
+                              time_basis = time_basis)
   stacked <- stacked_list$stacked
   stacked_ids <- stacked_list$ids
   .Y <- stacked[,ncol(stacked)]
@@ -99,7 +99,7 @@ predict.f_w_stack_SuperLearner <- function(fit, newX, newtimes){
   if (fit$time_basis == "continuous"){
     get_stacked_pred <- function(t){
       new_stacked <- data.frame(t = t, newX)
-      preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+      preds <- stats::predict(fit$reg.object, newdata=new_stacked)$pred
       return(preds)
     }
 
@@ -113,7 +113,7 @@ predict.f_w_stack_SuperLearner <- function(fit, newX, newtimes){
       risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
       colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
       new_stacked <- data.frame(new_stacked)
-      preds <- predict(fit$reg.object, newdata=new_stacked)$pred
+      preds <- stats::predict(fit$reg.object, newdata=new_stacked)$pred
       return(preds)
     }
 

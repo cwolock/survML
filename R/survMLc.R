@@ -44,10 +44,10 @@
 #' classifier. Defaults to 10.
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
-#' with right truncation separetely than left truncation, it is simpler to
+#' with right truncation separately than left truncation, it is simpler to
 #' estimate the survival function of \code{tau - time}. Defaults to code{NULL},
 #' in which case the maximum study entry time is chosen as the
-#' refererence point.
+#' reference point.
 #'
 #' @return A named list of class \code{survMLc}
 #'
@@ -66,7 +66,9 @@
 #' T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
 #'
 #' G0 <- function(t, x) {
-#'   as.numeric(t < 15) * .9 * pexp(t, rate = exp(-2 -.5 * x[,1] - .25 * x[,2] + .5 * x[,1] * x[,2]), lower.tail=FALSE)
+#'   as.numeric(t < 15) *.9*pexp(t,
+#'                               rate = exp(-2 -.5*x[,1]-.25*x[,2]+.5*x[,1]*x[,2]),
+#'                               lower.tail=FALSE)
 #' }
 #' C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
 #' C[C > 15] <- 15
@@ -143,7 +145,7 @@ survMLc <- function(time,
                            X = X,
                            V = V,
                            SL.library = SL.library)
-    P_Delta_opt_preds <- predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
+    P_Delta_opt_preds <- stats::predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
 
     if (denom_method == "stratified"){
       S_Y_0_opt <- f_y_stack(time = time,
@@ -154,7 +156,7 @@ survMLc <- function(time,
                              V = V,
                              time_basis = time_basis,
                              SL.library = SL.library)
-      S_Y_0_opt_preds <- predict(S_Y_0_opt,
+      S_Y_0_opt_preds <- stats::predict(S_Y_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
     } else{
@@ -166,7 +168,7 @@ survMLc <- function(time,
                            V = V,
                            time_basis = time_basis,
                            SL.library = SL.library)
-      S_Y_opt_preds <- predict(S_Y_opt,
+      S_Y_opt_preds <- stats::predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
     }
@@ -192,7 +194,7 @@ survMLc <- function(time,
                              entry = entry,
                              time_basis = time_basis,
                              SL.library = SL.library)
-      F_W_1_opt_preds <- predict(F_W_1_opt,
+      F_W_1_opt_preds <- stats::predict(F_W_1_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
       F_W_0_opt <- f_w_stack(time = time,
@@ -204,7 +206,7 @@ survMLc <- function(time,
                              entry = entry,
                              time_basis = time_basis,
                              SL.library = SL.library)
-      F_W_0_opt_preds <- predict(F_W_0_opt,
+      F_W_0_opt_preds <- stats::predict(F_W_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
     } else{ # retrospective setting is automatically marginal denominator
@@ -217,7 +219,7 @@ survMLc <- function(time,
                           entry = entry,
                           time_basis = time_basis,
                           SL.library = SL.library)
-      F_W_opt_preds <- predict(F_W_opt,
+      F_W_opt_preds <- stats::predict(F_W_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
     }
@@ -226,7 +228,7 @@ survMLc <- function(time,
 
 
 
-  S_Y_1_opt_preds <- predict(S_Y_1_opt,
+  S_Y_1_opt_preds <- stats::predict(S_Y_1_opt,
                              newX = newX,
                              newtimes = time_grid_approx)
 

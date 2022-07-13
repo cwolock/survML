@@ -32,10 +32,10 @@
 #' classifier. Defaults to 10.
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
-#' with right truncation separetely than left truncation, it is simpler to
+#' with right truncation separately than left truncation, it is simpler to
 #' estimate the survival function of \code{tau - time}. Defaults to code{NULL},
 #' in which case the maximum study entry time is chosen as the
-#' refererence point.
+#' reference point.
 #'
 #' @return A named list of class \code{survMLs}.
 #' \item{S_T_preds}{An \code{m x k} matrix of estimated survival probabilites at the
@@ -59,7 +59,9 @@
 #' T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
 #'
 #' G0 <- function(t, x) {
-#'   as.numeric(t < 15) * .9 * pexp(t, rate = exp(-2 -.5 * x[,1] - .25 * x[,2] + .5 * x[,1] * x[,2]), lower.tail=FALSE)
+#'   as.numeric(t < 15) *.9*pexp(t,
+#'                               rate = exp(-2 -.5*x[,1]-.25*x[,2]+.5*x[,1]*x[,2]),
+#'                               lower.tail=FALSE)
 #' }
 #' C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
 #' C[C > 15] <- 15
@@ -129,12 +131,12 @@ survMLs <- function(time,
   }
 
   # create stacked dataset
-  stacked <- survML:::stack_haz(time = time,
-                                event = event,
-                                X = X,
-                                time_grid = time_grid,
-                                entry = entry,
-                                time_basis = time_basis)
+  stacked <- stack_haz(time = time,
+                       event = event,
+                       X = X,
+                       time_grid = time_grid,
+                       entry = entry,
+                       time_basis = time_basis)
 
   .Y <- stacked[,ncol(stacked)]
   .X <- data.frame(stacked[,-ncol(stacked)])
@@ -151,7 +153,7 @@ survMLs <- function(time,
   if (time_basis == "continuous"){
     get_hazard_preds <- function(t){
       new_stacked <- data.frame(t = t, newX)
-      preds <- predict(fit, newdata=new_stacked)$pred
+      preds <- stats::predict(fit, newdata=new_stacked)$pred
       return(preds)
     }
   } else if (time_basis == "dummy"){
@@ -163,7 +165,7 @@ survMLs <- function(time,
       risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
       colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
       new_stacked <- data.frame(new_stacked)
-      preds <- predict(fit, newdata=new_stacked)$pred
+      preds <- stats::predict(fit, newdata=new_stacked)$pred
       return(preds)
     }
   }
@@ -175,8 +177,8 @@ survMLs <- function(time,
   get_surv_preds <- function(t){
     if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
       final_index <- max(which(time_grid[-1] <= t))
-    # if (sum(time_grid <= t) != 0){ # if you don't fall before the first time in the grid
-    #   final_index <- max(which(time_grid <= t))
+      # if (sum(time_grid <= t) != 0){ # if you don't fall before the first time in the grid
+      #   final_index <- max(which(time_grid <= t))
       haz <- as.matrix(hazard_preds[,1:final_index])
       anti_haz <- 1 - haz
       surv <- apply(anti_haz, MARGIN = 1, prod)
