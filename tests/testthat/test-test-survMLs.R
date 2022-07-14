@@ -27,7 +27,7 @@ fit <- survMLs(time = time,
                newtimes = seq(0, 15, 3),
                direction = "prospective",
                bin_size = 0.02,
-               time_basis = "continuous",
+               time_basis = "dummy",
                SL.library = SL.library,
                V = 5)
 

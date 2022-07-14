@@ -9,7 +9,7 @@ stack_haz <- function(time, event, X, time_grid, entry, time_basis){
   if (time_basis == "continuous"){
     ncol_stacked <- ncol(X) + 2 # covariates, time, binary outcome
   } else if (time_basis == "dummy"){
-    ncol_stacked <- ncol(X) + length(time_grid) + 1 # covariates, risk set dummies, binary outcome
+    ncol_stacked <- ncol(X) + length(trunc_time_grid) + 1 # covariates, risk set dummies, binary outcome
   }
   stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
   for (i in 1:(length(trunc_time_grid))){ # can change this to not do anything in last time bin
@@ -36,7 +36,7 @@ stack_haz <- function(time, event, X, time_grid, entry, time_basis){
     colnames(stacked)[ncol(stacked)] <- "event_indicators"
     if (time_basis == "dummy"){
       risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
-      colnames(stacked)[1:(length(time_grid))] <- risk_set_names
+      colnames(stacked)[1:(length(trunc_time_grid))] <- risk_set_names
     }
   }
   stacked <- stacked[-1,]
