@@ -12,9 +12,17 @@
 #'
 #' @return An object of class \code{f_w_stack_SuperLearner}
 #' @noRd
-f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
-                                   time_basis = "continuous", direction = "forward",
-                                   SL.library){
+f_w_stack_SuperLearner <- function(time,
+                                   event,
+                                   entry,
+                                   X,
+                                   censored,
+                                   bin_size,
+                                   V,
+                                   time_basis = "continuous",
+                                   direction = "forward",
+                                   SL.library,
+                                   obsWeights = NULL){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -39,6 +47,7 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
   entry <- as.matrix(entry)
   dat <- data.frame(X, time, entry)
 
+
   if (!is.null(bin_size)){
     #time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
     time_grid <- stats::quantile(time, probs = seq(0, 1, by = bin_size))
@@ -48,17 +57,27 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
     time_grid <- c(0, time_grid)
 
   }
-  # time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-  # time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
 
-  stacked_list <- stack_entry(time = time,
-                              entry = entry,
-                              X = X,
-                              time_grid = time_grid,
-                              ids = TRUE,
-                              time_basis = time_basis)
-  stacked <- stacked_list$stacked
-  stacked_ids <- stacked_list$ids
+  ids <- seq(1:length(time))
+
+  if (!is.null(obsWeights)){
+    stackX <- as.matrix(data.frame(X,
+                                   obsWeights = obsWeights,
+                                   ids = ids))
+  } else{
+    stackX <- as.matrix(data.frame(X,
+                                   ids = ids))
+  }
+
+  stacked <- stack_entry(time = time,
+                         entry = entry,
+                         X = stackX,
+                         time_grid = time_grid,
+                         time_basis = time_basis)
+  long_obsWeights <- stacked$obsWeights
+  stacked_ids <- stacked$ids
+  stacked$obsWeights <- NULL
+  stacked$ids <- NULL
   .Y <- stacked[,ncol(stacked)]
   .X <- stacked[,-ncol(stacked)]
 
@@ -75,6 +94,7 @@ f_w_stack_SuperLearner <- function(time, event, entry, X, censored, bin_size, V,
                                     family = stats::binomial(),
                                     method = 'method.NNLS',
                                     verbose = FALSE,
+                                    obsWeights = long_obsWeights,
                                     cvControl = list(V = V,
                                                      validRows = validRows))
 

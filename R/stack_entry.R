@@ -2,12 +2,9 @@
 #'
 #' @return A stacked dataset
 #' @noRd
-stack_entry <- function(time, entry, X, time_grid, time_basis, ids = FALSE){
+stack_entry <- function(time, entry, X, time_grid, time_basis){
   trunc_time_grid <- time_grid[-length(time_grid)] # do I need to truncate if treating time as continuous? look at this later
   dat <- data.frame(X, time = time, entry = entry)
-  if (ids){
-    id_vec <- NA
-  }
   if (time_basis == "continuous"){
     ncol_stacked <- ncol(X) + 2 # covariates, time, binary outcome
     stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
@@ -19,10 +16,6 @@ stack_entry <- function(time, entry, X, time_grid, time_basis, ids = FALSE){
       #   risk_set <- dat
       # }
       risk_set <- dat[dat$time > time_grid[i],]# maybe this should be >= i+1? Need to think more carefully about this. obv in the limit, doesn't matter
-      if (ids){
-        id_i <- which(dat$time > time_grid[i])
-        id_vec <- c(id_vec, id_i)
-      }
       risk_set_covariates <- risk_set[,1:ncol(X)]
       #event_indicators <- matrix(ifelse(risk_set$entry <= time_grid[i], 1, 0))
       event_indicators <- matrix(ifelse(risk_set$entry <= time_grid[i + 1 ], 1, 0))
@@ -38,10 +31,6 @@ stack_entry <- function(time, entry, X, time_grid, time_basis, ids = FALSE){
     stacked <- matrix(NA, ncol = ncol_stacked, nrow = 1)
     for (i in 1:(length(trunc_time_grid))){
       risk_set <- dat[dat$time > time_grid[i],]# maybe this should be >= i+1? Need to think more carefully about this. obv in the limit, doesn't matter
-      if (ids){
-        id_i <- which(dat$time > time_grid[i])
-        id_vec <- c(id_vec, id_i)
-      }
       risk_set_covariates <- risk_set[,1:ncol(X)]
       event_indicators <- matrix(ifelse(risk_set$entry <= time_grid[i + 1 ], 1, 0))
       dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(risk_set))
@@ -54,11 +43,7 @@ stack_entry <- function(time, entry, X, time_grid, time_basis, ids = FALSE){
     colnames(stacked)[1:(length(time_grid))] <- risk_set_names
     colnames(stacked)[ncol(stacked)] <- "event_indicators"
   }
-  if (ids){
-    id_vec <- id_vec[-1]
-    ids <- id_vec
-  }
   stacked <- data.frame(stacked)
-  return(list(stacked = stacked, ids = ids))
+  return(stacked)
 }
 

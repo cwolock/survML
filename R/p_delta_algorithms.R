@@ -7,7 +7,11 @@
 #'
 #' @return An object of class \code{p_delta_SuperLearner}
 #' @noRd
-p_delta_SuperLearner <- function(event, X, SL.library, V = 10){
+p_delta_SuperLearner <- function(event,
+                                 X,
+                                 SL.library,
+                                 V = 10,
+                                 obsWeights = NULL){
 
   X <- as.data.frame(X)
   opt_fit <- SuperLearner::SuperLearner(Y = event,
@@ -15,7 +19,8 @@ p_delta_SuperLearner <- function(event, X, SL.library, V = 10){
                                         family = stats::binomial(),
                                         SL.library = SL.library,
                                         method = "method.NNLS",
-                                        verbose = FALSE)
+                                        verbose = FALSE,
+                                        obsWeights = obsWeights)
 
   fit <- list(reg.object = opt_fit)
   class(fit) <- c("p_delta_SuperLearner")
@@ -29,7 +34,8 @@ p_delta_SuperLearner <- function(event, X, SL.library, V = 10){
 #'
 #' @return Matrix of predictions
 #' @noRd
-predict.p_delta_SuperLearner <- function(fit, newX){
+predict.p_delta_SuperLearner <- function(fit,
+                                         newX){
   X <- as.data.frame(newX)
   preds <- stats::predict(fit$reg.object, newdata = newX)$pred
   return(preds)

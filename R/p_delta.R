@@ -9,16 +9,23 @@
 #' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
 #' @param V Number of cross validation folds on which to train the Super Learner
 #' classifier. Defaults to 10.
+#' @param obsWeights Optional observation weights. These weights are passed
+#' directly to \code{SuperLearner}, which in turn passes them directly to the
+#' prediction algorithms.
 #'
 #' @return An fitted binary regression for (complement of)
 #' probability of censoring
+#'
+#' @noRd
 p_delta <- function(event,
                     X,
                     V = 10,
-                    SL.library){
+                    SL.library,
+                    obsWeights = NULL){
   fit <- p_delta_SuperLearner(event = event,
                               X = X,
                               SL.library = SL.library,
-                              V = V)
+                              V = V,
+                              obsWeights = obsWeights)
   return(fit)
 }

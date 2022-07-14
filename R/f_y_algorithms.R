@@ -20,7 +20,8 @@ f_y_stack_SuperLearner <- function(time,
                                    isotonize = TRUE,
                                    V,
                                    time_basis = "continuous",
-                                   SL.library){
+                                   SL.library,
+                                   obsWeights = NULL){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -50,13 +51,28 @@ f_y_stack_SuperLearner <- function(time,
     time_grid <- c(0, time_grid)
   }
 
-  stacked_list <- stack_cdf(time = time,
-                            X = X,
+  ids <- seq(1:length(time))
+
+  if (!is.null(obsWeights)){
+    stackX <- as.matrix(data.frame(X,
+                                   obsWeights = obsWeights,
+                                   ids = ids))
+  } else{
+    stackX <- as.matrix(data.frame(X,
+                                   ids = ids))
+  }
+
+  stacked <- stack_cdf(time = time,
+                            X = stackX,
                             time_grid = time_grid,
-                            time_basis = time_basis,
-                            ids = TRUE)
-  stacked <- stacked_list$stacked
-  stacked_ids <- stacked_list$ids
+                            time_basis = time_basis)
+
+  long_obsWeights <- stacked$obsWeights
+  stacked_ids <- stacked$ids
+  stacked$obsWeights <- NULL
+  stacked$ids <- NULL
+  .Y <- stacked[,ncol(stacked)]
+  .X <- stacked[,-ncol(stacked)]
 
   get_validRows <- function(fold_sample_ids){
     validRows <- which(stacked_ids %in% fold_sample_ids)
@@ -65,8 +81,6 @@ f_y_stack_SuperLearner <- function(time,
 
   validRows <- lapply(cv_folds, get_validRows)
 
-  .Y <- stacked[,ncol(stacked)]
-  .X <- stacked[,-ncol(stacked)]
 
   fit <- SuperLearner::SuperLearner(Y = .Y,
                                     X = .X,
@@ -74,6 +88,7 @@ f_y_stack_SuperLearner <- function(time,
                                     family = stats::binomial(),
                                     method = 'method.NNLS',
                                     verbose = FALSE,
+                                    obsWeights = long_obsWeights,
                                     cvControl = list(V = V,
                                                      validRows = validRows))
 

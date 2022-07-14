@@ -25,8 +25,13 @@
 #' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
 #' @param V Number of cross validation folds on which to train the Super Learner
 #' classifier. Defaults to 10.
+#' @param obsWeights Optional observation weights. These weights are passed
+#' directly to \code{SuperLearner}, which in turn passes them directly to the
+#' prediction algorithms.
 #'
 #' @return An fitted pooled binary regression for the truncation distribution
+#'
+#' @noRd
 f_w_stack <- function(time,
                       event,
                       X,
@@ -35,7 +40,8 @@ f_w_stack <- function(time,
                       bin_size = NULL,
                       V = 10,
                       SL.library,
-                      time_basis){
+                      time_basis,
+                      obsWeights = NULL){
 
   fit <- f_w_stack_SuperLearner(time = time,
                                 event = event,
@@ -45,7 +51,8 @@ f_w_stack <- function(time,
                                 time_basis = time_basis,
                                 SL.library = SL.library,
                                 V = V,
-                                entry = entry)
+                                entry = entry,
+                                obsWeights = obsWeights)
 
   return(fit)
 }

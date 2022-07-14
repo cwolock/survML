@@ -48,6 +48,9 @@
 #' estimate the survival function of \code{tau - time}. Defaults to code{NULL},
 #' in which case the maximum study entry time is chosen as the
 #' reference point.
+#' @param obsWeights Optional observation weights. These weights are passed
+#' directly to \code{SuperLearner}, which in turn passes them directly to the
+#' prediction algorithms.
 #'
 #' @return A named list of class \code{survMLc}
 #'
@@ -117,6 +120,7 @@ survMLc <- function(time,
                     surv_form = "PI",
                     SL.library,
                     V = 10,
+                    obsWeights = NULL,
                     tau = NULL){
   P_Delta_opt <- NULL
   S_Y_opt <- NULL
@@ -144,7 +148,8 @@ survMLc <- function(time,
     P_Delta_opt <- p_delta(event = event,
                            X = X,
                            V = V,
-                           SL.library = SL.library)
+                           SL.library = SL.library,
+                           obsWeights = obsWeights)
     P_Delta_opt_preds <- stats::predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
 
     if (denom_method == "stratified"){
@@ -155,7 +160,8 @@ survMLc <- function(time,
                              bin_size = bin_size,
                              V = V,
                              time_basis = time_basis,
-                             SL.library = SL.library)
+                             SL.library = SL.library,
+                             obsWeights = obsWeights)
       S_Y_0_opt_preds <- stats::predict(S_Y_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -167,7 +173,8 @@ survMLc <- function(time,
                            bin_size = bin_size,
                            V = V,
                            time_basis = time_basis,
-                           SL.library = SL.library)
+                           SL.library = SL.library,
+                           obsWeights = obsWeights)
       S_Y_opt_preds <- stats::predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
@@ -181,7 +188,8 @@ survMLc <- function(time,
                          bin_size = bin_size,
                          V = V,
                          time_basis = time_basis,
-                         SL.library = SL.library)
+                         SL.library = SL.library,
+                         obsWeights = obsWeights)
 
   if (!is.null(entry)){ # if a truncation variable is given
     if (denom_method == "stratified"){
@@ -193,7 +201,8 @@ survMLc <- function(time,
                              V = V,
                              entry = entry,
                              time_basis = time_basis,
-                             SL.library = SL.library)
+                             SL.library = SL.library,
+                             obsWeights = obsWeights)
       F_W_1_opt_preds <- stats::predict(F_W_1_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -205,7 +214,8 @@ survMLc <- function(time,
                              V = V,
                              entry = entry,
                              time_basis = time_basis,
-                             SL.library = SL.library)
+                             SL.library = SL.library,
+                             obsWeights = obsWeights)
       F_W_0_opt_preds <- stats::predict(F_W_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -218,7 +228,8 @@ survMLc <- function(time,
                           V = V,
                           entry = entry,
                           time_basis = time_basis,
-                          SL.library = SL.library)
+                          SL.library = SL.library,
+                          obsWeights = obsWeights)
       F_W_opt_preds <- stats::predict(F_W_opt,
                                newX = newX,
                                newtimes = time_grid_approx)

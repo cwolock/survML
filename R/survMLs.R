@@ -133,11 +133,12 @@ survMLs <- function(time,
   # create stacked dataset
   stacked <- stack_haz(time = time,
                        event = event,
-                       X = X,
+                       X = as.matrix(data.frame(X, obsWeights = obsWeights)),
                        time_grid = time_grid,
                        entry = entry,
                        time_basis = time_basis)
-
+  long_obsWeights <- stacked$obsWeights
+  stacked$obsWeights <- NULL
   .Y <- stacked[,ncol(stacked)]
   .X <- data.frame(stacked[,-ncol(stacked)])
   # fit Super Learner
@@ -147,6 +148,7 @@ survMLs <- function(time,
                                     family = stats::binomial(),
                                     method = 'method.NNLS',
                                     verbose = FALSE,
+                                    obsWeights = long_obsWeights,
                                     cvControl = list(V = V))
 
   # create function to get discrete hazard predictions

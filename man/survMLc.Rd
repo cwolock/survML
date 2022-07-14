@@ -19,6 +19,7 @@ survMLc(
   surv_form = "PI",
   SL.library,
   V = 10,
+  obsWeights = NULL,
   tau = NULL
 )
 }
@@ -78,6 +79,10 @@ argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
 
 \item{V}{Number of cross validation folds on which to train the Super Learner
 classifier. Defaults to 10.}
+
+\item{obsWeights}{Optional observation weights. These weights are passed
+directly to \code{SuperLearner}, which in turn passes them directly to the
+prediction algorithms.}
 
 \item{tau}{The maximum time of interest in a study, used for
 retrospective conditional survival estimation. Rather than dealing
