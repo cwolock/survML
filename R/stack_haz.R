@@ -40,6 +40,7 @@ stack_haz <- function(time, event, X, time_grid, entry, time_basis){
     }
   }
   stacked <- stacked[-1,]
+  stacked <- data.frame(stacked)
   return(stacked)
 }
 
