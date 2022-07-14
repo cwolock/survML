@@ -104,7 +104,8 @@ survMLs <- function(time,
                     time_basis = "continuous",
                     SL.library,
                     V = 10,
-                    tau = NULL){
+                    tau = NULL,
+                    obsWeights = NULL){
 
   if (direction == "retrospective"){
     if (is.null(tau)){
