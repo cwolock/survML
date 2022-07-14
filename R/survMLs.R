@@ -130,10 +130,16 @@ survMLs <- function(time,
     time_grid <- c(0, time_grid)
   }
 
+  if (!is.null(obsWeights)){
+    stackX <- as.matrix(data.frame(X, obsWeights = obsWeights))
+  } else{
+    stackX <- X
+  }
+
   # create stacked dataset
   stacked <- stack_haz(time = time,
                        event = event,
-                       X = as.matrix(data.frame(X, obsWeights = obsWeights)),
+                       X = stackX,
                        time_grid = time_grid,
                        entry = entry,
                        time_basis = time_basis)
