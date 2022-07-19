@@ -3,7 +3,6 @@
 #' @return A stacked dataset
 #' @noRd
 stack_cdf <- function(time, X, time_grid, time_basis){
-  trunc_time_grid <- time_grid[-length(time_grid)] # do I need to truncate if treating time as continuous? look at this later
 
   if (time_basis == "continuous"){
     # we will treat time as continuous

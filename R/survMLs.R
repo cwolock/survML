@@ -131,9 +131,9 @@ survMLs <- function(time,
     time_grid <- c(0, time_grid)
   }
 
-  # this truncated time grid does not include the last time, since our discretization
-  # convention pushes events with t <= time < t + 1 to time t
-  trunc_time_grid <- time_grid[-length(time_grid)]
+  # this truncated time grid does not include the first time, since our discretization
+  # convention pushes events with t= < time < t + 1 to time t
+  trunc_time_grid <- time_grid#[-length(trunc_time_grid)]
 
   if (!is.null(obsWeights)){
     stackX <- as.matrix(data.frame(X, obsWeights = obsWeights))
@@ -142,12 +142,23 @@ survMLs <- function(time,
   }
 
   # create stacked dataset
-  stacked <- stack_haz(time = time,
+  stacked <- survML:::stack_haz(time = time,
                        event = event,
                        X = stackX,
                        time_grid = time_grid,
                        entry = entry,
-                       time_basis = time_basis)
+                       time_basis = "continuous")
+
+  # change t to dummy variable
+  if (time_basis == "dummy"){
+    stacked$t <- factor(stacked$t)
+    dummy_mat <- model.matrix(~-1 + t, data=stacked)
+    risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+    colnames(dummy_mat) <- risk_set_names
+    stacked$t <- NULL
+    stacked <- cbind(dummy_mat, stacked)
+  }
+
   long_obsWeights <- stacked$obsWeights
   stacked$obsWeights <- NULL
   .Y <- stacked[,ncol(stacked)]
@@ -164,16 +175,14 @@ survMLs <- function(time,
 
   # create function to get discrete hazard predictions
   if (time_basis == "continuous"){
-    get_hazard_preds <- function(t){
-      index <- max(which(trunc_time_grid <= t))
+    get_hazard_preds <- function(index){
       new_stacked <- data.frame(t = trunc_time_grid[index], newX)
       preds <- stats::predict(fit, newdata=new_stacked)$pred
       return(preds)
     }
   } else if (time_basis == "dummy"){
-    get_hazard_preds <- function(t){
+    get_hazard_preds <- function(index){
       dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
-      index <- max(which(trunc_time_grid <= t))
       dummies[,index] <- 1
       new_stacked <- cbind(dummies, newX)
       risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
@@ -186,13 +195,13 @@ survMLs <- function(time,
 
   # don't estimate hazard at t =0
   #hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1)
-  hazard_preds <- apply(X = matrix(trunc_time_grid), FUN = get_hazard_preds, MARGIN = 1)
+  hazard_preds <- apply(X = matrix(1:length(trunc_time_grid)),
+                        FUN = get_hazard_preds,
+                        MARGIN = 1)
 
   get_surv_preds <- function(t){
     if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
       final_index <- max(which(trunc_time_grid <= t))
-      # if (sum(time_grid <= t) != 0){ # if you don't fall before the first time in the grid
-      #   final_index <- max(which(time_grid <= t))
       haz <- as.matrix(hazard_preds[,1:final_index])
       anti_haz <- 1 - haz
       surv <- apply(anti_haz, MARGIN = 1, prod)

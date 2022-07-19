@@ -65,7 +65,17 @@ f_y_stack_SuperLearner <- function(time,
   stacked <- stack_cdf(time = time,
                             X = stackX,
                             time_grid = time_grid,
-                            time_basis = time_basis)
+                            time_basis = "continuous")
+
+  # change t to dummy variable
+  if (time_basis == "dummy"){
+    stacked$t <- factor(stacked$t)
+    dummy_mat <- model.matrix(~-1 + t, data=stacked)
+    risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+    colnames(dummy_mat) <- risk_set_names
+    stacked$t <- NULL
+    stacked <- cbind(dummy_mat, stacked)
+  }
 
   long_obsWeights <- stacked$obsWeights
   stacked_ids <- stacked$ids
@@ -111,7 +121,6 @@ f_y_stack_SuperLearner <- function(time,
 predict.f_y_stack_SuperLearner <- function(fit, newX, newtimes){
 
   time_grid <- fit$time_grid
-  trunc_time_grid <- time_grid[-length(time_grid)]
 
   if (fit$time_basis == "continuous"){
     get_stacked_pred <- function(t){

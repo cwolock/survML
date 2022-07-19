@@ -3,7 +3,8 @@
 #' @return A stacked dataset
 #' @noRd
 stack_haz <- function(time, event, X, time_grid, entry, time_basis){
-  trunc_time_grid <- time_grid[-length(time_grid)] # do I need to truncate if treating time as continuous? look at this later
+  trunc_time_grid <- time_grid#[-length(time_grid)]
+  time_grid <- c(time_grid, max(time) + 1)
   dat <- data.frame(X, event = event, time = time)
 
   if (time_basis == "continuous"){
