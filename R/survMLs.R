@@ -190,7 +190,7 @@ survMLs <- function(time,
 
   get_surv_preds <- function(t){
     if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
-      final_index <- max(which(time_grid[-1] <= t))
+      final_index <- max(which(trunc_time_grid <= t))
       # if (sum(time_grid <= t) != 0){ # if you don't fall before the first time in the grid
       #   final_index <- max(which(time_grid <= t))
       haz <- as.matrix(hazard_preds[,1:final_index])
