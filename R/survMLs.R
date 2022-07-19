@@ -131,6 +131,10 @@ survMLs <- function(time,
     time_grid <- c(0, time_grid)
   }
 
+  # this truncated time grid does not include the last time, since our discretization
+  # convention pushes events with t <= time < t + 1 to time t
+  trunc_time_grid <- time_grid[-length(time_grid)]
+
   if (!is.null(obsWeights)){
     stackX <- as.matrix(data.frame(X, obsWeights = obsWeights))
   } else{
@@ -161,18 +165,19 @@ survMLs <- function(time,
   # create function to get discrete hazard predictions
   if (time_basis == "continuous"){
     get_hazard_preds <- function(t){
-      new_stacked <- data.frame(t = t, newX)
+      index <- max(which(trunc_time_grid <= t))
+      new_stacked <- data.frame(t = trunc_time_grid[index], newX)
       preds <- stats::predict(fit, newdata=new_stacked)$pred
       return(preds)
     }
   } else if (time_basis == "dummy"){
     get_hazard_preds <- function(t){
-      dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
-      index <- max(which(time_grid <= t))
+      dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
+      index <- max(which(trunc_time_grid <= t))
       dummies[,index] <- 1
       new_stacked <- cbind(dummies, newX)
-      risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
-      colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
+      risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+      colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
       new_stacked <- data.frame(new_stacked)
       preds <- stats::predict(fit, newdata=new_stacked)$pred
       return(preds)
@@ -181,10 +186,10 @@ survMLs <- function(time,
 
   # don't estimate hazard at t =0
   #hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1)
-  hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1)
+  hazard_preds <- apply(X = matrix(trunc_time_grid), FUN = get_hazard_preds, MARGIN = 1)
 
   get_surv_preds <- function(t){
-    if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
+    if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
       final_index <- max(which(time_grid[-1] <= t))
       # if (sum(time_grid <= t) != 0){ # if you don't fall before the first time in the grid
       #   final_index <- max(which(time_grid <= t))
