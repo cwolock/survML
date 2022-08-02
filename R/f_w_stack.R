@@ -41,7 +41,8 @@ f_w_stack <- function(time,
                       V = 10,
                       SL.library,
                       time_basis,
-                      obsWeights = NULL){
+                      obsWeights = NULL,
+                      parallel = FALSE){
 
   fit <- f_w_stack_SuperLearner(time = time,
                                 event = event,
@@ -52,7 +53,8 @@ f_w_stack <- function(time,
                                 SL.library = SL.library,
                                 V = V,
                                 entry = entry,
-                                obsWeights = obsWeights)
+                                obsWeights = obsWeights,
+                                parallel = parallel)
 
   return(fit)
 }

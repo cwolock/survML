@@ -49,7 +49,7 @@
 #' @examples
 #'
 #' # This is a small simulation example
-#' set.seed(92)
+#' set.seed(123)
 #' n <- 100
 #' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 #'
@@ -105,7 +105,8 @@ survMLs <- function(time,
                     SL.library,
                     V = 10,
                     tau = NULL,
-                    obsWeights = NULL){
+                    obsWeights = NULL,
+                    parallel = FALSE){
 
   if (direction == "retrospective"){
     if (is.null(tau)){
@@ -164,14 +165,26 @@ survMLs <- function(time,
   .Y <- stacked[,ncol(stacked)]
   .X <- data.frame(stacked[,-ncol(stacked)])
   # fit Super Learner
-  fit <- SuperLearner::SuperLearner(Y = .Y,
-                                    X = .X,
-                                    SL.library = SL.library,
-                                    family = stats::binomial(),
-                                    method = 'method.NNLS',
-                                    verbose = FALSE,
-                                    obsWeights = long_obsWeights,
-                                    cvControl = list(V = V))
+  if (parallel){
+    fit <- SuperLearner::mcSuperLearner(Y = .Y,
+                                      X = .X,
+                                      SL.library = SL.library,
+                                      family = stats::binomial(),
+                                      method = 'method.NNLS',
+                                      verbose = FALSE,
+                                      obsWeights = long_obsWeights,
+                                      cvControl = list(V = V))
+  } else{
+    fit <- SuperLearner::SuperLearner(Y = .Y,
+                                      X = .X,
+                                      SL.library = SL.library,
+                                      family = stats::binomial(),
+                                      method = 'method.NNLS',
+                                      verbose = FALSE,
+                                      obsWeights = long_obsWeights,
+                                      cvControl = list(V = V))
+  }
+
 
   # create function to get discrete hazard predictions
   if (time_basis == "continuous"){

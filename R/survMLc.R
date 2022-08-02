@@ -59,7 +59,7 @@
 #' @examples
 #'
 #' # This is a small simulation example
-#' set.seed(92)
+#' set.seed(123)
 #' n <- 100
 #' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 #'
@@ -121,7 +121,8 @@ survMLc <- function(time,
                     SL.library,
                     V = 10,
                     obsWeights = NULL,
-                    tau = NULL){
+                    tau = NULL,
+                    parallel = FALSE){
   P_Delta_opt <- NULL
   S_Y_opt <- NULL
   S_Y_1_opt <- NULL
@@ -149,7 +150,8 @@ survMLc <- function(time,
                            X = X,
                            V = V,
                            SL.library = SL.library,
-                           obsWeights = obsWeights)
+                           obsWeights = obsWeights,
+                           parallel = parallel)
     P_Delta_opt_preds <- stats::predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
 
     if (denom_method == "stratified"){
@@ -161,7 +163,8 @@ survMLc <- function(time,
                              V = V,
                              time_basis = time_basis,
                              SL.library = SL.library,
-                             obsWeights = obsWeights)
+                             obsWeights = obsWeights,
+                             parallel = parallel)
       S_Y_0_opt_preds <- stats::predict(S_Y_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -174,7 +177,8 @@ survMLc <- function(time,
                            V = V,
                            time_basis = time_basis,
                            SL.library = SL.library,
-                           obsWeights = obsWeights)
+                           obsWeights = obsWeights,
+                           parallel = parallel)
       S_Y_opt_preds <- stats::predict(S_Y_opt,
                                newX = newX,
                                newtimes = time_grid_approx)
@@ -189,7 +193,8 @@ survMLc <- function(time,
                          V = V,
                          time_basis = time_basis,
                          SL.library = SL.library,
-                         obsWeights = obsWeights)
+                         obsWeights = obsWeights,
+                         parallel = parallel)
 
   if (!is.null(entry)){ # if a truncation variable is given
     if (denom_method == "stratified"){
@@ -202,7 +207,8 @@ survMLc <- function(time,
                              entry = entry,
                              time_basis = time_basis,
                              SL.library = SL.library,
-                             obsWeights = obsWeights)
+                             obsWeights = obsWeights,
+                             parallel = parallel)
       F_W_1_opt_preds <- stats::predict(F_W_1_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -215,7 +221,8 @@ survMLc <- function(time,
                              entry = entry,
                              time_basis = time_basis,
                              SL.library = SL.library,
-                             obsWeights = obsWeights)
+                             obsWeights = obsWeights,
+                             parallel = parallel)
       F_W_0_opt_preds <- stats::predict(F_W_0_opt,
                                  newX = newX,
                                  newtimes = time_grid_approx)
@@ -229,7 +236,8 @@ survMLc <- function(time,
                           entry = entry,
                           time_basis = time_basis,
                           SL.library = SL.library,
-                          obsWeights = obsWeights)
+                          obsWeights = obsWeights,
+                          parallel = parallel)
       F_W_opt_preds <- stats::predict(F_W_opt,
                                newX = newX,
                                newtimes = time_grid_approx)

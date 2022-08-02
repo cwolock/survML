@@ -38,7 +38,8 @@ f_y_stack <- function(time,
                       V = 10,
                       SL.library,
                       time_basis,
-                      obsWeights = NULL){
+                      obsWeights = NULL,
+                      parallel = FALSE){
 
   fit <- f_y_stack_SuperLearner(time = time,
                                 event = event,
@@ -48,7 +49,8 @@ f_y_stack <- function(time,
                                 time_basis = time_basis,
                                 SL.library = SL.library,
                                 V = V,
-                                obsWeights = obsWeights)
+                                obsWeights = obsWeights,
+                                parallel = parallel)
 
   return(fit)
 }

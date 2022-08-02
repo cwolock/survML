@@ -9,6 +9,7 @@
 #' @param V Number of CV folds
 #' @param time_basis How to treat time
 #' @param SL.library SuperLearner library
+#' #' @param parallel whether or not to parallelize
 #'
 #' @return An object of class \code{f_w_stack_SuperLearner}
 #' @noRd
@@ -22,7 +23,8 @@ f_w_stack_SuperLearner <- function(time,
                                    time_basis = "continuous",
                                    direction = "forward",
                                    SL.library,
-                                   obsWeights = NULL){
+                                   obsWeights = NULL,
+                                   parallel = FALSE){
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -99,15 +101,27 @@ f_w_stack_SuperLearner <- function(time,
 
   validRows <- lapply(cv_folds, get_validRows)
 
-  fit <- SuperLearner::SuperLearner(Y = .Y,
-                                    X = .X,
-                                    SL.library = SL.library,
-                                    family = stats::binomial(),
-                                    method = 'method.NNLS',
-                                    verbose = FALSE,
-                                    obsWeights = long_obsWeights,
-                                    cvControl = list(V = V,
-                                                     validRows = validRows))
+  if (parallel){
+    fit <- SuperLearner::mcSuperLearner(Y = .Y,
+                                      X = .X,
+                                      SL.library = SL.library,
+                                      family = stats::binomial(),
+                                      method = 'method.NNLS',
+                                      verbose = FALSE,
+                                      obsWeights = long_obsWeights,
+                                      cvControl = list(V = V,
+                                                       validRows = validRows))
+  } else{
+    fit <- SuperLearner::SuperLearner(Y = .Y,
+                                      X = .X,
+                                      SL.library = SL.library,
+                                      family = stats::binomial(),
+                                      method = 'method.NNLS',
+                                      verbose = FALSE,
+                                      obsWeights = long_obsWeights,
+                                      cvControl = list(V = V,
+                                                       validRows = validRows))
+  }
 
   fit <- list(reg.object = fit, time_grid = time_grid, time_basis = time_basis)
   class(fit) <- c("f_w_stack_SuperLearner")

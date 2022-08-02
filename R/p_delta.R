@@ -21,11 +21,13 @@ p_delta <- function(event,
                     X,
                     V = 10,
                     SL.library,
-                    obsWeights = NULL){
+                    obsWeights = NULL,
+                    parallel = FALSE){
   fit <- p_delta_SuperLearner(event = event,
                               X = X,
                               SL.library = SL.library,
                               V = V,
-                              obsWeights = obsWeights)
+                              obsWeights = obsWeights,
+                              parallel = parallel)
   return(fit)
 }

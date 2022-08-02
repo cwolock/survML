@@ -11,16 +11,27 @@ p_delta_SuperLearner <- function(event,
                                  X,
                                  SL.library,
                                  V = 10,
-                                 obsWeights = NULL){
+                                 obsWeights = NULL,
+                                 parallel = FALSE){
 
   X <- as.data.frame(X)
-  opt_fit <- SuperLearner::SuperLearner(Y = event,
-                                        X = X,
-                                        family = stats::binomial(),
-                                        SL.library = SL.library,
-                                        method = "method.NNLS",
-                                        verbose = FALSE,
-                                        obsWeights = obsWeights)
+  if (parallel){
+    opt_fit <- SuperLearner::mcSuperLearner(Y = event,
+                                          X = X,
+                                          family = stats::binomial(),
+                                          SL.library = SL.library,
+                                          method = "method.NNLS",
+                                          verbose = FALSE,
+                                          obsWeights = obsWeights)
+  } else{
+    opt_fit <- SuperLearner::SuperLearner(Y = event,
+                                          X = X,
+                                          family = stats::binomial(),
+                                          SL.library = SL.library,
+                                          method = "method.NNLS",
+                                          verbose = FALSE,
+                                          obsWeights = obsWeights)
+  }
 
   fit <- list(reg.object = opt_fit)
   class(fit) <- c("p_delta_SuperLearner")
