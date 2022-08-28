@@ -117,7 +117,7 @@ f_w_stack_SuperLearner <- function(time,
                                       SL.library = SL.library,
                                       family = stats::binomial(),
                                       method = 'method.NNLS',
-                                      verbose = FALSE,
+                                      verbose = TRUE,
                                       obsWeights = long_obsWeights,
                                       cvControl = list(V = V,
                                                        validRows = validRows))

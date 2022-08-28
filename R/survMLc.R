@@ -153,7 +153,6 @@ survMLc <- function(time,
                            obsWeights = obsWeights,
                            parallel = parallel)
     P_Delta_opt_preds <- stats::predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
-
     if (denom_method == "stratified"){
       S_Y_0_opt <- f_y_stack(time = time,
                              event = event,
@@ -296,10 +295,24 @@ survMLc <- function(time,
                                       time_grid = time_grid_approx,
                                       denom_method = denom_method,
                                       truncation = FALSE)
+          S_C_ests <- compute_prodint(cdf_uncens = S_Y_0_curr,
+                                      cdf_cens = S_Y_1_curr,
+                                      p_uncens = 1-pi_curr,
+                                      newtimes = newtimes,
+                                      time_grid = time_grid_approx,
+                                      denom_method = denom_method,
+                                      truncation = FALSE)
         } else if (surv_form == "exp"){
           S_T_ests <- compute_exponential(cdf_uncens = S_Y_1_curr,
                                           cdf_cens = S_Y_0_curr,
                                           p_uncens = pi_curr,
+                                          newtimes = newtimes,
+                                          time_grid = time_grid_approx,
+                                          denom_method = denom_method,
+                                          truncation = FALSE)
+          S_C_ests <- compute_exponential(cdf_uncens = S_Y_0_curr,
+                                          cdf_cens = S_Y_1_curr,
+                                          p_uncens = 1-pi_curr,
                                           newtimes = newtimes,
                                           time_grid = time_grid_approx,
                                           denom_method = denom_method,
@@ -349,18 +362,22 @@ survMLc <- function(time,
         }
       }
     }
-    return(S_T_ests)
+    return(list(S_T_ests = S_T_ests, S_C_ests = S_C_ests))
   }
 
-  S_T_preds <- t(apply(X = as.matrix(seq(1, nrow(newX))),
+  preds <- t(matrix(unlist(apply(X = as.matrix(seq(1, nrow(newX))),
                        MARGIN = 1,
-                       FUN = estimate_S_T))
+                       FUN = estimate_S_T)), nrow = 2*length(newtimes)))
+
+  S_T_preds <- preds[,1:length(newtimes)]
+  S_C_preds <- preds[,(length(newtimes) + 1):(2*length(newtimes))]
 
   if (direction == "retrospective"){
     S_T_preds <- 1 - S_T_preds
   }
 
   res <- list(S_T_preds = S_T_preds,
+              S_C_preds = S_C_preds,
               fits = list(P_Delta = P_Delta_opt,
                           S_Y_1 = S_Y_1_opt,
                           S_Y_0 = S_Y_0_opt,
