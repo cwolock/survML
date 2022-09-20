@@ -108,6 +108,14 @@ survMLs <- function(time,
                     obsWeights = NULL,
                     parallel = FALSE){
 
+  if (is.null(newX)){
+    newX <- X
+  }
+
+  if (is.null(newtimes)){
+    newtimes <- time
+  }
+
   if (direction == "retrospective"){
     if (is.null(tau)){
       tau <- max(entry)
@@ -232,7 +240,68 @@ survMLs <- function(time,
   }
 
   res <- list(S_T_preds = surv_preds,
+              direction = direction,
+              time_basis = time_basis,
+              time_grid = time_grid,
+              tau = tau,
               fit = fit)
   class(res) <- "survMLs"
   return(res)
+}
+
+#' @noRd
+#' @export
+
+predict.survMLs <- function(object,
+                            newX,
+                            newtimes){
+
+  trunc_time_grid <- object$time_grid
+
+  # create function to get discrete hazard predictions
+  if (object$time_basis == "continuous"){
+    get_hazard_preds <- function(index){
+      new_stacked <- data.frame(t = trunc_time_grid[index], newX)
+      preds <- stats::predict(object$fit, newdata=new_stacked)$pred
+      return(preds)
+    }
+  } else if (object$time_basis == "dummy"){
+    get_hazard_preds <- function(index){
+      dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
+      dummies[,index] <- 1
+      new_stacked <- cbind(dummies, newX)
+      risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+      colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
+      new_stacked <- data.frame(new_stacked)
+      preds <- stats::predict(object$fit, newdata=new_stacked)$pred
+      return(preds)
+    }
+  }
+
+  # don't estimate hazard at t =0
+  #hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1)
+  hazard_preds <- apply(X = matrix(1:length(trunc_time_grid)),
+                        FUN = get_hazard_preds,
+                        MARGIN = 1)
+
+  get_surv_preds <- function(t){
+    if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
+      final_index <- max(which(trunc_time_grid <= t))
+      haz <- as.matrix(hazard_preds[,1:final_index])
+      anti_haz <- 1 - haz
+      surv <- apply(anti_haz, MARGIN = 1, prod)
+    } else{
+      surv <- rep(1, nrow(hazard_preds))
+    }
+    return(surv)
+  }
+
+  surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+
+
+  if (object$direction == "retrospective"){
+    surv_preds <- 1 - surv_preds
+  }
+
+  return(list(S_T_preds = surv_preds))
 }

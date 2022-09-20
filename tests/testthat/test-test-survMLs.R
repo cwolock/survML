@@ -17,7 +17,7 @@ time <- time[sampled]
 event <- event[sampled]
 entry <- entry[sampled]
 
-SL.library <- c("SL.mean", "SL.gam")
+SL.library <- c("SL.gam", "SL.glm")
 
 fit <- survMLs(time = time,
                event = event,
@@ -27,14 +27,23 @@ fit <- survMLs(time = time,
                newtimes = seq(0, 15, 3),
                direction = "prospective",
                bin_size = 0.02,
-               time_basis = "dummy",
+               time_basis = "continuous",
                SL.library = SL.library,
                V = 5)
 
-true_S_T_preds <- rbind(c(1, 0.791, 0.536, 0.491, 0.489, 0.487),
-                        c(1, 0.863, 0.855, 0.761, 0.666, 0.530),
-                        c(1, 0.799, 0.747, 0.492, 0.409, 0.355))
+true_S_T_preds <- rbind(c(0.999, 0.999, 0.812, 0.557, 0.355, 0.309),
+                        c(0.999, 0.999, 0.841, 0.613, 0.420, 0.373),
+                        c(0.997, 0.997, 0.637, 0.282, 0.111, 0.083))
 
 test_that("survMLc is not broken", {
   expect_equal(round(fit$S_T_preds, digits = 3), true_S_T_preds)
+})
+
+preds <- predict(fit,
+                 newX = X[c(1,2,3),],
+                 newtimes = seq(0, 15, 3))
+
+
+test_that("survMLs predict() method is not broken", {
+  expect_equal(round(preds$S_T_preds, digits = 3), true_S_T_preds)
 })

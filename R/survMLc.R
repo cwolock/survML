@@ -420,6 +420,7 @@ survMLc <- function(time,
               denom_method = denom_method,
               tau = tau,
               surv_form = surv_form,
+              time_basis = time_basis,
               fits = list(P_Delta = P_Delta_opt,
                           S_Y_1 = S_Y_1_opt,
                           S_Y_0 = S_Y_0_opt,
@@ -490,7 +491,7 @@ predict.survMLc <- function(object,
       if (!is.null(object$fits$F_W_1)){ # truncation
         F_W_0_curr <- F_W_0_opt_preds[i,]
         F_W_1_curr <- F_W_1_opt_preds[i,]
-        if (object$surv_form == "PI"){
+        if (surv_form == "PI"){
           S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
                                      cdf_cens = S_Y_0_curr,
                                      entry_uncens = F_W_1_curr,
@@ -509,7 +510,7 @@ predict.survMLc <- function(object,
                                      time_grid = object$time_grid_approx,
                                      denom_method = object$denom_method,
                                      truncation = TRUE)
-        } else if (object$surv_form == "exp"){
+        } else if (surv_form == "exp"){
           S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
                                          cdf_cens = S_Y_0_curr,
                                          entry_uncens = F_W_1_curr,
@@ -530,7 +531,7 @@ predict.survMLc <- function(object,
                                          truncation = TRUE)
         }
       } else{ # no truncation
-        if (object$surv_form == "PI"){
+        if (surv_form == "PI"){
           S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
                                       cdf_cens = S_Y_0_curr,
                                       p_uncens = pi_curr,
@@ -545,7 +546,7 @@ predict.survMLc <- function(object,
                                       time_grid = object$time_grid_approx,
                                       denom_method = object$denom_method,
                                       truncation = FALSE)
-        } else if (object$surv_form == "exp"){
+        } else if (surv_form == "exp"){
           S_T_ests <- compute_exponential(cdf_uncens = S_Y_1_curr,
                                           cdf_cens = S_Y_0_curr,
                                           p_uncens = pi_curr,
@@ -566,7 +567,7 @@ predict.survMLc <- function(object,
       S_Y_curr <- S_Y_opt_preds[i,]
       if (!is.null(object$fits$F_W)){ # truncation
         F_W_curr <- F_W_opt_preds[i,]
-        if (object$surv_form == "PI"){
+        if (surv_form == "PI"){
           S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
                                      cdf_marg = S_Y_curr,
                                      p_uncens = pi_curr,
@@ -576,7 +577,7 @@ predict.survMLc <- function(object,
                                      denom_method = object$denom_method,
                                      truncation = TRUE)
           S_C_ests <- rep(1, length(S_T_ests))
-        } else if (object$surv_form == "exp"){
+        } else if (surv_form == "exp"){
           S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
                                          cdf_marg = S_Y_curr,
                                          p_uncens = pi_curr,
@@ -588,7 +589,7 @@ predict.survMLc <- function(object,
           S_C_ests <- rep(1, length(S_T_ests))
         }
       } else{
-        if (object$surv_form == "PI"){
+        if (surv_form == "PI"){
           S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
                                       cdf_marg = S_Y_curr,
                                       p_uncens = pi_curr,
@@ -597,7 +598,7 @@ predict.survMLc <- function(object,
                                       denom_method = object$denom_method,
                                       truncation = FALSE)
           S_C_ests <- rep(1, length(S_T_ests))
-        } else if (object$surv_form == "exp"){
+        } else if (surv_form == "exp"){
           S_T_ests <- compute_exponential(cdf_uncens = S_Y_1_curr,
                                           cdf_marg = S_Y_curr,
                                           p_uncens = pi_curr,
