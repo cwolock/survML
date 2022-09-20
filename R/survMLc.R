@@ -110,8 +110,8 @@ survMLc <- function(time,
                     event = rep(1, length(time)),
                     entry = NULL,
                     X,
-                    newX,
-                    newtimes,
+                    newX = NULL,
+                    newtimes = NULL,
                     direction = "prospective",
                     bin_size = NULL,
                     time_basis,
@@ -130,6 +130,16 @@ survMLc <- function(time,
   F_W_1_opt <- NULL
   F_W_0_opt <- NULL
   F_W_opt <- NULL
+
+  tau <- NULL
+
+  if (is.null(newX)){
+    newX <- X
+  }
+
+  if (is.null(newtimes)){
+    newtimes <- time_grid_approx
+  }
 
   if (direction == "retrospective"){
     if (is.null(tau)){
@@ -275,12 +285,30 @@ survMLc <- function(time,
                                      time_grid = time_grid_approx,
                                      denom_method = denom_method,
                                      truncation = TRUE)
+          S_C_ests <-compute_prodint(cdf_uncens = S_Y_0_curr,
+                                     cdf_cens = S_Y_1_curr,
+                                     entry_uncens = F_W_0_curr,
+                                     entry_cens = F_W_1_curr,
+                                     p_uncens = 1 - pi_curr,
+                                     newtimes = newtimes,
+                                     time_grid = time_grid_approx,
+                                     denom_method = denom_method,
+                                     truncation = TRUE)
         } else if (surv_form == "exp"){
           S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
                                          cdf_cens = S_Y_0_curr,
                                          entry_uncens = F_W_1_curr,
                                          entry_cens = F_W_0_curr,
                                          p_uncens = pi_curr,
+                                         newtimes = newtimes,
+                                         time_grid = time_grid_approx,
+                                         denom_method = denom_method,
+                                         truncation = TRUE)
+          S_C_ests <-compute_exponential(cdf_uncens = S_Y_0_curr,
+                                         cdf_cens = S_Y_1_curr,
+                                         entry_uncens = F_W_0_curr,
+                                         entry_cens = F_W_1_curr,
+                                         p_uncens = 1 - pi_curr,
                                          newtimes = newtimes,
                                          time_grid = time_grid_approx,
                                          denom_method = denom_method,
@@ -332,6 +360,7 @@ survMLc <- function(time,
                                      time_grid = time_grid_approx,
                                      denom_method = denom_method,
                                      truncation = TRUE)
+          S_C_ests <- rep(1, length(S_T_ests))
         } else if (surv_form == "exp"){
           S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
                                          cdf_marg = S_Y_curr,
@@ -341,6 +370,7 @@ survMLc <- function(time,
                                          time_grid = time_grid_approx,
                                          denom_method = denom_method,
                                          truncation = TRUE)
+          S_C_ests <- rep(1, length(S_T_ests))
         }
       } else{
         if (surv_form == "PI"){
@@ -351,6 +381,7 @@ survMLc <- function(time,
                                       time_grid = time_grid_approx,
                                       denom_method = denom_method,
                                       truncation = FALSE)
+          S_C_ests <- rep(1, length(S_T_ests))
         } else if (surv_form == "exp"){
           S_T_ests <- compute_exponential(cdf_uncens = S_Y_1_curr,
                                           cdf_marg = S_Y_curr,
@@ -359,25 +390,36 @@ survMLc <- function(time,
                                           time_grid = time_grid_approx,
                                           denom_method = denom_method,
                                           truncation = FALSE)
+          S_C_ests <- rep(1, length(S_T_ests))
         }
       }
     }
     return(list(S_T_ests = S_T_ests, S_C_ests = S_C_ests))
   }
 
+
+
   preds <- t(matrix(unlist(apply(X = as.matrix(seq(1, nrow(newX))),
-                       MARGIN = 1,
-                       FUN = estimate_S_T)), nrow = 2*length(newtimes)))
+                                 MARGIN = 1,
+                                 FUN = estimate_S_T)), nrow = 2*length(newtimes)))
 
   S_T_preds <- preds[,1:length(newtimes)]
   S_C_preds <- preds[,(length(newtimes) + 1):(2*length(newtimes))]
 
   if (direction == "retrospective"){
     S_T_preds <- 1 - S_T_preds
+    S_C_preds <- 1 - S_C_preds
   }
+
+
 
   res <- list(S_T_preds = S_T_preds,
               S_C_preds = S_C_preds,
+              time_grid_approx = time_grid_approx,
+              direction = direction,
+              denom_method = denom_method,
+              tau = tau,
+              surv_form = surv_form,
               fits = list(P_Delta = P_Delta_opt,
                           S_Y_1 = S_Y_1_opt,
                           S_Y_0 = S_Y_0_opt,
@@ -387,4 +429,202 @@ survMLc <- function(time,
                           F_W = F_W_opt))
   class(res) <- "survMLc"
   return(res)
+}
+
+
+#' @noRd
+#' @export
+
+predict.survMLc <- function(object,
+                            newX,
+                            newtimes,
+                            surv_form = "PI"){
+
+  if (object$direction == "retrospective"){
+    newtimes <- object$tau - newtimes
+    P_Delta_opt_preds <- rep(1, nrow(newX))
+  } else if (object$direction == "prospective"){
+    P_Delta_opt_preds <- stats::predict(object$fits$P_Delta, newX = newX) # this is for my wrapped algorithms
+    if (object$denom_method == "stratified"){
+      S_Y_0_opt_preds <- stats::predict(object$fits$S_Y_0,
+                                        newX = newX,
+                                        newtimes = object$time_grid_approx)
+    } else{
+      S_Y_opt_preds <- stats::predict(object$fits$S_Y,
+                                      newX = newX,
+                                      newtimes = object$time_grid_approx)
+    }
+  }
+
+  if (!is.null(object$fits$F_W_1) | !is.null(object$fits$F_W)){ # if a truncation variable is given
+    if (object$denom_method == "stratified"){
+      F_W_1_opt_preds <- stats::predict(object$fits$F_W_1,
+                                        newX = newX,
+                                        newtimes = object$time_grid_approx)
+      F_W_0_opt_preds <- stats::predict(object$fits$F_W_0,
+                                        newX = newX,
+                                        newtimes = object$time_grid_approx)
+    } else{ # retrospective setting is automatically marginal denominator
+      F_W_opt_preds <- stats::predict(object$fits$F_W,
+                                      newX = newX,
+                                      newtimes = object$time_grid_approx)
+    }
+  }
+
+  S_Y_1_opt_preds <- stats::predict(object$fits$S_Y_1,
+                                    newX = newX,
+                                    newtimes = object$time_grid_approx)
+
+  if (object$direction == "retrospective"){
+    S_Y_opt_preds <- S_Y_1_opt_preds
+  }
+
+  estimate_S_T <- function(i){
+    # get S_Y estimates up to t
+    S_Y_1_curr <- S_Y_1_opt_preds[i,]
+
+    pi_curr <- P_Delta_opt_preds[i]
+
+    if (object$denom_method == "stratified"){
+      S_Y_0_curr <- S_Y_0_opt_preds[i,]
+      if (!is.null(object$fits$F_W_1)){ # truncation
+        F_W_0_curr <- F_W_0_opt_preds[i,]
+        F_W_1_curr <- F_W_1_opt_preds[i,]
+        if (object$surv_form == "PI"){
+          S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
+                                     cdf_cens = S_Y_0_curr,
+                                     entry_uncens = F_W_1_curr,
+                                     entry_cens = F_W_0_curr,
+                                     p_uncens = pi_curr,
+                                     newtimes = newtimes,
+                                     time_grid = object$time_grid_approx,
+                                     denom_method = object$denom_method,
+                                     truncation = TRUE)
+          S_C_ests <-compute_prodint(cdf_uncens = S_Y_0_curr,
+                                     cdf_cens = S_Y_1_curr,
+                                     entry_uncens = F_W_0_curr,
+                                     entry_cens = F_W_1_curr,
+                                     p_uncens = 1 - pi_curr,
+                                     newtimes = newtimes,
+                                     time_grid = object$time_grid_approx,
+                                     denom_method = object$denom_method,
+                                     truncation = TRUE)
+        } else if (object$surv_form == "exp"){
+          S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
+                                         cdf_cens = S_Y_0_curr,
+                                         entry_uncens = F_W_1_curr,
+                                         entry_cens = F_W_0_curr,
+                                         p_uncens = pi_curr,
+                                         newtimes = newtimes,
+                                         time_grid = object$time_grid_approx,
+                                         denom_method = object$denom_method,
+                                         truncation = TRUE)
+          S_C_ests <-compute_exponential(cdf_uncens = S_Y_0_curr,
+                                         cdf_cens = S_Y_1_curr,
+                                         entry_uncens = F_W_0_curr,
+                                         entry_cens = F_W_1_curr,
+                                         p_uncens = 1 - pi_curr,
+                                         newtimes = newtimes,
+                                         time_grid = object$time_grid_approx,
+                                         denom_method = object$denom_method,
+                                         truncation = TRUE)
+        }
+      } else{ # no truncation
+        if (object$surv_form == "PI"){
+          S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
+                                      cdf_cens = S_Y_0_curr,
+                                      p_uncens = pi_curr,
+                                      newtimes = newtimes,
+                                      time_grid = object$time_grid_approx,
+                                      denom_method = object$denom_method,
+                                      truncation = FALSE)
+          S_C_ests <- compute_prodint(cdf_uncens = S_Y_0_curr,
+                                      cdf_cens = S_Y_1_curr,
+                                      p_uncens = 1-pi_curr,
+                                      newtimes = newtimes,
+                                      time_grid = object$time_grid_approx,
+                                      denom_method = object$denom_method,
+                                      truncation = FALSE)
+        } else if (object$surv_form == "exp"){
+          S_T_ests <- compute_exponential(cdf_uncens = S_Y_1_curr,
+                                          cdf_cens = S_Y_0_curr,
+                                          p_uncens = pi_curr,
+                                          newtimes = newtimes,
+                                          time_grid = object$time_grid_approx,
+                                          denom_method = object$denom_method,
+                                          truncation = FALSE)
+          S_C_ests <- compute_exponential(cdf_uncens = S_Y_0_curr,
+                                          cdf_cens = S_Y_1_curr,
+                                          p_uncens = 1-pi_curr,
+                                          newtimes = newtimes,
+                                          time_grid = object$time_grid_approx,
+                                          denom_method = object$denom_method,
+                                          truncation = FALSE)
+        }
+      }
+    } else{ # marginal denominator, or retrospective
+      S_Y_curr <- S_Y_opt_preds[i,]
+      if (!is.null(object$fits$F_W)){ # truncation
+        F_W_curr <- F_W_opt_preds[i,]
+        if (object$surv_form == "PI"){
+          S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
+                                     cdf_marg = S_Y_curr,
+                                     p_uncens = pi_curr,
+                                     entry_marg = F_W_curr,
+                                     newtimes = newtimes,
+                                     time_grid = object$time_grid_approx,
+                                     denom_method = object$denom_method,
+                                     truncation = TRUE)
+          S_C_ests <- rep(1, length(S_T_ests))
+        } else if (object$surv_form == "exp"){
+          S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
+                                         cdf_marg = S_Y_curr,
+                                         p_uncens = pi_curr,
+                                         entry_marg = F_W_curr,
+                                         newtimes = newtimes,
+                                         time_grid = object$time_grid_approx,
+                                         denom_method = object$denom_method,
+                                         truncation = TRUE)
+          S_C_ests <- rep(1, length(S_T_ests))
+        }
+      } else{
+        if (object$surv_form == "PI"){
+          S_T_ests <- compute_prodint(cdf_uncens = S_Y_1_curr,
+                                      cdf_marg = S_Y_curr,
+                                      p_uncens = pi_curr,
+                                      newtimes = newtimes,
+                                      time_grid = object$time_grid_approx,
+                                      denom_method = object$denom_method,
+                                      truncation = FALSE)
+          S_C_ests <- rep(1, length(S_T_ests))
+        } else if (object$surv_form == "exp"){
+          S_T_ests <- compute_exponential(cdf_uncens = S_Y_1_curr,
+                                          cdf_marg = S_Y_curr,
+                                          p_uncens = pi_curr,
+                                          newtimes = newtimes,
+                                          time_grid = object$time_grid_approx,
+                                          denom_method = object$denom_method,
+                                          truncation = FALSE)
+          S_C_ests <- rep(1, length(S_T_ests))
+        }
+      }
+    }
+    return(list(S_T_ests = S_T_ests, S_C_ests = S_C_ests))
+  }
+
+  preds <- t(matrix(unlist(apply(X = as.matrix(seq(1, nrow(newX))),
+                                 MARGIN = 1,
+                                 FUN = estimate_S_T)), nrow = 2*length(newtimes)))
+
+  S_T_preds <- preds[,1:length(newtimes)]
+  S_C_preds <- preds[,(length(newtimes) + 1):(2*length(newtimes))]
+
+  if (object$direction == "retrospective"){
+    S_T_preds <- 1 - S_T_preds
+  }
+
+  res <- list(S_T_preds = S_T_preds,
+              S_C_preds = S_C_preds)
+  return(res)
+
 }

@@ -16,7 +16,9 @@ survMLs(
   time_basis = "continuous",
   SL.library,
   V = 10,
-  tau = NULL
+  tau = NULL,
+  obsWeights = NULL,
+  parallel = FALSE
 )
 }
 \arguments{
@@ -82,7 +84,7 @@ Estimate a conditional survival function via stacking
 \examples{
 
 # This is a small simulation example
-set.seed(92)
+set.seed(123)
 n <- 100
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 

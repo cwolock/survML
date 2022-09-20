@@ -41,3 +41,12 @@ true_S_T_preds <- rbind(c(1, 0.791, 0.536, 0.491, 0.489, 0.487),
 test_that("survMLc is not broken", {
   expect_equal(round(fit$S_T_preds, digits = 3), true_S_T_preds)
 })
+
+
+preds <- predict(fit,
+                 newX = X[c(1,2,3),],
+                 newtimes = seq(0, 15, 3))
+
+test_that("survMLc predict() method is not broken", {
+  expect_equal(round(preds$S_T_preds, digits = 3), true_S_T_preds)
+})
