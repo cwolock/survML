@@ -6,50 +6,126 @@
 \usage{
 survMLs(
   time,
-  event,
+  event = rep(1, length(time)),
+  entry = NULL,
   X,
   newX,
   newtimes,
-  bin_size = NULL,
-  V = 10,
-  time_basis = "continuous",
-  algorithm = "xgboost",
-  entry = NULL,
   direction = "prospective",
-  tuning_params = NULL,
-  SL.library = NULL
+  bin_size = NULL,
+  time_basis = "continuous",
+  SL.library,
+  V = 10,
+  tau = NULL,
+  obsWeights = NULL,
+  parallel = FALSE
 )
 }
 \arguments{
-\item{time}{Observed time}
+\item{time}{\code{n x 1} numeric vector of observed
+follow-up times If there is censoring, these are the minimum of the
+event and censoring times.}
 
-\item{event}{Indicator of event (vs censoring)}
+\item{event}{\code{n x 1} numeric vector of status indicators of
+whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 
-\item{X}{Covariate matrix}
+\item{entry}{Study entry variable, if applicable. Defaults to \code{NULL},
+indicating that there is no truncation.}
 
-\item{newX}{Values of covariates at which to make a prediction}
+\item{X}{\code{n x p} data.frame of observed covariate values
+on which to train the estimator.}
 
-\item{newtimes}{Times at which to make the survival function prediction}
+\item{newX}{\code{m x p} data.frame of new observed covariate
+values at which to obtain \code{m} predictions for the estimated algorithm.
+Must have the same names and structure as \code{X}.}
 
-\item{bin_size}{Quantiles on which to grid times. If NULL, defaults to every observed time}
+\item{newtimes}{\code{k x 1} numeric vector of times at which to obtain \code{k}
+predicted conditional survivals.}
 
-\item{V}{Number of cross validation folds}
+\item{direction}{Whether the data come from a prospective or retrospective study.
+This determines whether the data are treated as subject to left truncation and
+right censoring (\code{"prospective"}) or right truncation alone
+(\code{"retrospective"}).}
 
-\item{time_basis}{How to treat time (continuous or dummy)}
+\item{bin_size}{Size of bins for the discretization of time.
+A value between 0 and 1 indicating the size of observed event time quantiles
+on which to grid times (e.g. 0.02 creates a grid of 50 times evenly spaced on the
+quantile scaled). If NULL, defaults to every observed event time.}
 
-\item{algorithm}{Binary classification algorithm to use}
+\item{time_basis}{How to treat time for training the binary
+classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
+an indicator variable is included for each time in the time grid.}
 
-\item{entry}{Study entry variable, if applicable}
+\item{SL.library}{Library of algorithms to include in the binary classification
+Super Learner. Should have the same structure as the \code{SL.library}
+argument to the \code{SuperLearner} function in the \code{SuperLearner} package.}
 
-\item{direction}{Prospective or retrospective study}
+\item{V}{Number of cross validation folds on which to train the Super Learner
+classifier. Defaults to 10.}
 
-\item{tuning_params}{Tuning parameters to be passed to algorithm for tuning}
-
-\item{SL.library}{SuperLearner library}
+\item{tau}{The maximum time of interest in a study, used for
+retrospective conditional survival estimation. Rather than dealing
+with right truncation separately than left truncation, it is simpler to
+estimate the survival function of \code{tau - time}. Defaults to code{NULL},
+in which case the maximum study entry time is chosen as the
+reference point.}
 }
 \value{
-An object of class \code{survMLs}
+A named list of class \code{survMLs}.
+\item{S_T_preds}{An \code{m x k} matrix of estimated survival probabilites at the
+\code{m} covariate vector values and \code{k} times provided by the user in
+\code{newX} and \code{newtimes}, respectively.}
+\item{fit}{The Super Learner fit for binary classification on the stacked
+dataset.}
 }
 \description{
 Estimate a conditional survival function via stacking
+}
+\examples{
+
+# This is a small simulation example
+set.seed(123)
+n <- 100
+X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+
+S0 <- function(t, x){
+  pexp(t, rate = exp(-2 + x[,1] - x[,2] + .5 * x[,1] * x[,2]), lower.tail = FALSE)
+}
+T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+
+G0 <- function(t, x) {
+  as.numeric(t < 15) *.9*pexp(t,
+                              rate = exp(-2 -.5*x[,1]-.25*x[,2]+.5*x[,1]*x[,2]),
+                              lower.tail=FALSE)
+}
+C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+C[C > 15] <- 15
+
+entry <- runif(n, 0, 15)
+
+time <- pmin(T, C)
+event <- as.numeric(T <= C)
+
+sampled <- which(time >= entry)
+X <- X[sampled,]
+time <- time[sampled]
+event <- event[sampled]
+entry <- entry[sampled]
+
+SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+
+fit <- survMLs(time = time,
+               event = event,
+               entry = entry,
+               X = X,
+               newX = X,
+               newtimes = seq(0, 15, .1),
+               direction = "prospective",
+               bin_size = 0.02,
+               time_basis = "continuous",
+               SL.library = SL.library,
+               V = 5)
+
+plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
+abline(0,1,col='red')
 }

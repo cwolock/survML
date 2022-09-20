@@ -1,40 +1,125 @@
 #' Estimate a conditional survival function via stacking
 #'
-#' @param time Observed time
-#' @param event Indicator of event (vs censoring)
-#' @param X Covariate matrix
-#' @param newX Values of covariates at which to make a prediction
-#' @param newtimes Times at which to make the survival function prediction
-#' @param bin_size Quantiles on which to grid times. If NULL, defaults to every observed time
-#' @param V Number of cross validation folds
-#' @param time_basis How to treat time (continuous or dummy)
-#' @param algorithm Binary classification algorithm to use
-#' @param entry Study entry variable, if applicable
-#' @param direction Prospective or retrospective study
-#' @param tuning_params Tuning parameters to be passed to algorithm for tuning
-#' @param SL.library SuperLearner library
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
+#' @param entry Study entry variable, if applicable. Defaults to \code{NULL},
+#' indicating that there is no truncation.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' on which to train the estimator.
+#' @param newX \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param newtimes \code{k x 1} numeric vector of times at which to obtain \code{k}
+#' predicted conditional survivals.
+#' @param direction Whether the data come from a prospective or retrospective study.
+#' This determines whether the data are treated as subject to left truncation and
+#' right censoring (\code{"prospective"}) or right truncation alone
+#' (\code{"retrospective"}).
+#' @param bin_size Size of bins for the discretization of time.
+#' A value between 0 and 1 indicating the size of observed event time quantiles
+#' on which to grid times (e.g. 0.02 creates a grid of 50 times evenly spaced on the
+#' quantile scaled). If NULL, defaults to every observed event time.
+#' @param time_basis How to treat time for training the binary
+#' classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
+#' an indicator variable is included for each time in the time grid.
+#' @param SL.library Library of algorithms to include in the binary classification
+#' Super Learner. Should have the same structure as the \code{SL.library}
+#' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
+#' @param V Number of cross validation folds on which to train the Super Learner
+#' classifier. Defaults to 10.
+#' @param tau The maximum time of interest in a study, used for
+#' retrospective conditional survival estimation. Rather than dealing
+#' with right truncation separately than left truncation, it is simpler to
+#' estimate the survival function of \code{tau - time}. Defaults to code{NULL},
+#' in which case the maximum study entry time is chosen as the
+#' reference point.
 #'
-#' @return An object of class \code{survMLs}
+#' @return A named list of class \code{survMLs}.
+#' \item{S_T_preds}{An \code{m x k} matrix of estimated survival probabilites at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{fit}{The Super Learner fit for binary classification on the stacked
+#' dataset.}
 #'
 #' @export
 #'
 #' @examples
+#'
+#' # This is a small simulation example
+#' set.seed(123)
+#' n <- 100
+#' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+#'
+#' S0 <- function(t, x){
+#'   pexp(t, rate = exp(-2 + x[,1] - x[,2] + .5 * x[,1] * x[,2]), lower.tail = FALSE)
+#' }
+#' T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+#'
+#' G0 <- function(t, x) {
+#'   as.numeric(t < 15) *.9*pexp(t,
+#'                               rate = exp(-2 -.5*x[,1]-.25*x[,2]+.5*x[,1]*x[,2]),
+#'                               lower.tail=FALSE)
+#' }
+#' C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+#' C[C > 15] <- 15
+#'
+#' entry <- runif(n, 0, 15)
+#'
+#' time <- pmin(T, C)
+#' event <- as.numeric(T <= C)
+#'
+#' sampled <- which(time >= entry)
+#' X <- X[sampled,]
+#' time <- time[sampled]
+#' event <- event[sampled]
+#' entry <- entry[sampled]
+#'
+#' SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+#'
+#' fit <- survMLs(time = time,
+#'                event = event,
+#'                entry = entry,
+#'                X = X,
+#'                newX = X,
+#'                newtimes = seq(0, 15, .1),
+#'                direction = "prospective",
+#'                bin_size = 0.02,
+#'                time_basis = "continuous",
+#'                SL.library = SL.library,
+#'                V = 5)
+#'
+#' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
+#' abline(0,1,col='red')
 survMLs <- function(time,
-                    event,
+                    event = rep(1, length(time)),
+                    entry = NULL,
                     X,
                     newX,
                     newtimes,
-                    bin_size = NULL,
-                    V = 10,
-                    time_basis = "continuous",
-                    algorithm = "xgboost",
-                    entry = NULL,
                     direction = "prospective",
-                    tuning_params = NULL,
-                    SL.library = NULL){
+                    bin_size = NULL,
+                    time_basis = "continuous",
+                    SL.library,
+                    V = 10,
+                    tau = NULL,
+                    obsWeights = NULL,
+                    parallel = FALSE){
+
+  if (is.null(newX)){
+    newX <- X
+  }
+
+  if (is.null(newtimes)){
+    newtimes <- time
+  }
 
   if (direction == "retrospective"){
-    tau <- max(time)
+    if (is.null(tau)){
+      tau <- max(entry)
+    }
     time <- tau - time
     newtimes <- tau - newtimes
     entry <- tau - entry
@@ -48,166 +133,175 @@ survMLs <- function(time,
 
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
-    time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+    time_grid <- stats::quantile(dat$time[dat$event == 1], probs = seq(0, 1, by = bin_size))
+    time_grid[1] <- 0
   } else{
-    time_grid <- sort(unique(dat$time))
+    time_grid <- sort(unique(dat$time[dat$event == 1]))
+    time_grid <- c(0, time_grid)
   }
 
-  trunc_time_grid <- time_grid[-length(time_grid)]
+  # this truncated time grid does not include the first time, since our discretization
+  # convention pushes events with t= < time < t + 1 to time t
+  trunc_time_grid <- time_grid#[-length(trunc_time_grid)]
 
-  if (algorithm == "xgboost"){
-    if (is.null(tuning_params)){
-      tune <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
-                   eta = c(0.1), subsample = c(0.5))
-    } else{
-      tune <- tuning_params
-    }
+  if (!is.null(obsWeights)){
+    stackX <- as.matrix(data.frame(X, obsWeights = obsWeights))
+  } else{
+    stackX <- X
+  }
 
-    param_grid <- expand.grid(ntrees = tune$ntrees,
-                              max_depth = tune$max_depth,
-                              eta = tune$eta,
-                              subsample = tune$subsample)
-    cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
+  # create stacked dataset
+  stacked <- survML:::stack_haz(time = time,
+                       event = event,
+                       X = stackX,
+                       time_grid = time_grid,
+                       entry = entry,
+                       time_basis = "continuous")
 
-    get_CV_risk <- function(i){
-      ntrees <- param_grid$ntrees[i]
-      max_depth <- param_grid$max_depth[i]
-      eta <- param_grid$eta[i]
-      subsample <- param_grid$subsample[i]
-      risks <- rep(NA, V)
-      for (j in 1:V){
-        train <- stacked[-cv_folds[[j]],] ### THIS IS A BUG - CV is not implemented properly
-        xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train[,-ncol(train)]),
-                                      label = as.matrix(train[,ncol(train)]))
-        #ratio <- min(c(subsamp_size/nrow(train), 1))
-        fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = ntrees,
-                                max_depth = max_depth, eta = eta,
-                                verbose = FALSE, nthread = 1,
-                                save_period = NULL, eval_metric = "logloss",
-                                subsample = subsample)
-        test <- as.matrix(stacked[cv_folds[[j]],])
-        preds <- predict(fit, newdata = test[,-ncol(test)])
-        preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
-        truth <- test[,ncol(test)]
-        log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
-          -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
-        })
-        log_loss <- unlist(log_loss)
-        sum_log_loss <- sum(log_loss)
-        risks[j] <- sum_log_loss
-      }
-      return(sum(risks))
-    }
+  # change t to dummy variable
+  if (time_basis == "dummy"){
+    stacked$t <- factor(stacked$t)
+    dummy_mat <- model.matrix(~-1 + t, data=stacked)
+    risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+    colnames(dummy_mat) <- risk_set_names
+    stacked$t <- NULL
+    stacked <- cbind(dummy_mat, stacked)
+  }
 
-    stacked <- survML:::stack_haz(time = time,
-                                  event = event,
-                                  X = X,
-                                  time_grid = time_grid,
-                                  entry = entry)
-    # I guess for stacking, I can do cross validation on stacked dataset, rather than on individuals? shouldn't matter too
-    # much I'd think
-
-    CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
-
-    opt_param_index <- which.min(CV_risks)
-    opt_ntrees <- param_grid$ntrees[opt_param_index]
-    opt_max_depth <- param_grid$max_depth[opt_param_index]
-    opt_eta <- param_grid$eta[opt_param_index]
-    opt_subsample <- param_grid$subsample[opt_param_index]
-    opt_params <- list(ntrees = opt_ntrees, max_depth = opt_max_depth, eta = opt_eta, subsampe = opt_subsample)
-    #stacked <- survML:::stack_haz(time = time, event = event, X = X, time_grid = time_grid)
-    Y2 <- stacked[,ncol(stacked)]
-    X2 <- as.matrix(stacked[,-ncol(stacked)])
-    xgmat <- xgboost::xgb.DMatrix(data = X2, label = Y2)
-    fit <- xgboost::xgboost(data = xgmat, objective="binary:logistic", nrounds = opt_ntrees,
-                            max_depth = opt_max_depth, eta = opt_eta,
-                            verbose = FALSE, nthread = 1,
-                            save_period = NULL, eval_metric = "logloss", subsample = opt_subsample)
-
-    get_hazard_preds <- function(t){
-      new_stacked <- as.matrix(data.frame(t = t, newX))
-      preds <- predict(fit, newdata=new_stacked)
-      return(preds)
-    }
-
-    hazard_preds <- apply(X = matrix(time_grid[-1]), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
-
-    get_surv_preds <- function(t){
-      if (sum(time_grid[-1] <= t) != 0){ # if you don't fall before the first time in the grid
-        final_index <- max(which(time_grid[-1] <= t))
-        haz <- as.matrix(hazard_preds[,1:final_index])
-        anti_haz <- 1 - haz
-        surv <- apply(anti_haz, MARGIN = 1, prod)
-      } else{
-        surv <- rep(1, nrow(hazard_preds))
-      }
-      return(surv)
-    }
-
-    surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
-
-  } else if (algorithm == "SuperLearner"){
-
-    stacked <- survML:::stack_haz(time = time,
-                                  event = event,
-                                  X = X,
-                                  time_grid = time_grid,
-                                  entry = entry,
-                                  time_basis = time_basis)
-
-    .Y <- stacked[,ncol(stacked)]
-    .X <- data.frame(stacked[,-ncol(stacked)])
+  long_obsWeights <- stacked$obsWeights
+  stacked$obsWeights <- NULL
+  .Y <- stacked[,ncol(stacked)]
+  .X <- data.frame(stacked[,-ncol(stacked)])
+  # fit Super Learner
+  if (parallel){
+    fit <- SuperLearner::mcSuperLearner(Y = .Y,
+                                      X = .X,
+                                      SL.library = SL.library,
+                                      family = stats::binomial(),
+                                      method = 'method.NNLS',
+                                      verbose = FALSE,
+                                      obsWeights = long_obsWeights,
+                                      cvControl = list(V = V))
+  } else{
     fit <- SuperLearner::SuperLearner(Y = .Y,
                                       X = .X,
                                       SL.library = SL.library,
-                                      family = binomial(),
+                                      family = stats::binomial(),
                                       method = 'method.NNLS',
                                       verbose = FALSE,
+                                      obsWeights = long_obsWeights,
                                       cvControl = list(V = V))
-
-    if (time_basis == "continuous"){
-      get_hazard_preds <- function(t){
-        new_stacked <- data.frame(t = t, newX)
-        preds <- predict(fit, newdata=new_stacked)$pred
-        return(preds)
-      }
-    } else if (time_basis == "dummy"){
-      get_hazard_preds <- function(t){
-        dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
-        index <- max(which(time_grid <= t))
-        dummies[,index] <- 1
-        new_stacked <- cbind(dummies, newX)
-        risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
-        colnames(new_stacked)[1:length(time_grid)] <- risk_set_names
-        new_stacked <- data.frame(new_stacked)
-        preds <- predict(fit, newdata=new_stacked)$pred
-        return(preds)
-      }
-    }
-
-    hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1) # don't estimate hazard at t =0
-
-    get_surv_preds <- function(t){
-      if (sum(time_grid <= t) != 0){ # if you don't fall before the first time in the grid
-        final_index <- max(which(time_grid <= t))
-        haz <- as.matrix(hazard_preds[,1:final_index])
-        anti_haz <- 1 - haz
-        surv <- apply(anti_haz, MARGIN = 1, prod)
-      } else{
-        surv <- rep(1, nrow(hazard_preds))
-      }
-      return(surv)
-    }
-
-    surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
   }
+
+
+  # create function to get discrete hazard predictions
+  if (time_basis == "continuous"){
+    get_hazard_preds <- function(index){
+      new_stacked <- data.frame(t = trunc_time_grid[index], newX)
+      preds <- stats::predict(fit, newdata=new_stacked)$pred
+      return(preds)
+    }
+  } else if (time_basis == "dummy"){
+    get_hazard_preds <- function(index){
+      dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
+      dummies[,index] <- 1
+      new_stacked <- cbind(dummies, newX)
+      risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+      colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
+      new_stacked <- data.frame(new_stacked)
+      preds <- stats::predict(fit, newdata=new_stacked)$pred
+      return(preds)
+    }
+  }
+
+  # don't estimate hazard at t =0
+  #hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1)
+  hazard_preds <- apply(X = matrix(1:length(trunc_time_grid)),
+                        FUN = get_hazard_preds,
+                        MARGIN = 1)
+
+  get_surv_preds <- function(t){
+    if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
+      final_index <- max(which(trunc_time_grid <= t))
+      haz <- as.matrix(hazard_preds[,1:final_index])
+      anti_haz <- 1 - haz
+      surv <- apply(anti_haz, MARGIN = 1, prod)
+    } else{
+      surv <- rep(1, nrow(hazard_preds))
+    }
+    return(surv)
+  }
+
+  surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+
 
   if (direction == "retrospective"){
     surv_preds <- 1 - surv_preds
   }
 
   res <- list(S_T_preds = surv_preds,
+              direction = direction,
+              time_basis = time_basis,
+              time_grid = time_grid,
+              tau = tau,
               fit = fit)
   class(res) <- "survMLs"
   return(res)
+}
+
+#' @noRd
+#' @export
+
+predict.survMLs <- function(object,
+                            newX,
+                            newtimes){
+
+  trunc_time_grid <- object$time_grid
+
+  # create function to get discrete hazard predictions
+  if (object$time_basis == "continuous"){
+    get_hazard_preds <- function(index){
+      new_stacked <- data.frame(t = trunc_time_grid[index], newX)
+      preds <- stats::predict(object$fit, newdata=new_stacked)$pred
+      return(preds)
+    }
+  } else if (object$time_basis == "dummy"){
+    get_hazard_preds <- function(index){
+      dummies <- matrix(0, ncol = length(trunc_time_grid), nrow = nrow(newX))
+      dummies[,index] <- 1
+      new_stacked <- cbind(dummies, newX)
+      risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
+      colnames(new_stacked)[1:length(trunc_time_grid)] <- risk_set_names
+      new_stacked <- data.frame(new_stacked)
+      preds <- stats::predict(object$fit, newdata=new_stacked)$pred
+      return(preds)
+    }
+  }
+
+  # don't estimate hazard at t =0
+  #hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1)
+  hazard_preds <- apply(X = matrix(1:length(trunc_time_grid)),
+                        FUN = get_hazard_preds,
+                        MARGIN = 1)
+
+  get_surv_preds <- function(t){
+    if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
+      final_index <- max(which(trunc_time_grid <= t))
+      haz <- as.matrix(hazard_preds[,1:final_index])
+      anti_haz <- 1 - haz
+      surv <- apply(anti_haz, MARGIN = 1, prod)
+    } else{
+      surv <- rep(1, nrow(hazard_preds))
+    }
+    return(surv)
+  }
+
+  surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+
+
+  if (object$direction == "retrospective"){
+    surv_preds <- 1 - surv_preds
+  }
+
+  return(list(S_T_preds = surv_preds))
 }
