@@ -29,13 +29,16 @@ f_y_stack_SuperLearner <- function(time,
     if (censored == TRUE){
       time <- time[!as.logical(event)]
       X <- X[!as.logical(event),]
+      obsWeights <- obsWeights[!as.logical(event)]
     } else if (censored == FALSE){
       time <- time[as.logical(event)]
       X <- X[as.logical(event),]
+      obsWeights <- obsWeights[as.logical(event)]
     }
   } else{
     time <- time
     X <- X
+    obsWeights <- obsWeights
   }
 
   cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))

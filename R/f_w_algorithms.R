@@ -31,15 +31,18 @@ f_w_stack_SuperLearner <- function(time,
       time <- time[!as.logical(event)]
       entry <- entry[!as.logical(event)]
       X <- X[!as.logical(event),]
+      obsWeights <- obsWeights[!as.logical(event)]
     } else if (censored == FALSE){
       time <- time[as.logical(event)]
       X <- X[as.logical(event),]
       entry <- entry[as.logical(event)]
+      obsWeights <- obsWeights[as.logical(event)]
     }
   } else{
     time <- time
     entry <- entry
     X <- X
+    obsWeights <- obsWeights
   }
 
   cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
