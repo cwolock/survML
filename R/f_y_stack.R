@@ -34,12 +34,9 @@ f_y_stack <- function(time,
                       event,
                       X,
                       censored,
-                      bin_size = NULL,
-                      V = 10,
-                      SL.library,
-                      time_basis,
-                      obsWeights = NULL,
-                      parallel = FALSE){
+                      bin_size,
+                      SL_control,
+                      time_basis){
 
   fit <- f_y_stack_SuperLearner(time = time,
                                 event = event,
@@ -47,10 +44,7 @@ f_y_stack <- function(time,
                                 censored = censored,
                                 bin_size = bin_size,
                                 time_basis = time_basis,
-                                SL.library = SL.library,
-                                V = V,
-                                obsWeights = obsWeights,
-                                parallel = parallel)
+                                SL_control = SL_control)
 
   return(fit)
 }

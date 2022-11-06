@@ -1,4 +1,4 @@
-#' Estimate a conditional survival function via stacking
+#' Estimate a conditional survival function via local survival stacking
 #'
 #' @param time \code{n x 1} numeric vector of observed
 #' follow-up times If there is censoring, these are the minimum of the
@@ -25,11 +25,12 @@
 #' @param time_basis How to treat time for training the binary
 #' classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
 #' an indicator variable is included for each time in the time grid.
-#' @param SL.library Library of algorithms to include in the binary classification
-#' Super Learner. Should have the same structure as the \code{SL.library}
-#' argument to the \code{SuperLearner} function in the \code{SuperLearner} package.
-#' @param V Number of cross validation folds on which to train the Super Learner
-#' classifier. Defaults to 10.
+#' @param SL_control Named list of parameters controlling the Super Learner fitting
+#' process. These parameters are passed directly to the \code{SuperLearner} function.
+#' Key parameters include \code{SL.library} (library of algorithms to include in the
+#' binary classification Super Learner), \code{V} (Number of cross validation folds on
+#' which to train the Super Learner classifier, defaults to 10), and \code{obsWeights}
+#' (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
 #' with right truncation separately than left truncation, it is simpler to
@@ -37,7 +38,7 @@
 #' in which case the maximum study entry time is chosen as the
 #' reference point.
 #'
-#' @return A named list of class \code{survMLs}.
+#' @return A named list of class \code{stackL}.
 #' \item{S_T_preds}{An \code{m x k} matrix of estimated survival probabilites at the
 #' \code{m} covariate vector values and \code{k} times provided by the user in
 #' \code{newX} and \code{newtimes}, respectively.}
@@ -79,7 +80,7 @@
 #'
 #' SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
 #'
-#' fit <- survMLs(time = time,
+#' fit <- stackL(time = time,
 #'                event = event,
 #'                entry = entry,
 #'                X = X,
@@ -88,25 +89,23 @@
 #'                direction = "prospective",
 #'                bin_size = 0.02,
 #'                time_basis = "continuous",
-#'                SL.library = SL.library,
-#'                V = 5)
+#'                SL_control = list(SL.library = SL.library,
+#'                                  V = 5))
 #'
 #' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
 #' abline(0,1,col='red')
-survMLs <- function(time,
-                    event = rep(1, length(time)),
-                    entry = NULL,
-                    X,
-                    newX,
-                    newtimes,
-                    direction = "prospective",
-                    bin_size = NULL,
-                    time_basis = "continuous",
-                    SL.library,
-                    V = 10,
-                    tau = NULL,
-                    obsWeights = NULL,
-                    parallel = FALSE){
+stackL <- function(time,
+                   event = rep(1, length(time)),
+                   entry = NULL,
+                   X,
+                   newX,
+                   newtimes,
+                   direction = "prospective",
+                   bin_size = NULL,
+                   time_basis = "continuous",
+                   SL_control = list(SL.library = c("SL.mean"),
+                                     V = 10),
+                   tau = NULL){
 
   if (is.null(newX)){
     newX <- X
@@ -144,19 +143,19 @@ survMLs <- function(time,
   # convention pushes events with t= < time < t + 1 to time t
   trunc_time_grid <- time_grid#[-length(trunc_time_grid)]
 
-  if (!is.null(obsWeights)){
-    stackX <- as.matrix(data.frame(X, obsWeights = obsWeights))
+  if (!is.null(SL_control$obsWeights)){
+    stackX <- as.matrix(data.frame(X, obsWeights = SL_control$obsWeights))
   } else{
     stackX <- X
   }
 
   # create stacked dataset
   stacked <- survML:::stack_haz(time = time,
-                       event = event,
-                       X = stackX,
-                       time_grid = time_grid,
-                       entry = entry,
-                       time_basis = "continuous")
+                                event = event,
+                                X = stackX,
+                                time_grid = time_grid,
+                                entry = entry,
+                                time_basis = "continuous")
 
   # change t to dummy variable
   if (time_basis == "dummy"){
@@ -173,26 +172,15 @@ survMLs <- function(time,
   .Y <- stacked[,ncol(stacked)]
   .X <- data.frame(stacked[,-ncol(stacked)])
   # fit Super Learner
-  if (parallel){
-    fit <- SuperLearner::mcSuperLearner(Y = .Y,
-                                      X = .X,
-                                      SL.library = SL.library,
-                                      family = stats::binomial(),
-                                      method = 'method.NNLS',
-                                      verbose = FALSE,
-                                      obsWeights = long_obsWeights,
-                                      cvControl = list(V = V))
-  } else{
-    fit <- SuperLearner::SuperLearner(Y = .Y,
-                                      X = .X,
-                                      SL.library = SL.library,
-                                      family = stats::binomial(),
-                                      method = 'method.NNLS',
-                                      verbose = FALSE,
-                                      obsWeights = long_obsWeights,
-                                      cvControl = list(V = V))
-  }
 
+  fit <- SuperLearner::SuperLearner(Y = .Y,
+                                    X = .X,
+                                    SL.library = SL_control$SL.library,
+                                    family = stats::binomial(),
+                                    method = 'method.NNLS',
+                                    verbose = FALSE,
+                                    obsWeights = long_obsWeights,
+                                    cvControl = list(V = SL_control$V))
 
   # create function to get discrete hazard predictions
   if (time_basis == "continuous"){
@@ -234,7 +222,6 @@ survMLs <- function(time,
 
   surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
 
-
   if (direction == "retrospective"){
     surv_preds <- 1 - surv_preds
   }
@@ -245,16 +232,16 @@ survMLs <- function(time,
               time_grid = time_grid,
               tau = tau,
               fit = fit)
-  class(res) <- "survMLs"
+  class(res) <- "stackL"
   return(res)
 }
 
 #' @noRd
 #' @export
 
-predict.survMLs <- function(object,
-                            newX,
-                            newtimes){
+predict.stackL <- function(object,
+                           newX,
+                           newtimes){
 
   trunc_time_grid <- object$time_grid
 

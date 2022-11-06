@@ -19,7 +19,7 @@ entry <- entry[sampled]
 
 SL.library <- c("SL.gam", "SL.glm")
 
-fit <- survMLs(time = time,
+fit <- stackL(time = time,
                event = event,
                entry = entry,
                X = X,
@@ -28,8 +28,8 @@ fit <- survMLs(time = time,
                direction = "prospective",
                bin_size = 0.02,
                time_basis = "continuous",
-               SL.library = SL.library,
-               V = 5)
+              SL_control = list(SL.library = SL.library,
+                                V = 5))
 
 true_S_T_preds <- rbind(c(0.999, 0.999, 0.812, 0.557, 0.355, 0.309),
                         c(0.999, 0.999, 0.841, 0.613, 0.420, 0.373),
