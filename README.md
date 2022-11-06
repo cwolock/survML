@@ -153,7 +153,7 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
   theme_bw() + 
   ylab("fitted") +
   xlab("true") + 
-  ggtitle("survMLc() example")
+  ggtitle("Global survival stacking example")
 
 p
 ```
@@ -187,7 +187,7 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
   theme_bw() + 
   ylab("fitted") +
   xlab("true") + 
-  ggtitle("survMLs() example")
+  ggtitle("Local survival stacking example")
 
 p
 ```
