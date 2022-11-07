@@ -90,7 +90,7 @@ important user-specified arguments are described here:
     (i.e., include time as-is). It is also possible to include a dummy
     variable for each time in the grid (i.e., treat time as a `factor`
     variable) using option `dummy`.
--   `SL_contrl`: This is a named list of arguments that are passed
+-   `SL_control`: This is a named list of arguments that are passed
     directly to the `SuperLearner()` function. `SL.library` gives the
     library of algorithms to be included in the Super Learner binary
     regression. This argument should be vector of algorithm names, which
