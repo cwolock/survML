@@ -200,4 +200,4 @@ For details of this method, please see the following preprint:
 
 Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. “A
 framework for leveraging machine learning tools to estimate personalized
-survival curves.” (2022).
+survival curves.” [arXiv: 2211.03031.](https://arxiv.org/abs/2211.03031)
