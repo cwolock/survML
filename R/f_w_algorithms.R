@@ -6,10 +6,7 @@
 #' @param X Covariate matrix
 #' @param censored Logical, indicates whether to run regression on censored observations (vs uncensored)
 #' @param bin_size Size of quantiles over which to make the stacking bins
-#' @param V Number of CV folds
 #' @param time_basis How to treat time
-#' @param SL.library SuperLearner library
-#' #' @param parallel whether or not to parallelize
 #'
 #' @return An object of class \code{f_w_stack_SuperLearner}
 #' @noRd
@@ -19,33 +16,30 @@ f_w_stack_SuperLearner <- function(time,
                                    X,
                                    censored,
                                    bin_size,
-                                   V,
-                                   time_basis = "continuous",
-                                   direction = "forward",
-                                   SL.library,
-                                   obsWeights = NULL,
-                                   parallel = FALSE){
+                                   SL_control,
+                                   time_basis,
+                                   direction){
 
   if (!is.null(censored)){
     if (censored == TRUE){
       time <- time[!as.logical(event)]
       entry <- entry[!as.logical(event)]
       X <- X[!as.logical(event),]
-      obsWeights <- obsWeights[!as.logical(event)]
+      obsWeights <- SL_control$obsWeights[!as.logical(event)]
     } else if (censored == FALSE){
       time <- time[as.logical(event)]
       X <- X[as.logical(event),]
       entry <- entry[as.logical(event)]
-      obsWeights <- obsWeights[as.logical(event)]
+      obsWeights <- SL_control$obsWeights[as.logical(event)]
     }
   } else{
     time <- time
     entry <- entry
     X <- X
-    obsWeights <- obsWeights
+    obsWeights <- SL_control$obsWeights
   }
 
-  cv_folds <- split(sample(1:length(time)), rep(1:V, length = length(time)))
+  cv_folds <- split(sample(1:length(time)), rep(1:SL_control$V, length = length(time)))
 
   X <- as.matrix(X)
   time <- as.matrix(time)
@@ -104,27 +98,15 @@ f_w_stack_SuperLearner <- function(time,
 
   validRows <- lapply(cv_folds, get_validRows)
 
-  if (parallel){
-    fit <- SuperLearner::mcSuperLearner(Y = .Y,
-                                      X = .X,
-                                      SL.library = SL.library,
-                                      family = stats::binomial(),
-                                      method = 'method.NNLS',
-                                      verbose = FALSE,
-                                      obsWeights = long_obsWeights,
-                                      cvControl = list(V = V,
-                                                       validRows = validRows))
-  } else{
-    fit <- SuperLearner::SuperLearner(Y = .Y,
-                                      X = .X,
-                                      SL.library = SL.library,
-                                      family = stats::binomial(),
-                                      method = 'method.NNLS',
-                                      verbose = TRUE,
-                                      obsWeights = long_obsWeights,
-                                      cvControl = list(V = V,
-                                                       validRows = validRows))
-  }
+  fit <- SuperLearner::SuperLearner(Y = .Y,
+                                    X = .X,
+                                    SL.library = SL.library,
+                                    family = stats::binomial(),
+                                    method = 'method.NNLS',
+                                    verbose = FALSE,
+                                    obsWeights = long_obsWeights,
+                                    cvControl = list(V = SL_control$V,
+                                                     validRows = validRows))
 
   fit <- list(reg.object = fit, time_grid = time_grid, time_basis = time_basis)
   class(fit) <- c("f_w_stack_SuperLearner")

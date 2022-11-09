@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 # `survML`: Conditional survival function estimation using machine learning
 
-The `survML` package implements two methods for estimating a conditional survival function using off-the-shelf machine learning. The first, called cumulative probability estimation and performed using the `survMLc()` function, involves decomposing the conditional hazard function into regression functions depending only on the observed data. The second, called survival stacking or discrete-time hazard estimation, involves discretizing time and estimating the probability of an event of interest within each discrete time period. More details on each method, as well as examples, follow. 
+The `survML` package implements two methods for estimating a conditional survival function using off-the-shelf machine learning. The first, called *global survival stacking* and performed using the `stackG()` function, involves decomposing the conditional hazard function into regression functions depending only on the observed data. The second, called *local survival stacking* or discrete-time hazard estimation, involves discretizing time and estimating the probability of an event of interest within each discrete time period. This procedure is implemented in the `stackL()` function. More details on each method, as well as examples, follow. 
 
 ## Installing `survML`
 
@@ -34,23 +34,23 @@ The development version of `survML` is available on GitHub. You can install it u
 install_github(repo = "cwolock/survML")
 ```
 
-## Cumulative probability estimation
+## Global survival stacking
 
-In a basic survival analysis setting with right-censored data (but no truncation), the cumulative probability estimator requires three pieces: (1) the conditional probability of censoring given covariates, (2) the CDF of the observed time given covariates, among censored subjects, and (3) the CDF of the observed time given covariates, among uncensored subjects. All three of these can be estimated using standard binary regression or classification methods. 
+In a basic survival analysis setting with right-censored data (but no truncation), the ideal data for each individual consist of a covariate vector $X$, an event time $T$, and a censoring time $C$. The observed data consist of $X$, the observed follow-up time $Y:=\text{min}(T,C)$, and the event indicator $\Delta := I(T \leq C)$. Global survival stacking requires three components: (1) the conditional probability that $\Delta = 1$ given $X$, (2) the CDF of $Y$ given $X$ among among censored subjects, and (3) the CDF of $Y$ given $X$ among uncensored subjects. All three of these can be estimated using standard binary regression or classification methods. 
 
 For maximum flexibility, `survML` uses Super Learner for binary regression. Estimating (1) is a standard binary regression problem. We use pooled binary regression to estimate (2) and (3). In essence, at time $t$ each on a user-specified grid, the CDF is a binary regression using the outcome $I(Y \leq t)$. The data sets for each $t$ are combined into a single, pooled data set, including $t$ as a covariate. 
 
-The `survMLc` function performs cumulative probability estimation. The most important user-specified arguments are described here:
+The `stackG` function performs global survival stacking. The most important user-specified arguments are described here:
 
-* `bin_size`: This is the size of time grid used for estimating (2) and (3). In most cases, a finer grid performs better than a coarser grid, at increased computational cost. We recommend using as fine a grid as computational resources and time allow. In simulations, a grid of 40 time points performed similarly to a grid of every observed time. Bin size is given in quantile terms; `bin_size = 0.025` will use times corresponding to quantiles $\{0, 0.025, 0.05, \dots, 0.975, 1\}$. If `NULL`, a grid of every observed time is used. 
+* `bin_size`: This is the size of time grid used for estimating (2) and (3). In most cases, a finer grid performs better than a coarser grid, at increased computational cost. We recommend using as fine a grid as computational resources and time allow. In simulations, a grid of 40 time points performed similarly to a grid of every observed follow-up time. Bin size is given in quantile terms; `bin_size = 0.025` will use times corresponding to quantiles $\{0, 0.025, 0.05, \dots, 0.975, 1\}$. If `NULL`, a grid of every observed time is used. 
 * `time_basis`: This is how the time variable $t$ is included in the pooled data set. The default is `continuous` (i.e., include time as-is). It is also possible to include a dummy variable for each time in the grid (i.e., treat time as a `factor` variable) using option `dummy`. 
-* `SL.library`: This is the library of algorithms to be included in the Super Learner binary regression. This argument should be vector of algorithm names, which can be either default algorithms included in the `SuperLearner` package, or user-specified algorithms. This argument is passed directly to the `SuperLearner()` function. See the `SuperLearner` package documentation for more information. 
+* `SL_control`: This is a named list of arguments that are passed directly to the `SuperLearner()` function. `SL.library` gives the library of algorithms to be included in the Super Learner binary regression. This argument should be vector of algorithm names, which can be either default algorithms included in the `SuperLearner` package, or user-specified algorithms. See the `SuperLearner` package documentation for more information. 
 
 ### Example
 
-Here's a small example applying `survMLc` to simulated data. 
+Here's a small example applying `stackG` to simulated data. 
 
-```{r survMLc_example}
+```{r stackG_example}
 # This is a small simulation example
 set.seed(123)
 n <- 500
@@ -74,24 +74,23 @@ event <- as.numeric(T <= C)
 
 SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
 
-fit <- survMLc(time = time,
-               event = event,
-               X = X,
-               newX = X,
-               newtimes = seq(0, 15, .1),
-               direction = "prospective",
-               bin_size = 0.02,
-               time_basis = "continuous",
-               time_grid_approx = sort(unique(time)),
-               denom_method = "stratified",
-               surv_form = "exp",
-               SL.library = SL.library,
-               V = 5)
+fit <- stackG(time = time,
+              event = event,
+              X = X,
+              newX = X,
+              newtimes = seq(0, 15, .1),
+              direction = "prospective",
+              bin_size = 0.02,
+              time_basis = "continuous",
+              time_grid_approx = sort(unique(time)),
+              surv_form = "exp",
+              SL_control = list(SL.library = SL.library,
+                                V = 5))
 ```
 
 We can plot the fitted versus true conditional survival at various times for one particular individual in our data set: 
 
-```{r plot_survMLc_example}
+```{r plot_stackG_example}
 plot_dat <- data.frame(fitted = fit$S_T_preds[1,], 
                        true = S0(t =  seq(0, 15, .1), X[1,]))
 
@@ -101,29 +100,29 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
   theme_bw() + 
   ylab("fitted") +
   xlab("true") + 
-  ggtitle("survMLc() example")
+  ggtitle("Global survival stacking example")
 
 p
 ```
 
-## Survival stacking
+## Local survival stacking
 
 ### Example
 
-```{r survMLs_example}
-fit <- survMLs(time = time,
-               event = event,
-               X = X,
-               newX = X,
-               newtimes = seq(0, 15, .1),
-               direction = "prospective",
-               bin_size = 0.02,
-               time_basis = "continuous",
-               SL.library = SL.library,
-               V = 5)
+```{r stackL_example}
+fit <- stackL(time = time,
+              event = event,
+              X = X,
+              newX = X,
+              newtimes = seq(0, 15, .1),
+              direction = "prospective",
+              bin_size = 0.02,
+              time_basis = "continuous",
+              SL_control = list(SL.library = SL.library,
+                                V = 5))
 ```
 
-```{r plot_survMLs_example}
+```{r plot_stackL_example}
 plot_dat <- data.frame(fitted = fit$S_T_preds[1,], 
                        true = S0(t =  seq(0, 15, .1), X[1,]))
 
@@ -133,7 +132,7 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
   theme_bw() + 
   ylab("fitted") +
   xlab("true") + 
-  ggtitle("survMLs() example")
+  ggtitle("Local survival stacking example")
 
 p
 ```
@@ -141,6 +140,4 @@ p
 ## References
 For details of this method, please see the following preprint:
 
-Charles J. Wolock, Peter B. Gilbert, Noah Simon, Marco Carone. "Flexible estimation of the conditional survival function via observable regression models." (2022). 
-
-Super Learner citation. 
+Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. "A framework for leveraging machine learning tools to estimate personalized survival curves." (2022). 

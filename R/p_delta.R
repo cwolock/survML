@@ -19,15 +19,9 @@
 #' @noRd
 p_delta <- function(event,
                     X,
-                    V = 10,
-                    SL.library,
-                    obsWeights = NULL,
-                    parallel = FALSE){
+                    SL_control){
   fit <- p_delta_SuperLearner(event = event,
                               X = X,
-                              SL.library = SL.library,
-                              V = V,
-                              obsWeights = obsWeights,
-                              parallel = parallel)
+                              SL_control = SL_control)
   return(fit)
 }

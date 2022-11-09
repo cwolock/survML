@@ -19,8 +19,8 @@ compute_exponential <- function(cdf_uncens,
                             p_uncens,
                             newtimes,
                             time_grid,
-                            denom_method,
-                            truncation = FALSE){
+                            denom_method = "stratified",
+                            truncation = TRUE){
 
   estimate_S_T <- function(t){
     curr_length <- sum(time_grid <= t)
