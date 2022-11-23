@@ -46,7 +46,31 @@
 #' in which case the maximum study entry time is chosen as the
 #' reference point.
 #'
-#' @return A named list of class \code{stackG}
+#' @return A named list of class \code{stackG}, with the following components:
+#' \item{S_T_preds}{An \code{m x k} matrix with predicted survival probabilities for the event variable at
+#' \code{newtimes} for individuals with covariate values given by \code{newX}. Rows correspond to individuals,
+#' columns to times.}
+#' \item{S_C_preds}{An \code{m x k} matrix with predicted survival probabilities for the censoring variable at
+#' \code{newtimes} for individuals with covariate values given by \code{newX}. Rows correspond to individuals,
+#' columns to times.}
+#' \item{time_grid_approx}{The approximation grid for the product integral or cumulative hazard integral,
+#' (user-specified).}
+#' \item{direction}{Whether the data come from a prospective or retrospective study (user-specified).}
+#' \item{tau}{The maximum time of interest in a study, used for
+#' retrospective conditional survival estimation (user-specified).}
+#' \item{surv_form}{Exponential or product-integral form (user-specified).}
+#' \item{time_basis}{Whether time is included in the regression as \code{continuous} or
+#' \code{dummy} (user-specified).}
+#' \item{SL_control}{Named list of parameters controlling the Super Learner fitting
+#' process (user-specified).}
+#' \item{fits}{A named list of fitted regression objects corresponding to the constituent regressions needed for
+#' global survival stacking. Includes \code{P_Delta} (probability of event given covariates),
+#' \code{F_Y_1} (conditional cdf of follow-up times given covariates among uncensored),
+#' \code{F_Y_0} (conditional cdf of follow-up times given covariates among censored),
+#' \code{G_W_1} (conditional distribution of entry times given covariates and follow-up time among uncensored),
+#' \code{G_W_0} (conditional distribution of entry times given covariates and follow-up time among uncensored).
+#' Each of these objects includes estimated coefficients from the \code{SuperLearner} fit, as well as the
+#' time grid used to create the stacked dataset (where applicable).}
 #'
 #' @export
 #'
@@ -115,10 +139,10 @@ stackG <- function(time,
                    tau = NULL){
   P_Delta_opt <- NULL
   S_Y_opt <- NULL
-  S_Y_1_opt <- NULL
-  S_Y_0_opt <- NULL
-  F_W_1_opt <- NULL
-  F_W_0_opt <- NULL
+  F_Y_1_opt <- NULL
+  F_Y_0_opt <- NULL
+  G_W_1_opt <- NULL
+  G_W_0_opt <- NULL
   F_W_opt <- NULL
 
   tau <- NULL
@@ -141,8 +165,8 @@ stackG <- function(time,
     newtimes <- tau - newtimes
     time_grid_approx <- sort(tau - time_grid_approx)
     P_Delta_opt_preds <- rep(1, nrow(newX))
-    S_Y_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
-    F_W_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
+    F_Y_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
+    G_W_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
 
   # if there is a censoring probability to estimate, i.e. if there is censoring
@@ -152,19 +176,19 @@ stackG <- function(time,
                            SL_control = SL_control)
     P_Delta_opt_preds <- stats::predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
 
-    S_Y_0_opt <- f_y_stack(time = time,
+    F_Y_0_opt <- f_y_stack(time = time,
                            event = event,
                            X = X,
                            censored = TRUE,
                            bin_size = bin_size,
                            SL_control = SL_control,
                            time_basis = time_basis)
-    S_Y_0_opt_preds <- stats::predict(S_Y_0_opt,
+    F_Y_0_opt_preds <- stats::predict(F_Y_0_opt,
                                       newX = newX,
                                       newtimes = time_grid_approx)
   }
 
-  S_Y_1_opt <- f_y_stack(time = time,
+  F_Y_1_opt <- f_y_stack(time = time,
                          event = event,
                          X = X,
                          censored = FALSE,
@@ -173,7 +197,7 @@ stackG <- function(time,
                          time_basis = time_basis)
 
   if (!is.null(entry)){ # if a truncation variable is given
-    F_W_1_opt <- f_w_stack(time = time,
+    G_W_1_opt <- f_w_stack(time = time,
                            event = event,
                            X = X,
                            censored = FALSE,
@@ -181,11 +205,11 @@ stackG <- function(time,
                            SL_control = SL_control,
                            entry = entry,
                            time_basis = time_basis)
-    F_W_1_opt_preds <- stats::predict(F_W_1_opt,
+    G_W_1_opt_preds <- stats::predict(G_W_1_opt,
                                       newX = newX,
                                       newtimes = time_grid_approx)
     if (sum(event == 0) != 0){ # if there's censoring
-      F_W_0_opt <- f_w_stack(time = time,
+      G_W_0_opt <- f_w_stack(time = time,
                              event = event,
                              X = X,
                              censored = TRUE,
@@ -193,55 +217,55 @@ stackG <- function(time,
                              SL_control = SL_control,
                              entry = entry,
                              time_basis = time_basis)
-      F_W_0_opt_preds <- stats::predict(F_W_0_opt,
+      G_W_0_opt_preds <- stats::predict(G_W_0_opt,
                                         newX = newX,
                                         newtimes = time_grid_approx)
     } else{
-      F_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
+      G_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
     }
   } else{
-    F_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
-    F_W_1_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
+    G_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
+    G_W_1_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
 
-  S_Y_1_opt_preds <- stats::predict(S_Y_1_opt,
+  F_Y_1_opt_preds <- stats::predict(F_Y_1_opt,
                                     newX = newX,
                                     newtimes = time_grid_approx)
 
   estimate_S_T <- function(i){
     # get S_Y estimates up to t
-    S_Y_1_curr <- S_Y_1_opt_preds[i,]
+    F_Y_1_curr <- F_Y_1_opt_preds[i,]
     pi_curr <- P_Delta_opt_preds[i]
-    S_Y_0_curr <- S_Y_0_opt_preds[i,]
-    F_W_0_curr <- F_W_0_opt_preds[i,]
-    F_W_1_curr <- F_W_1_opt_preds[i,]
+    F_Y_0_curr <- F_Y_0_opt_preds[i,]
+    G_W_0_curr <- G_W_0_opt_preds[i,]
+    G_W_1_curr <- G_W_1_opt_preds[i,]
     if (surv_form == "PI"){
-      S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
-                                 cdf_cens = S_Y_0_curr,
-                                 entry_uncens = F_W_1_curr,
-                                 entry_cens = F_W_0_curr,
+      S_T_ests <-compute_prodint(cdf_uncens = F_Y_1_curr,
+                                 cdf_cens = F_Y_0_curr,
+                                 entry_uncens = G_W_1_curr,
+                                 entry_cens = G_W_0_curr,
                                  p_uncens = pi_curr,
                                  newtimes = newtimes,
                                  time_grid = time_grid_approx)
-      S_C_ests <-compute_prodint(cdf_uncens = S_Y_0_curr,
-                                 cdf_cens = S_Y_1_curr,
-                                 entry_uncens = F_W_0_curr,
-                                 entry_cens = F_W_1_curr,
+      S_C_ests <-compute_prodint(cdf_uncens = F_Y_0_curr,
+                                 cdf_cens = F_Y_1_curr,
+                                 entry_uncens = G_W_0_curr,
+                                 entry_cens = G_W_1_curr,
                                  p_uncens = 1 - pi_curr,
                                  newtimes = newtimes,
                                  time_grid = time_grid_approx)
     } else if (surv_form == "exp"){
-      S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
-                                     cdf_cens = S_Y_0_curr,
-                                     entry_uncens = F_W_1_curr,
-                                     entry_cens = F_W_0_curr,
+      S_T_ests <-compute_exponential(cdf_uncens = F_Y_1_curr,
+                                     cdf_cens = F_Y_0_curr,
+                                     entry_uncens = G_W_1_curr,
+                                     entry_cens = G_W_0_curr,
                                      p_uncens = pi_curr,
                                      newtimes = newtimes,
                                      time_grid = time_grid_approx)
-      S_C_ests <-compute_exponential(cdf_uncens = S_Y_0_curr,
-                                     cdf_cens = S_Y_1_curr,
-                                     entry_uncens = F_W_0_curr,
-                                     entry_cens = F_W_1_curr,
+      S_C_ests <-compute_exponential(cdf_uncens = F_Y_0_curr,
+                                     cdf_cens = F_Y_1_curr,
+                                     entry_uncens = G_W_0_curr,
+                                     entry_cens = G_W_1_curr,
                                      p_uncens = 1 - pi_curr,
                                      newtimes = newtimes,
                                      time_grid = time_grid_approx)
@@ -272,10 +296,10 @@ stackG <- function(time,
               time_basis = time_basis,
               SL_control = SL_control,
               fits = list(P_Delta = P_Delta_opt,
-                          S_Y_1 = S_Y_1_opt,
-                          S_Y_0 = S_Y_0_opt,
-                          F_W_1 = F_W_1_opt,
-                          F_W_0 = F_W_0_opt))
+                          F_Y_1 = F_Y_1_opt,
+                          F_Y_0 = F_Y_0_opt,
+                          G_W_1 = G_W_1_opt,
+                          G_W_0 = G_W_0_opt))
   class(res) <- "stackG"
   return(res)
 }
@@ -297,66 +321,66 @@ predict.stackG <- function(object,
   } else{
     P_Delta_opt_preds <- rep(1, nrow(newX))
   }
-  if (!is.null(object$fits$F_W_1)){
-    F_W_1_opt_preds <- stats::predict(object$fits$F_W_1,
+  if (!is.null(object$fits$G_W_1)){
+    G_W_1_opt_preds <- stats::predict(object$fits$G_W_1,
                                       newX = newX,
                                       newtimes = object$time_grid_approx)
   } else{
-    F_W_1_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
+    G_W_1_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
   }
-  if (!is.null(object$fits$F_W_0)){
-    F_W_0_opt_preds <- stats::predict(object$fits$F_W_0,
+  if (!is.null(object$fits$G_W_0)){
+    G_W_0_opt_preds <- stats::predict(object$fits$G_W_0,
                                       newX = newX,
                                       newtimes = object$time_grid_approx)
   } else{
-    F_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
+    G_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
   }
-  if (!is.null(object$fits$S_Y_0)){
-    S_Y_0_opt_preds <- stats::predict(object$fits$S_Y_0,
+  if (!is.null(object$fits$F_Y_0)){
+    F_Y_0_opt_preds <- stats::predict(object$fits$F_Y_0,
                                       newX = newX,
                                       newtimes = object$time_grid_approx)
   } else{
-    S_Y_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
+    F_Y_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
   }
 
-  S_Y_1_opt_preds <- stats::predict(object$fits$S_Y_1,
+  F_Y_1_opt_preds <- stats::predict(object$fits$F_Y_1,
                                     newX = newX,
                                     newtimes = object$time_grid_approx)
 
   estimate_S_T <- function(i){
     # get S_Y estimates up to t
-    S_Y_1_curr <- S_Y_1_opt_preds[i,]
+    F_Y_1_curr <- F_Y_1_opt_preds[i,]
     pi_curr <- P_Delta_opt_preds[i]
-    S_Y_0_curr <- S_Y_0_opt_preds[i,]
-    F_W_0_curr <- F_W_0_opt_preds[i,]
-    F_W_1_curr <- F_W_1_opt_preds[i,]
+    F_Y_0_curr <- F_Y_0_opt_preds[i,]
+    G_W_0_curr <- G_W_0_opt_preds[i,]
+    G_W_1_curr <- G_W_1_opt_preds[i,]
     if (surv_form == "PI"){
-      S_T_ests <-compute_prodint(cdf_uncens = S_Y_1_curr,
-                                 cdf_cens = S_Y_0_curr,
-                                 entry_uncens = F_W_1_curr,
-                                 entry_cens = F_W_0_curr,
+      S_T_ests <-compute_prodint(cdf_uncens = F_Y_1_curr,
+                                 cdf_cens = F_Y_0_curr,
+                                 entry_uncens = G_W_1_curr,
+                                 entry_cens = G_W_0_curr,
                                  p_uncens = pi_curr,
                                  newtimes = newtimes,
                                  time_grid = object$time_grid_approx)
-      S_C_ests <-compute_prodint(cdf_uncens = S_Y_0_curr,
-                                 cdf_cens = S_Y_1_curr,
-                                 entry_uncens = F_W_0_curr,
-                                 entry_cens = F_W_1_curr,
+      S_C_ests <-compute_prodint(cdf_uncens = F_Y_0_curr,
+                                 cdf_cens = F_Y_1_curr,
+                                 entry_uncens = G_W_0_curr,
+                                 entry_cens = G_W_1_curr,
                                  p_uncens = 1 - pi_curr,
                                  newtimes = newtimes,
                                  time_grid = object$time_grid_approx)
     } else if (surv_form == "exp"){
-      S_T_ests <-compute_exponential(cdf_uncens = S_Y_1_curr,
-                                     cdf_cens = S_Y_0_curr,
-                                     entry_uncens = F_W_1_curr,
-                                     entry_cens = F_W_0_curr,
+      S_T_ests <-compute_exponential(cdf_uncens = F_Y_1_curr,
+                                     cdf_cens = F_Y_0_curr,
+                                     entry_uncens = G_W_1_curr,
+                                     entry_cens = G_W_0_curr,
                                      p_uncens = pi_curr,
                                      newtimes = newtimes,
                                      time_grid = object$time_grid_approx)
-      S_C_ests <-compute_exponential(cdf_uncens = S_Y_0_curr,
-                                     cdf_cens = S_Y_1_curr,
-                                     entry_uncens = F_W_0_curr,
-                                     entry_cens = F_W_1_curr,
+      S_C_ests <-compute_exponential(cdf_uncens = F_Y_0_curr,
+                                     cdf_cens = F_Y_1_curr,
+                                     entry_uncens = G_W_0_curr,
+                                     entry_cens = G_W_1_curr,
                                      p_uncens = 1 - pi_curr,
                                      newtimes = newtimes,
                                      time_grid = object$time_grid_approx)

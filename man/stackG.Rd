@@ -80,7 +80,31 @@ in which case the maximum study entry time is chosen as the
 reference point.}
 }
 \value{
-A named list of class \code{stackG}
+A named list of class \code{stackG}, with the following components:
+\item{S_T_preds}{An \code{m x k} matrix with predicted survival probabilities for the event variable at
+\code{newtimes} for individuals with covariate values given by \code{newX}. Rows correspond to individuals,
+columns to times.}
+\item{S_C_preds}{An \code{m x k} matrix with predicted survival probabilities for the censoring variable at
+\code{newtimes} for individuals with covariate values given by \code{newX}. Rows correspond to individuals,
+columns to times.}
+\item{time_grid_approx}{The approximation grid for the product integral or cumulative hazard integral,
+(user-specified).}
+\item{direction}{Whether the data come from a prospective or retrospective study (user-specified).}
+\item{tau}{The maximum time of interest in a study, used for
+retrospective conditional survival estimation (user-specified).}
+\item{surv_form}{Exponential or product-integral form (user-specified).}
+\item{time_basis}{Whether time is included in the regression as \code{continuous} or
+\code{dummy} (user-specified).}
+\item{SL_control}{Named list of parameters controlling the Super Learner fitting
+process (user-specified).}
+\item{fits}{A named list of fitted regression objects corresponding to the constituent regressions needed for
+global survival stacking. Includes \code{P_Delta} (probability of event given covariates),
+\code{F_Y_1} (conditional cdf of follow-up times given covariates among uncensored),
+\code{F_Y_0} (conditional cdf of follow-up times given covariates among censored),
+\code{G_W_1} (conditional distribution of entry times given covariates and follow-up time among uncensored),
+\code{G_W_0} (conditional distribution of entry times given covariates and follow-up time among uncensored).
+Each of these objects includes estimated coefficients from the \code{SuperLearner} fit, as well as the
+time grid used to create the stacked dataset (where applicable).}
 }
 \description{
 Estimate a conditional survival function using global survival stacking
