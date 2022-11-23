@@ -69,7 +69,7 @@ reference point.}
 }
 \value{
 A named list of class \code{stackL}.
-\item{S_T_preds}{An \code{m x k} matrix of estimated survival probabilites at the
+\item{S_T_preds}{An \code{m x k} matrix of estimated event time survival probabilities at the
 \code{m} covariate vector values and \code{k} times provided by the user in
 \code{newX} and \code{newtimes}, respectively.}
 \item{fit}{The Super Learner fit for binary classification on the stacked

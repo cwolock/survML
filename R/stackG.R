@@ -47,12 +47,12 @@
 #' reference point.
 #'
 #' @return A named list of class \code{stackG}, with the following components:
-#' \item{S_T_preds}{An \code{m x k} matrix with predicted survival probabilities for the event variable at
-#' \code{newtimes} for individuals with covariate values given by \code{newX}. Rows correspond to individuals,
-#' columns to times.}
-#' \item{S_C_preds}{An \code{m x k} matrix with predicted survival probabilities for the censoring variable at
-#' \code{newtimes} for individuals with covariate values given by \code{newX}. Rows correspond to individuals,
-#' columns to times.}
+#' \item{S_T_preds}{An \code{m x k} matrix of estimated event time survival probabilities at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{S_C_preds}{An \code{m x k} matrix of estimated censoring time survival probabilities at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
 #' \item{time_grid_approx}{The approximation grid for the product integral or cumulative hazard integral,
 #' (user-specified).}
 #' \item{direction}{Whether the data come from a prospective or retrospective study (user-specified).}
