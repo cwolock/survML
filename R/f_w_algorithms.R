@@ -100,7 +100,7 @@ f_w_stack_SuperLearner <- function(time,
 
   fit <- SuperLearner::SuperLearner(Y = .Y,
                                     X = .X,
-                                    SL.library = SL.library,
+                                    SL.library = SL_control$SL.library,
                                     family = stats::binomial(),
                                     method = 'method.NNLS',
                                     verbose = FALSE,
