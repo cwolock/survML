@@ -49,7 +49,7 @@ f_w_stack_SuperLearner <- function(time,
 
   if (!is.null(bin_size)){
     #time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-    time_grid <- stats::quantile(time, probs = seq(0, 1, by = bin_size))
+    time_grid <- sort(unique(stats::quantile(time, probs = seq(0, 1, by = bin_size))))
     time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
   } else{
     time_grid <- sort(unique(time))
@@ -98,11 +98,21 @@ f_w_stack_SuperLearner <- function(time,
 
   validRows <- lapply(cv_folds, get_validRows)
 
+  if (is.null(SL_control$method)){
+    SL_control$method <- "method.NNLS"
+  }
+  if (is.null(SL_control$V)){
+    SL_control$V <- 10
+  }
+  if (is.null(SL_control$SL.library)){
+    SL_control$SL.library <- c("SL.mean")
+  }
+
   fit <- SuperLearner::SuperLearner(Y = .Y,
                                     X = .X,
                                     SL.library = SL_control$SL.library,
                                     family = stats::binomial(),
-                                    method = 'method.NNLS',
+                                    method = SL_control$method,
                                     verbose = FALSE,
                                     obsWeights = long_obsWeights,
                                     cvControl = list(V = SL_control$V,

@@ -35,9 +35,10 @@
 #' (exponentiated cumulative hazard estimate).
 #' @param SL_control Named list of parameters controlling the Super Learner fitting
 #' process. These parameters are passed directly to the \code{SuperLearner} function.
-#' Key parameters include \code{SL.library} (library of algorithms to include in the
+#' Parameters include \code{SL.library} (library of algorithms to include in the
 #' binary classification Super Learner), \code{V} (Number of cross validation folds on
-#' which to train the Super Learner classifier, defaults to 10), and \code{obsWeights}
+#' which to train the Super Learner classifier, defaults to 10), \code{method} (Method for
+#' estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}), and \code{obsWeights}
 #' (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
@@ -135,7 +136,8 @@ stackG <- function(time,
                    time_grid_approx = sort(unique(time)),
                    surv_form = "PI",
                    SL_control = list(SL.library = c("SL.mean"),
-                                     V = 10),
+                                     V = 10,
+                                     method = "method.NNLS"),
                    tau = NULL){
   P_Delta_opt <- NULL
   S_Y_opt <- NULL

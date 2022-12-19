@@ -29,7 +29,8 @@ fit <- stackG(time = time,
               bin_size = 0.02,
               time_basis = "continuous",
               time_grid_approx = sort(unique(time)),
-              SL_control = list(SL.library = SL.library, V = 5),
+              SL_control = list(SL.library = SL.library, V = 5,
+                                method = "method.NNLS"),
               surv_form = "PI")
 
 true_S_T_preds <- rbind(c(1, 0.791, 0.536, 0.491, 0.489, 0.487),

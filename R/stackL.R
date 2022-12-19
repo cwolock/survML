@@ -27,9 +27,10 @@
 #' an indicator variable is included for each time in the time grid.
 #' @param SL_control Named list of parameters controlling the Super Learner fitting
 #' process. These parameters are passed directly to the \code{SuperLearner} function.
-#' Key parameters include \code{SL.library} (library of algorithms to include in the
+#' Parameters include \code{SL.library} (library of algorithms to include in the
 #' binary classification Super Learner), \code{V} (Number of cross validation folds on
-#' which to train the Super Learner classifier, defaults to 10), and \code{obsWeights}
+#' which to train the Super Learner classifier, defaults to 10), \code{method} (Method for
+#' estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}), and \code{obsWeights}
 #' (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
@@ -104,7 +105,8 @@ stackL <- function(time,
                    bin_size = NULL,
                    time_basis = "continuous",
                    SL_control = list(SL.library = c("SL.mean"),
-                                     V = 10),
+                                     V = 10,
+                                     method = "method.NNLS"),
                    tau = NULL){
 
   if (is.null(newX)){
@@ -132,7 +134,7 @@ stackL <- function(time,
 
   # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
   if (!is.null(bin_size)){
-    time_grid <- stats::quantile(dat$time[dat$event == 1], probs = seq(0, 1, by = bin_size))
+    time_grid <- sort(unique(stats::quantile(dat$time[dat$event == 1], probs = seq(0, 1, by = bin_size))))
     time_grid[1] <- 0
   } else{
     time_grid <- sort(unique(dat$time[dat$event == 1]))
@@ -172,12 +174,20 @@ stackL <- function(time,
   .Y <- stacked[,ncol(stacked)]
   .X <- data.frame(stacked[,-ncol(stacked)])
   # fit Super Learner
-
+  if (is.null(SL_control$method)){
+    SL_control$method <- "method.NNLS"
+  }
+  if (is.null(SL_control$V)){
+    SL_control$V <- 10
+  }
+  if (is.null(SL_control$SL.library)){
+    SL_control$SL.library <- c("SL.mean")
+  }
   fit <- SuperLearner::SuperLearner(Y = .Y,
                                     X = .X,
                                     SL.library = SL_control$SL.library,
                                     family = stats::binomial(),
-                                    method = 'method.NNLS',
+                                    method = SL_control$method,
                                     verbose = FALSE,
                                     obsWeights = long_obsWeights,
                                     cvControl = list(V = SL_control$V))

@@ -13,11 +13,21 @@ p_delta_SuperLearner <- function(event,
 
   X <- as.data.frame(X)
 
+  if (is.null(SL_control$method)){
+    SL_control$method <- "method.NNLS"
+  }
+  if (is.null(SL_control$V)){
+    SL_control$V <- 10
+  }
+  if (is.null(SL_control$SL.library)){
+    SL_control$SL.library <- c("SL.mean")
+  }
+
   opt_fit <- SuperLearner::SuperLearner(Y = event,
                                         X = X,
                                         family = stats::binomial(),
                                         SL.library = SL_control$SL.library,
-                                        method = "method.NNLS",
+                                        method = SL_control$method,
                                         verbose = FALSE,
                                         cvControl = list(V = SL_control$V),
                                         obsWeights = SL_control$obsWeights)
