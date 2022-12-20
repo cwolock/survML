@@ -153,12 +153,33 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
   theme_bw() + 
   ylab("fitted") +
   xlab("true") + 
-  ggtitle("Global survival stacking example")
+  ggtitle("Global survival stacking example (event time distribution)")
 
 p
 ```
 
 ![](man/figures/README-plot_stackG_example-1.png)<!-- -->
+
+The `stackG` function simultaneously produces estimates for the
+conditional censoring distribution. This may be useful, for example, for
+producing inverse probability of censoring (IPCW) weights.
+
+``` r
+plot_dat <- data.frame(fitted = fit$S_C_preds[1,], 
+                       true = G0(t =  seq(0, 15, .1), X[1,]))
+
+p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) + 
+  geom_point() + 
+  geom_abline(slope = 1, intercept = 0, color = "red") + 
+  theme_bw() + 
+  ylab("fitted") +
+  xlab("true") + 
+  ggtitle("Global survival stacking example (censoring time distribution)")
+
+p
+```
+
+![](man/figures/README-plot_stackG_example_cens-1.png)<!-- -->
 
 ## Local survival stacking
 
