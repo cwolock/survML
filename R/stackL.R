@@ -30,7 +30,9 @@
 #' Parameters include \code{SL.library} (library of algorithms to include in the
 #' binary classification Super Learner), \code{V} (Number of cross validation folds on
 #' which to train the Super Learner classifier, defaults to 10), \code{method} (Method for
-#' estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}), and \code{obsWeights}
+#' estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}),
+#' code{stratifyCV} (logical indicating whether to stratify by outcome in \code{SuperLearner}'s cross-validation
+#' scheme), and \code{obsWeights}
 #' (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
@@ -106,7 +108,8 @@ stackL <- function(time,
                    time_basis = "continuous",
                    SL_control = list(SL.library = c("SL.mean"),
                                      V = 10,
-                                     method = "method.NNLS"),
+                                     method = "method.NNLS",
+                                     stratifyCV = FALSE),
                    tau = NULL){
 
   if (is.null(newX)){
@@ -158,6 +161,7 @@ stackL <- function(time,
                                 time_grid = time_grid,
                                 entry = entry,
                                 time_basis = "continuous")
+  #print(stacked$event_indicators)
 
   # change t to dummy variable
   if (time_basis == "dummy"){
@@ -183,6 +187,7 @@ stackL <- function(time,
   if (is.null(SL_control$SL.library)){
     SL_control$SL.library <- c("SL.mean")
   }
+
   fit <- SuperLearner::SuperLearner(Y = .Y,
                                     X = .X,
                                     SL.library = SL_control$SL.library,
@@ -190,7 +195,8 @@ stackL <- function(time,
                                     method = SL_control$method,
                                     verbose = FALSE,
                                     obsWeights = long_obsWeights,
-                                    cvControl = list(V = SL_control$V))
+                                    cvControl = list(V = SL_control$V,
+                                                     stratifyCV = SL_control$stratifyCV))
 
   # create function to get discrete hazard predictions
   if (time_basis == "continuous"){

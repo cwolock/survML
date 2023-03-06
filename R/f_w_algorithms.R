@@ -50,7 +50,8 @@ f_w_stack_SuperLearner <- function(time,
   if (!is.null(bin_size)){
     #time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
     time_grid <- sort(unique(stats::quantile(time, probs = seq(0, 1, by = bin_size))))
-    time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+    time_grid <- c(0, time_grid) # 013123 changed this to try to get better predictions at time 0
+    #time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
   } else{
     time_grid <- sort(unique(time))
     time_grid <- c(0, time_grid)
@@ -116,7 +117,8 @@ f_w_stack_SuperLearner <- function(time,
                                     verbose = FALSE,
                                     obsWeights = long_obsWeights,
                                     cvControl = list(V = SL_control$V,
-                                                     validRows = validRows))
+                                                     validRows = validRows,
+                                                     stratifyCV = SL_control$stratifyCV))
 
   fit <- list(reg.object = fit, time_grid = time_grid, time_basis = time_basis)
   class(fit) <- c("f_w_stack_SuperLearner")

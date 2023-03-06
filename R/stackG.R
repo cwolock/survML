@@ -38,7 +38,9 @@
 #' Parameters include \code{SL.library} (library of algorithms to include in the
 #' binary classification Super Learner), \code{V} (Number of cross validation folds on
 #' which to train the Super Learner classifier, defaults to 10), \code{method} (Method for
-#' estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}), and \code{obsWeights}
+#' estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}), code{stratifyCV}
+#' (logical indicating whether to stratify by outcome in \code{SuperLearner}'s cross-validation
+#' scheme), and \code{obsWeights}
 #' (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
@@ -137,7 +139,8 @@ stackG <- function(time,
                    surv_form = "PI",
                    SL_control = list(SL.library = c("SL.mean"),
                                      V = 10,
-                                     method = "method.NNLS"),
+                                     method = "method.NNLS",
+                                     stratifyCV = FALSE),
                    tau = NULL){
   P_Delta_opt <- NULL
   S_Y_opt <- NULL
