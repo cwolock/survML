@@ -108,6 +108,9 @@ f_w_stack_SuperLearner <- function(time,
   if (is.null(SL_control$SL.library)){
     SL_control$SL.library <- c("SL.mean")
   }
+  if (is.null(SL_control$stratifyCV)){
+    SL_control$stratifyCV <- FALSE
+  }
 
   fit <- SuperLearner::SuperLearner(Y = .Y,
                                     X = .X,

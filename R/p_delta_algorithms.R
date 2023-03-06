@@ -22,6 +22,9 @@ p_delta_SuperLearner <- function(event,
   if (is.null(SL_control$SL.library)){
     SL_control$SL.library <- c("SL.mean")
   }
+  if (is.null(SL_control$stratifyCV)){
+    SL_control$stratifyCV <- FALSE
+  }
 
   opt_fit <- SuperLearner::SuperLearner(Y = event,
                                         X = X,
