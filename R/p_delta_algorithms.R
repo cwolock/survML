@@ -30,7 +30,7 @@ p_delta_SuperLearner <- function(event,
                                         method = SL_control$method,
                                         verbose = FALSE,
                                         cvControl = list(V = SL_control$V,
-                                                         stratifyCV = SL_control$stratify_CV),
+                                                         stratifyCV = SL_control$stratifyCV),
                                         obsWeights = SL_control$obsWeights)
 
   fit <- list(reg.object = opt_fit)
