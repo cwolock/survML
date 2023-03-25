@@ -18,8 +18,8 @@ stack_haz <- function(time, event, X, time_grid, entry, time_basis){
       #risk_set <- dat[dat$time > time_grid[i],]
       risk_set <- dat[dat$time >= time_grid[i],]
     } else{ # entry given
-      #risk_set <- dat[dat$time > time_grid[i] & entry <= time_grid[i+1],]
-      risk_set <- dat[dat$time >= time_grid[i] & entry <= time_grid[i],]
+      risk_set <- dat[dat$time >= time_grid[i] & entry < time_grid[i+1],]
+      #risk_set <- dat[dat$time >= time_grid[i] & entry <= time_grid[i],]
     }
     risk_set_covariates <- risk_set[,1:ncol(X)]
     #event_indicators <- matrix(ifelse(risk_set$time <= time_grid[i + 1 ] & risk_set$event == 1, 1, 0))
