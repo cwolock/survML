@@ -239,6 +239,7 @@ f_w_stack_xgboost <- function(time,
                                    ids = ids))
   }
 
+
   if (is.null(xgb_control$tuning_params)){
     xgb_control$tuning_params <- list(ntrees = c(50, 100, 250, 500), max_depth = c(1,2,3),
                                       eta = c(0.1), subsample = c(0.5))
@@ -253,101 +254,114 @@ f_w_stack_xgboost <- function(time,
     xgb_control$V <- 10
   }
 
-  param_grid <- expand.grid(ntrees = xgb_control$tuning_params$ntrees,
-                            max_depth = xgb_control$tuning_params$max_depth,
-                            eta = xgb_control$tuning_params$eta,
-                            subsample = xgb_control$tuning_params$subsample)
-
-  get_CV_risk <- function(i){
-    ntrees <- param_grid$ntrees[i]
-    max_depth <- param_grid$max_depth[i]
-    eta <- param_grid$eta[i]
-    subsample <- param_grid$subsample[i]
-    risks <- rep(NA, xgb_control$V)
-    for (j in 1:xgb_control$V){
-      train_stackX <- stackX[-cv_folds[[j]],]
-      train_time <- time[-cv_folds[[j]]]
-      train_entry <- entry[-cv_folds[[j]]]
-      train_stack <- survML:::stack_entry(time = train_time,
-                                          entry = train_entry,
-                                          X = train_stackX,
-                                          time_grid = time_grid,
-                                          time_basis = "continuous")
-
-      # change t to dummy variable
-      if (time_basis == "dummy"){
-        train_stack$t <- factor(train_stack$t)
-        dummy_mat <- model.matrix(~-1 + t, data=train_stack)
-        risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
-        colnames(dummy_mat) <- risk_set_names
-        train_stack$t <- NULL
-        train_stack <- cbind(dummy_mat, train_stack)
-      }
-
-      # long_obsWeights <- train_stack$obsWeights
-      # stacked_ids <- train_stack$ids
-      train_stack$obsWeights <- NULL
-      train_stack$ids <- NULL
-
-      xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]),
-                                    label = as.matrix(train_stack[,ncol(train_stack)]))
-      fit <- xgboost::xgboost(data = xgmat,
-                              objective=xgb_control$objective,
-                              nrounds = ntrees,
-                              max_depth = max_depth,
-                              eta = eta,
-                              verbose = FALSE,
-                              nthread = 1,
-                              save_period = NULL,
-                              eval_metric = xgb_control$eval_metric,
-                              subsample = subsample)
-      test_stackX <- stackX[cv_folds[[j]],]
-      test_time <- time[cv_folds[[j]]]
-      test_entry <- entry[cv_folds[[j]]]
-      test_stack <- survML:::stack_entry(time = test_time,
-                                         entry = test_entry,
-                                         X = test_stackX,
-                                         time_grid = time_grid,
-                                         time_basis = "continuous")
-
-      # change t to dummy variable
-      if (time_basis == "dummy"){
-        test_stack$t <- factor(test_stack$t)
-        dummy_mat <- model.matrix(~-1 + t, data=test_stack)
-        risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
-        colnames(dummy_mat) <- risk_set_names
-        test_stack$t <- NULL
-        test_stack <- cbind(dummy_mat, test_stack)
-      }
-
-      # long_obsWeights <- train_stack$obsWeights
-      # stacked_ids <- train_stack$ids
-      test_stack$obsWeights <- NULL
-      test_stack$ids <- NULL
-
-      preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
-      preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
-      truth <- test_stack[,ncol(test_stack)]
-      log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
-        -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
-      })
-      log_loss <- unlist(log_loss)
-      risks[j] <- sum(log_loss)
-    }
-    return(sum(risks))
+  if (is.null(xgb_control$tune)){
+    xgb_control$tune <- TRUE
   }
 
-  CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
+  if (xgb_control$tune){
+    param_grid <- expand.grid(ntrees = xgb_control$tuning_params$ntrees,
+                              max_depth = xgb_control$tuning_params$max_depth,
+                              eta = xgb_control$tuning_params$eta,
+                              subsample = xgb_control$tuning_params$subsample)
 
-  opt_param_index <- which.min(CV_risks)
-  opt_ntrees <- param_grid$ntrees[opt_param_index]
-  opt_max_depth <- param_grid$max_depth[opt_param_index]
-  opt_eta <- param_grid$eta[opt_param_index]
-  opt_subsample <- param_grid$subsample[opt_param_index]
-  opt_params <- list(ntrees = opt_ntrees,
-                     max_depth = opt_max_depth,
-                     eta = opt_eta,
-                     subsample = opt_subsample)
+    get_CV_risk <- function(i){
+      ntrees <- param_grid$ntrees[i]
+      max_depth <- param_grid$max_depth[i]
+      eta <- param_grid$eta[i]
+      subsample <- param_grid$subsample[i]
+      risks <- rep(NA, xgb_control$V)
+      for (j in 1:xgb_control$V){
+        train_stackX <- stackX[-cv_folds[[j]],]
+        train_time <- time[-cv_folds[[j]]]
+        train_entry <- entry[-cv_folds[[j]]]
+        train_stack <- survML:::stack_entry(time = train_time,
+                                            entry = train_entry,
+                                            X = train_stackX,
+                                            time_grid = time_grid,
+                                            time_basis = "continuous")
+
+        # change t to dummy variable
+        if (time_basis == "dummy"){
+          train_stack$t <- factor(train_stack$t)
+          dummy_mat <- model.matrix(~-1 + t, data=train_stack)
+          risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+          colnames(dummy_mat) <- risk_set_names
+          train_stack$t <- NULL
+          train_stack <- cbind(dummy_mat, train_stack)
+        }
+
+        # long_obsWeights <- train_stack$obsWeights
+        # stacked_ids <- train_stack$ids
+        train_stack$obsWeights <- NULL
+        train_stack$ids <- NULL
+
+        xgmat <- xgboost::xgb.DMatrix(data = as.matrix(train_stack[,-ncol(train_stack)]),
+                                      label = as.matrix(train_stack[,ncol(train_stack)]))
+        fit <- xgboost::xgboost(data = xgmat,
+                                objective=xgb_control$objective,
+                                nrounds = ntrees,
+                                max_depth = max_depth,
+                                eta = eta,
+                                verbose = FALSE,
+                                nthread = 1,
+                                save_period = NULL,
+                                eval_metric = xgb_control$eval_metric,
+                                subsample = subsample)
+        test_stackX <- stackX[cv_folds[[j]],]
+        test_time <- time[cv_folds[[j]]]
+        test_entry <- entry[cv_folds[[j]]]
+        test_stack <- survML:::stack_entry(time = test_time,
+                                           entry = test_entry,
+                                           X = test_stackX,
+                                           time_grid = time_grid,
+                                           time_basis = "continuous")
+
+        # change t to dummy variable
+        if (time_basis == "dummy"){
+          test_stack$t <- factor(test_stack$t)
+          dummy_mat <- model.matrix(~-1 + t, data=test_stack)
+          risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+          colnames(dummy_mat) <- risk_set_names
+          test_stack$t <- NULL
+          test_stack <- cbind(dummy_mat, test_stack)
+        }
+
+        # long_obsWeights <- train_stack$obsWeights
+        # stacked_ids <- train_stack$ids
+        test_stack$obsWeights <- NULL
+        test_stack$ids <- NULL
+
+        preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
+        preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
+        truth <- test_stack[,ncol(test_stack)]
+        log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
+          -truth[x] * log(preds[x]) - (1-truth[x])*log(1 - preds[x])
+        })
+        log_loss <- unlist(log_loss)
+        risks[j] <- sum(log_loss)
+      }
+      return(sum(risks))
+    }
+
+    CV_risks <- unlist(lapply(1:nrow(param_grid), get_CV_risk))
+
+    opt_param_index <- which.min(CV_risks)
+    opt_ntrees <- param_grid$ntrees[opt_param_index]
+    opt_max_depth <- param_grid$max_depth[opt_param_index]
+    opt_eta <- param_grid$eta[opt_param_index]
+    opt_subsample <- param_grid$subsample[opt_param_index]
+    opt_params <- list(ntrees = opt_ntrees,
+                       max_depth = opt_max_depth,
+                       eta = opt_eta,
+                       subsample = opt_subsample)
+
+    CV_mat <- cbind(param_grid, CV_risks)
+  } else{
+    opt_params <- xgb_control$tuning_params
+    CV_mat <- NA
+  }
+
+
 
   stacked <- survML:::stack_entry(time = time,
                                   entry = entry,
@@ -383,8 +397,6 @@ f_w_stack_xgboost <- function(time,
                           save_period = NULL,
                           eval_metric = xgb_control$eval_metric,
                           subsample = opt_subsample)
-
-  CV_mat <- cbind(param_grid, CV_risks)
 
   fit <- list(reg.object = fit,
               time_grid = time_grid,
