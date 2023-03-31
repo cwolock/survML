@@ -19,9 +19,18 @@
 #' @noRd
 p_delta <- function(event,
                     X,
-                    SL_control){
-  fit <- p_delta_SuperLearner(event = event,
-                              X = X,
-                              SL_control = SL_control)
+                    learner = "SuperLearner",
+                    SL_control,
+                    xgb_control){
+  if (learner == "SuperLearner"){
+    fit <- p_delta_SuperLearner(event = event,
+                                X = X,
+                                SL_control = SL_control)
+  } else if (learner == "xgboost"){
+    fit <- p_delta_xgboost(event = event,
+                                X = X,
+                                xgb_control = xgb_control)
+  }
+
   return(fit)
 }

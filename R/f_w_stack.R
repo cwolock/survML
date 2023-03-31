@@ -38,17 +38,32 @@ f_w_stack <- function(time,
                       entry,
                       censored,
                       bin_size,
+                      learner = "SuperLearner",
                       SL_control,
+                      xgb_control,
                       time_basis){
 
-  fit <- f_w_stack_SuperLearner(time = time,
-                                event = event,
-                                X = X,
-                                censored = censored,
-                                bin_size = bin_size,
-                                SL_control = SL_control,
-                                time_basis = time_basis,
-                                entry = entry)
+  if (learner == "SuperLearner"){
+    fit <- f_w_stack_SuperLearner(time = time,
+                                  event = event,
+                                  X = X,
+                                  censored = censored,
+                                  bin_size = bin_size,
+                                  SL_control = SL_control,
+                                  time_basis = time_basis,
+                                  entry = entry)
+
+  } else if (learner == "xgboost"){
+    fit <- f_w_stack_xgboost(time = time,
+                             event = event,
+                             X = X,
+                             censored = censored,
+                             bin_size = bin_size,
+                             xgb_control = xgb_control,
+                             time_basis = time_basis,
+                             entry = entry)
+
+  }
 
   return(fit)
 }
