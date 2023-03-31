@@ -44,7 +44,9 @@ The `stackG` function performs global survival stacking. The most important user
 
 * `bin_size`: This is the size of time grid used for estimating (2) and (3). In most cases, a finer grid performs better than a coarser grid, at increased computational cost. We recommend using as fine a grid as computational resources and time allow. In simulations, a grid of 40 time points performed similarly to a grid of every observed follow-up time. Bin size is given in quantile terms; `bin_size = 0.025` will use times corresponding to quantiles $\{0, 0.025, 0.05, \dots, 0.975, 1\}$. If `NULL`, a grid of every observed time is used. 
 * `time_basis`: This is how the time variable $t$ is included in the pooled data set. The default is `continuous` (i.e., include time as-is). It is also possible to include a dummy variable for each time in the grid (i.e., treat time as a `factor` variable) using option `dummy`. 
+* `learner`: Currently, `SuperLearner` and `xgboost` are available. Each has its own control parameters, which are detailed below. 
 * `SL_control`: This is a named list of arguments that are passed directly to the `SuperLearner()` function. `SL.library` gives the library of algorithms to be included in the Super Learner binary regression. This argument should be vector of algorithm names, which can be either default algorithms included in the `SuperLearner` package, or user-specified algorithms. See the `SuperLearner` package documentation for more information. 
+* `xgb_control`: This is a named list of arguments that are use to fit the `xgboost` algorithm. `tune` is a logical indicating whether to use cross-validation to select from a set of possible tuning parameters, or to fit `xgboost` using a single pre-specified set of parameters. `tuning_params` is a list of tuning parameters passed to `xgboost`. See the `xgboost` package documentation for more information.  
 
 ### Example
 

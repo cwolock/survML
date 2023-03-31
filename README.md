@@ -39,12 +39,12 @@ and a censoring time
 The observed data consist of
 ![X](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;X "X"),
 the observed follow-up time
-![Y:=\\text{min}(T,C)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;Y%3A%3D%5Ctext%7Bmin%7D%28T%2CC%29 "Y:=\text{min}(T,C)"),
+![Y:=\text{min}(T,C)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;Y%3A%3D%5Ctext%7Bmin%7D%28T%2CC%29 "Y:=\text{min}(T,C)"),
 and the event indicator
-![\\Delta := I(T \\leq C)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5CDelta%20%3A%3D%20I%28T%20%5Cleq%20C%29 "\Delta := I(T \leq C)").
+![\Delta := I(T \leq C)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5CDelta%20%3A%3D%20I%28T%20%5Cleq%20C%29 "\Delta := I(T \leq C)").
 Global survival stacking requires three components: (1) the conditional
 probability that
-![\\Delta = 1](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5CDelta%20%3D%201 "\Delta = 1")
+![\Delta = 1](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5CDelta%20%3D%201 "\Delta = 1")
 given
 ![X](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;X "X"),
 (2) the CDF of
@@ -65,7 +65,7 @@ time
 ![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t")
 each on a user-specified grid, the CDF is a binary regression using the
 outcome
-![I(Y \\leq t)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;I%28Y%20%5Cleq%20t%29 "I(Y \leq t)").
+![I(Y \leq t)](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;I%28Y%20%5Cleq%20t%29 "I(Y \leq t)").
 The data sets for each
 ![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t")
 are combined into a single, pooled data set, including
@@ -75,28 +75,36 @@ as a covariate.
 The `stackG` function performs global survival stacking. The most
 important user-specified arguments are described here:
 
--   `bin_size`: This is the size of time grid used for estimating (2)
-    and (3). In most cases, a finer grid performs better than a coarser
-    grid, at increased computational cost. We recommend using as fine a
-    grid as computational resources and time allow. In simulations, a
-    grid of 40 time points performed similarly to a grid of every
-    observed follow-up time. Bin size is given in quantile terms;
-    `bin_size = 0.025` will use times corresponding to quantiles
-    ![\\{0, 0.025, 0.05, \\dots, 0.975, 1\\}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5C%7B0%2C%200.025%2C%200.05%2C%20%5Cdots%2C%200.975%2C%201%5C%7D "\{0, 0.025, 0.05, \dots, 0.975, 1\}").
-    If `NULL`, a grid of every observed time is used.
--   `time_basis`: This is how the time variable
-    ![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t")
-    is included in the pooled data set. The default is `continuous`
-    (i.e., include time as-is). It is also possible to include a dummy
-    variable for each time in the grid (i.e., treat time as a `factor`
-    variable) using option `dummy`.
--   `SL_control`: This is a named list of arguments that are passed
-    directly to the `SuperLearner()` function. `SL.library` gives the
-    library of algorithms to be included in the Super Learner binary
-    regression. This argument should be vector of algorithm names, which
-    can be either default algorithms included in the `SuperLearner`
-    package, or user-specified algorithms. See the `SuperLearner`
-    package documentation for more information.
+- `bin_size`: This is the size of time grid used for estimating (2) and
+  (3). In most cases, a finer grid performs better than a coarser grid,
+  at increased computational cost. We recommend using as fine a grid as
+  computational resources and time allow. In simulations, a grid of 40
+  time points performed similarly to a grid of every observed follow-up
+  time. Bin size is given in quantile terms; `bin_size = 0.025` will use
+  times corresponding to quantiles
+  ![\\{0, 0.025, 0.05, \dots, 0.975, 1\\}](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;%5C%7B0%2C%200.025%2C%200.05%2C%20%5Cdots%2C%200.975%2C%201%5C%7D "\{0, 0.025, 0.05, \dots, 0.975, 1\}").
+  If `NULL`, a grid of every observed time is used.
+- `time_basis`: This is how the time variable
+  ![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t")
+  is included in the pooled data set. The default is `continuous` (i.e.,
+  include time as-is). It is also possible to include a dummy variable
+  for each time in the grid (i.e., treat time as a `factor` variable)
+  using option `dummy`.
+- `learner`: Currently, `SuperLearner` and `xgboost` are available. Each
+  has its own control parameters, which are detailed below.
+- `SL_control`: This is a named list of arguments that are passed
+  directly to the `SuperLearner()` function. `SL.library` gives the
+  library of algorithms to be included in the Super Learner binary
+  regression. This argument should be vector of algorithm names, which
+  can be either default algorithms included in the `SuperLearner`
+  package, or user-specified algorithms. See the `SuperLearner` package
+  documentation for more information.
+- `xgb_control`: This is a named list of arguments that are use to fit
+  the `xgboost` algorithm. `tune` is a logical indicating whether to use
+  cross-validation to select from a set of possible tuning parameters,
+  or to fit `xgboost` using a single pre-specified set of parameters.
+  `tuning_params` is a list of tuning parameters passed to `xgboost`.
+  See the `xgboost` package documentation for more information.
 
 ### Example
 
