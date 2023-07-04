@@ -6,13 +6,18 @@
 The `survML` package implements two methods for estimating a conditional
 survival function using off-the-shelf machine learning. The first,
 called *global survival stacking* and performed using the `stackG()`
-function, involves decomposing the conditional hazard function into
-regression functions depending only on the observed data. The second,
-called *local survival stacking* or discrete-time hazard estimation,
-involves discretizing time and estimating the probability of an event of
-interest within each discrete time period. This procedure is implemented
-in the `stackL()` function. More details on each method, as well as
-examples, follow.
+function, involves decomposing the conditional cumulative hazard
+function into regression functions depending only on the observed data.
+The second, called *local survival stacking* or discrete-time hazard
+estimation, involves discretizing time and estimating the probability of
+an event of interest within each discrete time period. This procedure is
+implemented in the `stackL()` function.
+
+These functions can be used for both left-truncated, right-censored data
+(commonly seen in prospective studies) and right-truncated data
+(commonly seen in retrospective studies).
+
+More details on each method, as well as examples, follow.
 
 ## Installing `survML`
 
@@ -28,9 +33,9 @@ install_github(repo = "cwolock/survML")
 
 ## Global survival stacking
 
-In a basic survival analysis setting with right-censored data (but no
-truncation), the ideal data for each individual consist of a covariate
-vector
+In a basic survival analysis setting with right-censored data (for
+simplicity, we don’t discuss truncation here), the ideal data for each
+individual consist of a covariate vector
 ![X](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;X "X"),
 an event time
 ![T](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;T "T"),
@@ -58,10 +63,8 @@ given
 among uncensored subjects. All three of these can be estimated using
 standard binary regression or classification methods.
 
-For maximum flexibility, `survML` uses Super Learner for binary
-regression. Estimating (1) is a standard binary regression problem. We
-use pooled binary regression to estimate (2) and (3). In essence, at
-time
+Estimating (1) is a standard binary regression problem. We use pooled
+binary regression to estimate (2) and (3). In essence, at time
 ![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t")
 each on a user-specified grid, the CDF is a binary regression using the
 outcome
@@ -70,7 +73,8 @@ The data sets for each
 ![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t")
 are combined into a single, pooled data set, including
 ![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t")
-as a covariate.
+as a covariate. Currently, `survML` allows either Super Learner or
+gradient-boosted trees to be used for binary regression.
 
 The `stackG` function performs global survival stacking. The most
 important user-specified arguments are described here:
@@ -191,6 +195,19 @@ p
 
 ## Local survival stacking
 
+For discrete time-to-event variables, the hazard function at a single
+time is a conditional probability whose estimation can be framed as a
+binary regression problem: among those who have not experienced the
+event by time
+![t](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;t "t"),
+what proportion experience the outcome at that time? Local survival
+stacking assumes a discrete survival process and is based on estimating
+this conditional event probability at each time in a user-specified
+grid. These binary regressions are estimated jointly by “stacking” the
+data sets corresponding to all times in the grid. This idea dates back
+at least to work by Polley and van der Laan (2011) and was also recently
+described by Craig et al. (2021).
+
 ### Example
 
 ``` r
@@ -225,8 +242,19 @@ p
 
 ## References
 
-For details of this method, please see the following preprint:
+For details of global survival stacking, please see the following
+preprint:
 
 Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. “A
 framework for leveraging machine learning tools to estimate personalized
-survival curves.” [arXiv: 2211.03031.](https://arxiv.org/abs/2211.03031)
+survival curves.” [arXiv:
+2211.03031.](https://arxiv.org/abs/2211.03031).
+
+Local survival stacking is described in:
+
+Eric C. Polley and Mark J. van der Laan. “Super Learning for
+Right-Censored Data” in *Targeted Learning* (2011).
+
+Erin Craig, Chenyang Zhong, Robert Tibshirani. “Survival stacking:
+casting survival analysis as a classification problem.”
+[arXiv:2107.13480](https://arxiv.org/abs/2107.13480).
