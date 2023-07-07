@@ -29,9 +29,13 @@ More details on each method, as well as examples, follow.
 
 ## Installing `survML`
 
-**Note: `survML` is currently under development.**
+You can install a stable version of `survML` from CRAN using
 
-The development version of `survML` is available on GitHub. You can install it using the `devtools` package as follows: 
+```r
+install.packages("survML")
+```
+
+Alternatively, the development version of `survML` is available on GitHub. You can install it using the `devtools` package as follows: 
 
 ```r
 ## install.packages("devtools") # run only if necessary
