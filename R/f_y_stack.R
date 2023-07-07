@@ -48,14 +48,6 @@ f_y_stack <- function(time,
                                   bin_size = bin_size,
                                   time_basis = time_basis,
                                   SL_control = SL_control)
-  } else if (learner == "xgboost"){
-    fit <- f_y_stack_xgboost(time = time,
-                             event = event,
-                             X = X,
-                             censored = censored,
-                             bin_size = bin_size,
-                             time_basis = time_basis,
-                             xgb_control = xgb_control)
   }
 
 

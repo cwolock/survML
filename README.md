@@ -54,8 +54,8 @@ binary regression to estimate (2) and (3). In essence, at time $t$ each
 on a user-specified grid, the CDF is a binary regression using the
 outcome $I(Y \leq t)$. The data sets for each $t$ are combined into a
 single, pooled data set, including $t$ as a covariate. Currently,
-`survML` allows either Super Learner or gradient-boosted trees to be
-used for binary regression.
+`survML` allows Super Learner to be used for binary regression, but more
+learners will be added in future versions.
 
 The `stackG` function performs global survival stacking. The most
 important user-specified arguments are described here:
@@ -74,8 +74,7 @@ important user-specified arguments are described here:
   as-is). It is also possible to include a dummy variable for each time
   in the grid (i.e., treat time as a `factor` variable) using option
   `dummy`.
-- `learner`: Currently, `SuperLearner` and `xgboost` are available. Each
-  has its own control parameters, which are detailed below.
+- `learner`: Currently, the only supported option is `SuperLearner`.
 - `SL_control`: This is a named list of arguments that are passed
   directly to the `SuperLearner()` function. `SL.library` gives the
   library of algorithms to be included in the Super Learner binary
@@ -83,12 +82,6 @@ important user-specified arguments are described here:
   can be either default algorithms included in the `SuperLearner`
   package, or user-specified algorithms. See the `SuperLearner` package
   documentation for more information.
-- `xgb_control`: This is a named list of arguments that are use to fit
-  the `xgboost` algorithm. `tune` is a logical indicating whether to use
-  cross-validation to select from a set of possible tuning parameters,
-  or to fit `xgboost` using a single pre-specified set of parameters.
-  `tuning_params` is a list of tuning parameters passed to `xgboost`.
-  See the `xgboost` package documentation for more information.
 
 ### Example
 

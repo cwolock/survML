@@ -53,16 +53,6 @@ f_w_stack <- function(time,
                                   time_basis = time_basis,
                                   entry = entry)
 
-  } else if (learner == "xgboost"){
-    fit <- f_w_stack_xgboost(time = time,
-                             event = event,
-                             X = X,
-                             censored = censored,
-                             bin_size = bin_size,
-                             xgb_control = xgb_control,
-                             time_basis = time_basis,
-                             entry = entry)
-
   }
 
   return(fit)

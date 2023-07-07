@@ -33,8 +33,9 @@
 #' @param surv_form Mapping from hazard estimate to survival estimate.
 #' Can be either \code{"PI"} (product integral mapping) or \code{"exp"}
 #' (exponentiated cumulative hazard estimate).
-#' @param learner Which binary regression algorithm to use. Currently, \code{SuperLearner} and
-#' \code{xgboost} are supported. See below for algorithm-specific arguments.
+#' @param learner Which binary regression algorithm to use. Currently, only
+#' \code{SuperLearner} is supported, but more learners will be added.
+#' See below for algorithm-specific arguments.
 #' @param SL_control Named list of parameters controlling the Super Learner fitting
 #' process. These parameters are passed directly to the \code{SuperLearner} function.
 #' Parameters include \code{SL.library} (library of algorithms to include in the
@@ -44,16 +45,6 @@
 #' (logical indicating whether to stratify by outcome in \code{SuperLearner}'s cross-validation
 #' scheme), and \code{obsWeights}
 #' (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).
-#' @param xgb_control Named list of parameters controlling the \code{xgboost} fitting
-#' process. Parameters include \code{tune} (logical, whether or not to tune the gradient boosting
-#' algorithm using cross-validation), \code{tuning_params} (named list, with each
-#' element of the list a vector of values of the tuning parameter over which to search for the
-#' optimal combination. These tuning parameters include \code{ntrees}, \code{max_depth}, \code{eta}, and
-#' \code{submsaple}. If each vector contains only a single element and \code{tune} is \code{FALSE}, then
-#' the provided values of the tuning parameters will be used without tuning),
-#' \code{V} (number of cross-validation folds), \code{objective} (the objective function used for
-#' gradient boosting), and \code{eval_metric} (the evaluation metric for cross-validation. Currently only
-#' \code{"logloss"} is supported).
 #' @param tau The maximum time of interest in a study, used for
 #' retrospective conditional survival estimation. Rather than dealing
 #' with right truncation separately than left truncation, it is simpler to
@@ -159,14 +150,6 @@ stackG <- function(time,
                                      V = 10,
                                      method = "method.NNLS",
                                      stratifyCV = FALSE),
-                   xgb_control = list(tune = TRUE,
-                                      tuning_params = list(ntrees = 500,
-                                                           max_depth = 2,
-                                                           eta = 0.01,
-                                                           subsample = 1),
-                                      V = 10,
-                                      objective = "binary:logistic",
-                                      eval_metric = "logloss"),
                    tau = NULL){
   P_Delta_opt <- NULL
   S_Y_opt <- NULL
@@ -205,8 +188,7 @@ stackG <- function(time,
     P_Delta_opt <- p_delta(event = event,
                            X = X,
                            learner = learner,
-                           SL_control = SL_control,
-                           xgb_control = xgb_control)
+                           SL_control = SL_control)
     P_Delta_opt_preds <- stats::predict(P_Delta_opt, newX = newX) # this is for my wrapped algorithms
 
     F_Y_0_opt <- f_y_stack(time = time,
@@ -216,7 +198,6 @@ stackG <- function(time,
                            bin_size = bin_size,
                            learner = learner,
                            SL_control = SL_control,
-                           xgb_control = xgb_control,
                            time_basis = time_basis)
     F_Y_0_opt_preds <- stats::predict(F_Y_0_opt,
                                       newX = newX,
@@ -230,7 +211,6 @@ stackG <- function(time,
                          bin_size = bin_size,
                          learner = learner,
                          SL_control = SL_control,
-                         xgb_control = xgb_control,
                          time_basis = time_basis)
 
   if (!is.null(entry)){ # if a truncation variable is given
@@ -241,7 +221,6 @@ stackG <- function(time,
                            bin_size = bin_size,
                            learner = learner,
                            SL_control = SL_control,
-                           xgb_control = xgb_control,
                            entry = entry,
                            time_basis = time_basis)
     G_W_1_opt_preds <- stats::predict(G_W_1_opt,
@@ -255,7 +234,6 @@ stackG <- function(time,
                              bin_size = bin_size,
                              learner = learner,
                              SL_control = SL_control,
-                             xgb_control = xgb_control,
                              entry = entry,
                              time_basis = time_basis)
       G_W_0_opt_preds <- stats::predict(G_W_0_opt,
@@ -337,7 +315,6 @@ stackG <- function(time,
               time_basis = time_basis,
               learner = learner,
               SL_control = SL_control,
-              xgb_control = xgb_control,
               fits = list(P_Delta = P_Delta_opt,
                           F_Y_1 = F_Y_1_opt,
                           F_Y_0 = F_Y_0_opt,

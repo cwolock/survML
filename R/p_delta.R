@@ -26,10 +26,6 @@ p_delta <- function(event,
     fit <- p_delta_SuperLearner(event = event,
                                 X = X,
                                 SL_control = SL_control)
-  } else if (learner == "xgboost"){
-    fit <- p_delta_xgboost(event = event,
-                                X = X,
-                                xgb_control = xgb_control)
   }
 
   return(fit)

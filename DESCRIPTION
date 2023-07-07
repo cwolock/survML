@@ -19,8 +19,7 @@ RoxygenNote: 7.2.3
 Depends: 
     SuperLearner (>= 2.0.28),
 Imports: 
-    Iso (>= 0.0.18.1),
-    xgboost (>= 1.6.0.1)
+    Iso (>= 0.0.18.1)
 Suggests: 
     knitr,
     rmarkdown,

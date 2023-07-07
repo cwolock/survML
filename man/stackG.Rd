@@ -19,8 +19,6 @@ stackG(
   learner = "SuperLearner",
   SL_control = list(SL.library = c("SL.mean"), V = 10, method = "method.NNLS", stratifyCV
     = FALSE),
-  xgb_control = list(tune = TRUE, tuning_params = list(ntrees = 500, max_depth = 2, eta =
-    0.01, subsample = 1), V = 10, objective = "binary:logistic", eval_metric = "logloss"),
   tau = NULL
 )
 }
@@ -69,8 +67,9 @@ Defaults to \code{times} argument.}
 Can be either \code{"PI"} (product integral mapping) or \code{"exp"}
 (exponentiated cumulative hazard estimate).}
 
-\item{learner}{Which binary regression algorithm to use. Currently, \code{SuperLearner} and
-\code{xgboost} are supported. See below for algorithm-specific arguments.}
+\item{learner}{Which binary regression algorithm to use. Currently, only
+\code{SuperLearner} is supported, but more learners will be added.
+See below for algorithm-specific arguments.}
 
 \item{SL_control}{Named list of parameters controlling the Super Learner fitting
 process. These parameters are passed directly to the \code{SuperLearner} function.
@@ -81,17 +80,6 @@ estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"})
 (logical indicating whether to stratify by outcome in \code{SuperLearner}'s cross-validation
 scheme), and \code{obsWeights}
 (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).}
-
-\item{xgb_control}{Named list of parameters controlling the \code{xgboost} fitting
-process. Parameters include \code{tune} (logical, whether or not to tune the gradient boosting
-algorithm using cross-validation), \code{tuning_params} (named list, with each
-element of the list a vector of values of the tuning parameter over which to search for the
-optimal combination. These tuning parameters include \code{ntrees}, \code{max_depth}, \code{eta}, and
-\code{submsaple}. If each vector contains only a single element and \code{tune} is \code{FALSE}, then
-the provided values of the tuning parameters will be used without tuning),
-\code{V} (number of cross-validation folds), \code{objective} (the objective function used for
-gradient boosting), and \code{eval_metric} (the evaluation metric for cross-validation. Currently only
-\code{"logloss"} is supported).}
 
 \item{tau}{The maximum time of interest in a study, used for
 retrospective conditional survival estimation. Rather than dealing

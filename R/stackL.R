@@ -25,6 +25,9 @@
 #' @param time_basis How to treat time for training the binary
 #' classifier. Options are \code{"continuous"} and \code{"dummy"}, meaning
 #' an indicator variable is included for each time in the time grid.
+#' @param learner Which binary regression algorithm to use. Currently, only
+#' \code{SuperLearner} is supported, but more learners will be added.
+#' See below for algorithm-specific arguments.
 #' @param SL_control Named list of parameters controlling the Super Learner fitting
 #' process. These parameters are passed directly to the \code{SuperLearner} function.
 #' Parameters include \code{SL.library} (library of algorithms to include in the
@@ -111,6 +114,7 @@ stackL <- function(time,
                    direction = "prospective",
                    bin_size = NULL,
                    time_basis = "continuous",
+                   learner = "SuperLearner",
                    SL_control = list(SL.library = c("SL.mean"),
                                      V = 10,
                                      method = "method.NNLS",
