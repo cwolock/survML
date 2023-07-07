@@ -78,7 +78,7 @@ C[C > 15] <- 15
 time <- pmin(T, C)
 event <- as.numeric(T <= C)
 
-SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+SL.library <- c("SL.mean", "SL.glm", "SL.gam")
 
 fit <- stackG(time = time,
               event = event,
