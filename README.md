@@ -31,6 +31,11 @@ install it using the `devtools` package as follows:
 install_github(repo = "cwolock/survML")
 ```
 
+## Bugs reports and feature requests
+
+To submit a bug report or request a new feature, please submit a new
+[GitHub Issue](https://github.com/cwolock/survML/issues).
+
 ## Global survival stacking
 
 In a basic survival analysis setting with right-censored data (for
@@ -111,6 +116,7 @@ C[C > 15] <- 15
 time <- pmin(T, C)
 event <- as.numeric(T <= C)
 
+# note that this a very small library, just for demonstration
 SL.library <- c("SL.mean", "SL.glm", "SL.gam")
 
 fit <- stackG(time = time,

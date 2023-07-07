@@ -38,6 +38,10 @@ The development version of `survML` is available on GitHub. You can install it u
 install_github(repo = "cwolock/survML")
 ```
 
+## Bugs reports and feature requests
+
+To submit a bug report or request a new feature, please submit a new [GitHub Issue](https://github.com/cwolock/survML/issues).
+
 ## Global survival stacking
 
 In a basic survival analysis setting with right-censored data (for simplicity, we don't discuss truncation here), the ideal data for each individual consist of a covariate vector $X$, an event time $T$, and a censoring time $C$. The observed data consist of $X$, the observed follow-up time $Y:=\text{min}(T,C)$, and the event indicator $\Delta := I(T \leq C)$. Global survival stacking requires three components: (1) the conditional probability that $\Delta = 1$ given $X$, (2) the CDF of $Y$ given $X$ among among censored subjects, and (3) the CDF of $Y$ given $X$ among uncensored subjects. All three of these can be estimated using standard binary regression or classification methods. 
@@ -78,6 +82,7 @@ C[C > 15] <- 15
 time <- pmin(T, C)
 event <- as.numeric(T <= C)
 
+# note that this a very small library, just for demonstration
 SL.library <- c("SL.mean", "SL.glm", "SL.gam")
 
 fit <- stackG(time = time,

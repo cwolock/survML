@@ -97,6 +97,11 @@
 #'
 #' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
 #' abline(0,1,col='red')
+#'
+#' @references Polley E.C. and van der Laan M.J. (2011).
+#' "Super Learning for Right-Censored Data" in Targeted Learning.
+#' @references Craig E., Zhong C., and Tibshirani R. (2021).
+#' “Survival stacking: casting survival analysis as a classification problem.”
 stackL <- function(time,
                    event = rep(1, length(time)),
                    entry = NULL,
@@ -260,7 +265,8 @@ stackL <- function(time,
 
 predict.stackL <- function(object,
                            newX,
-                           newtimes){
+                           newtimes,
+                           ...){
 
   trunc_time_grid <- object$time_grid
 
