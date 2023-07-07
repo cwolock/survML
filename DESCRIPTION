@@ -4,11 +4,12 @@ Version: 0.0.0.9000
 Authors@R: 
     person(given = "Charles",
            family = "Wolock",
-           role = c("aut", "cre"),
+           role = c("aut", "cre", "cph"),
            email = "cwolock@uw.edu",
            comment = c(ORCID = "0000-0003-3527-1102"))
-Description: An open-source R package for flexible estimation of conditional survival functions using off-the-shelf 
-             machine learning tools.
+Description: Two forms of survival stacking for flexible estimation of conditional survival 
+              functions using off-the-shelf machine learning tools. See Wolock CJ, Gilbert PB,
+              Simon N, and Carone M (2022+) <arXiv:arxiv.org/abs/2211.03031>. 
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
