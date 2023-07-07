@@ -1,6 +1,6 @@
 Package: survML
 Title: Flexible Estimation of Conditional Survival Functions Using Machine Learning
-Version: 1.0.0
+Version: 0.0.0.9000
 Authors@R: 
     person(given = "Charles",
            family = "Wolock",
@@ -10,7 +10,7 @@ Authors@R:
 Description: Tools for flexible estimation of conditional survival 
               functions using off-the-shelf machine learning tools. Implements both 
               global and local survival stacking. See Wolock CJ, Gilbert PB,
-              Simon N, and Carone M (2022+) <	arXiv:2211.03031>. 
+              Simon N, and Carone M (2022+) <arXiv:2211.03031>. 
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
