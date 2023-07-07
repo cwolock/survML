@@ -4,9 +4,9 @@
 \name{survML-package}
 \alias{survML}
 \alias{survML-package}
-\title{survML: Flexible Estimation of Conditional Survival Functions Using Regression on Observables}
+\title{survML: Flexible Estimation of Conditional Survival Functions Using Machine Learning}
 \description{
-An open-source R package for flexible estimation of conditional survival functions using regression on observables.
+An open-source R package for flexible estimation of conditional survival functions using off-the-shelf machine learning tools.
 }
 \author{
 \strong{Maintainer}: Charles Wolock \email{cwolock@uw.edu} (\href{https://orcid.org/0000-0003-3527-1102}{ORCID})
