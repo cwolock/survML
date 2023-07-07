@@ -78,7 +78,7 @@ f_w_stack_SuperLearner <- function(time,
   # change t to dummy variable
   if (time_basis == "dummy"){
     stacked$t <- factor(stacked$t)
-    dummy_mat <- model.matrix(~-1 + t, data=stacked)
+    dummy_mat <- stats::model.matrix(~-1 + t, data=stacked)
     risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
     colnames(dummy_mat) <- risk_set_names
     stacked$t <- NULL
@@ -274,16 +274,16 @@ f_w_stack_xgboost <- function(time,
         train_stackX <- stackX[-cv_folds[[j]],]
         train_time <- time[-cv_folds[[j]]]
         train_entry <- entry[-cv_folds[[j]]]
-        train_stack <- survML:::stack_entry(time = train_time,
-                                            entry = train_entry,
-                                            X = train_stackX,
-                                            time_grid = time_grid,
-                                            time_basis = "continuous")
+        train_stack <- stack_entry(time = train_time,
+                                   entry = train_entry,
+                                   X = train_stackX,
+                                   time_grid = time_grid,
+                                   time_basis = "continuous")
 
         # change t to dummy variable
         if (time_basis == "dummy"){
           train_stack$t <- factor(train_stack$t)
-          dummy_mat <- model.matrix(~-1 + t, data=train_stack)
+          dummy_mat <- stats::model.matrix(~-1 + t, data=train_stack)
           risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
           colnames(dummy_mat) <- risk_set_names
           train_stack$t <- NULL
@@ -310,16 +310,16 @@ f_w_stack_xgboost <- function(time,
         test_stackX <- stackX[cv_folds[[j]],]
         test_time <- time[cv_folds[[j]]]
         test_entry <- entry[cv_folds[[j]]]
-        test_stack <- survML:::stack_entry(time = test_time,
-                                           entry = test_entry,
-                                           X = test_stackX,
-                                           time_grid = time_grid,
-                                           time_basis = "continuous")
+        test_stack <- stack_entry(time = test_time,
+                                  entry = test_entry,
+                                  X = test_stackX,
+                                  time_grid = time_grid,
+                                  time_basis = "continuous")
 
         # change t to dummy variable
         if (time_basis == "dummy"){
           test_stack$t <- factor(test_stack$t)
-          dummy_mat <- model.matrix(~-1 + t, data=test_stack)
+          dummy_mat <- stats::model.matrix(~-1 + t, data=test_stack)
           risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
           colnames(dummy_mat) <- risk_set_names
           test_stack$t <- NULL
@@ -331,7 +331,7 @@ f_w_stack_xgboost <- function(time,
         test_stack$obsWeights <- NULL
         test_stack$ids <- NULL
 
-        preds <- predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
+        preds <- stats::predict(fit, newdata = as.matrix(test_stack[,-ncol(test_stack)]))
         preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
         truth <- test_stack[,ncol(test_stack)]
         log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
@@ -363,16 +363,16 @@ f_w_stack_xgboost <- function(time,
 
 
 
-  stacked <- survML:::stack_entry(time = time,
-                                  entry = entry,
-                                  X = stackX,
-                                  time_grid = time_grid,
-                                  time_basis = "continuous")
+  stacked <- stack_entry(time = time,
+                         entry = entry,
+                         X = stackX,
+                         time_grid = time_grid,
+                         time_basis = "continuous")
 
   # change t to dummy variable
   if (time_basis == "dummy"){
     stacked$t <- factor(stacked$t)
-    dummy_mat <- model.matrix(~-1 + t, data=stacked)
+    dummy_mat <- stats::model.matrix(~-1 + t, data=stacked)
     risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
     colnames(dummy_mat) <- risk_set_names
     stacked$t <- NULL

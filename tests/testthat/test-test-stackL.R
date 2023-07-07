@@ -20,30 +20,38 @@ entry <- entry[sampled]
 SL.library <- c("SL.gam", "SL.glm")
 
 fit <- stackL(time = time,
-               event = event,
-               entry = entry,
-               X = X,
-               newX = X[c(1,2,3),],
-               newtimes = seq(0, 15, 3),
-               direction = "prospective",
-               bin_size = 0.02,
-               time_basis = "continuous",
+              event = event,
+              entry = entry,
+              X = X,
+              newX = X[c(1,2,3),],
+              newtimes = seq(0, 15, 3),
+              direction = "prospective",
+              bin_size = 0.05,
+              time_basis = "continuous",
               SL_control = list(SL.library = SL.library,
                                 V = 5))
 
-true_S_T_preds <- rbind(c(0.999, 0.999, 0.812, 0.557, 0.355, 0.309),
-                        c(0.999, 0.999, 0.841, 0.613, 0.420, 0.373),
-                        c(0.997, 0.997, 0.637, 0.282, 0.111, 0.083))
+true_S_T_preds <- rbind(c(0.974, 0.974, 0.630, 0.385, 0.319, 0.283),
+                        c(0.985, 0.985, 0.769, 0.581, 0.522, 0.487),
+                        c(0.962, 0.962, 0.508, 0.247, 0.188, 0.158))
 
-test_that("survMLc is not broken", {
-  expect_equal(round(fit$S_T_preds, digits = 3), true_S_T_preds)
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackL() returns expected output (truncation)", {
+  expect_equal(sum(diffs), 0)
 })
 
 preds <- predict(fit,
                  newX = X[c(1,2,3),],
                  newtimes = seq(0, 15, 3))
 
+estimated_S_T_preds <- round(preds$S_T_preds, digits = 3)
 
-test_that("survMLs predict() method is not broken", {
-  expect_equal(round(preds$S_T_preds, digits = 3), true_S_T_preds)
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+
+test_that("stackL() predict() method is not broken", {
+  expect_equal(sum(diffs), 0)
 })

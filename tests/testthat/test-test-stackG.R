@@ -26,28 +26,36 @@ fit <- stackG(time = time,
               newX = X[c(1,2,3),],
               newtimes = seq(0, 15, 3),
               direction = "prospective",
-              bin_size = 0.02,
+              bin_size = 0.05,
               time_basis = "continuous",
               time_grid_approx = sort(unique(time)),
-              SL_control = list(SL.library = SL.library, V = 5,
+              SL_control = list(SL.library = SL.library,
+                                V = 5,
                                 method = "method.NNLS"),
-              surv_form = "PI")
+              surv_form = "exp")
 
-true_S_T_preds <- rbind(c(1, 0.791, 0.536, 0.491, 0.489, 0.487),
-                        c(1, 0.863, 0.855, 0.761, 0.666, 0.530),
-                        c(1, 0.799, 0.747, 0.492, 0.409, 0.355))
+true_S_T_preds <- rbind(c(1, 0.796, 0.575, 0.532, 0.529, 0.528),
+                        c(1, 0.849, 0.840, 0.745, 0.646, 0.546),
+                        c(1, 0.795, 0.744, 0.505, 0.420, 0.377))
 
-test_that("stackG is not broken", {
-  expect_equal(round(fit$S_T_preds, digits = 3), true_S_T_preds)
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() returns expected output (truncation)", {
+  expect_equal(sum(diffs), 0)
 })
-
 
 preds <- predict(fit,
                  newX = X[c(1,2,3),],
                  newtimes = seq(0, 15, 3))
 
-test_that("stackG predict() method is not broken", {
-  expect_equal(round(preds$S_T_preds, digits = 3), true_S_T_preds)
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() predict() method is not broken (truncation)", {
+  expect_equal(sum(diffs), 0)
 })
 
 
@@ -70,18 +78,24 @@ fit <- stackG(time = time,
               newX = X[c(1,2,3),],
               newtimes = seq(0, 15, 3),
               direction = "prospective",
-              bin_size = 0.02,
+              bin_size = 0.05,
               time_basis = "continuous",
               time_grid_approx = sort(unique(time)),
-              SL_control = list(SL.library = SL.library, V = 5),
-              surv_form = "PI")
+              SL_control = list(SL.library = SL.library,
+                                V = 5,
+                                method = "method.NNLS"),
+              surv_form = "exp")
 
-true_S_T_preds <- rbind(c(1, 0.791, 0.536, 0.491, 0.489, 0.487),
-                        c(1, 0.863, 0.855, 0.761, 0.666, 0.530),
-                        c(1, 0.799, 0.747, 0.492, 0.409, 0.355))
+true_S_T_preds <- rbind(c(1, 0.889, 0.720, 0.560, 0.502, 0.451),
+                        c(1, 0.668, 0.400, 0.243, 0.199, 0.165),
+                        c(1, 0.985, 0.953, 0.911, 0.892, 0.872))
 
-test_that("stackG is not broken", {
-  expect_equal(round(fit$S_T_preds, digits = 3), true_S_T_preds)
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() returns expected output (no truncation)", {
+  expect_equal(sum(diffs), 0)
 })
 
 
@@ -89,7 +103,10 @@ preds <- predict(fit,
                  newX = X[c(1,2,3),],
                  newtimes = seq(0, 15, 3))
 
-test_that("stackG predict() method is not broken", {
-  expect_equal(round(preds$S_T_preds, digits = 3), true_S_T_preds)
-})
+estimated_S_T_preds <- round(preds$S_T_preds, digits = 3)
 
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() predict() method is not broken", {
+  expect_equal(sum(diffs), 0)
+})

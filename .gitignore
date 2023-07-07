@@ -41,3 +41,4 @@ vignettes/*.pdf
 
 R/extra_f_y_algos.R
 *.html
+inst/doc

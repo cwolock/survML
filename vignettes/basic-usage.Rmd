@@ -1,22 +1,22 @@
 ---
-output: github_document
+title: "Basic Usage of survML"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basic Usage of survML}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, echo = FALSE, message = FALSE, warning = FALSE, error = FALSE}
-library(survML)
-library(ggplot2)
-
+```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  echo = TRUE,
-  error = FALSE,
-  warning = FALSE,
-  message = FALSE
+  comment = "#>"
 )
+```
+
+```{r setup}
+library(survML)
+library(ggplot2)
 ```
 
 # `survML`: Conditional survival function estimation using machine learning
@@ -26,21 +26,6 @@ The `survML` package implements two methods for estimating a conditional surviva
 These functions can be used for both left-truncated, right-censored data (commonly seen in prospective studies) and right-truncated data (commonly seen in retrospective studies). 
 
 More details on each method, as well as examples, follow. 
-
-## Installing `survML`
-
-**Note: `survML` is currently under development.**
-
-The development version of `survML` is available on GitHub. You can install it using the `devtools` package as follows: 
-
-```r
-## install.packages("devtools") # run only if necessary
-install_github(repo = "cwolock/survML")
-```
-
-## Bugs reports and feature requests
-
-To submit a bug report or request a new feature, please submit a new [GitHub Issue](https://github.com/cwolock/survML/issues).
 
 ## Global survival stacking
 
@@ -166,14 +151,3 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
 
 p
 ```
-
-## References
-For details of global survival stacking, please see the following preprint:
-
-Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. "A framework for leveraging machine learning tools to estimate personalized survival curves." [arXiv: 2211.03031.](https://arxiv.org/abs/2211.03031)
-
-Local survival stacking is described in: 
-
-Eric C. Polley and Mark J. van der Laan. "Super Learning for Right-Censored Data" in *Targeted Learning* (2011). 
-
-Erin Craig, Chenyang Zhong, and Robert Tibshirani. "Survival stacking: casting survival analysis as a classification problem." [arXiv:2107.13480.](https://arxiv.org/abs/2107.13480)

@@ -14,7 +14,8 @@ stackL(
   direction = "prospective",
   bin_size = NULL,
   time_basis = "continuous",
-  SL_control = list(SL.library = c("SL.mean"), V = 10),
+  SL_control = list(SL.library = c("SL.mean"), V = 10, method = "method.NNLS", stratifyCV
+    = FALSE),
   tau = NULL
 )
 }
@@ -55,9 +56,12 @@ an indicator variable is included for each time in the time grid.}
 
 \item{SL_control}{Named list of parameters controlling the Super Learner fitting
 process. These parameters are passed directly to the \code{SuperLearner} function.
-Key parameters include \code{SL.library} (library of algorithms to include in the
+Parameters include \code{SL.library} (library of algorithms to include in the
 binary classification Super Learner), \code{V} (Number of cross validation folds on
-which to train the Super Learner classifier, defaults to 10), and \code{obsWeights}
+which to train the Super Learner classifier, defaults to 10), \code{method} (Method for
+estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}),
+code{stratifyCV} (logical indicating whether to stratify by outcome in \code{SuperLearner}'s cross-validation
+scheme), and \code{obsWeights}
 (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).}
 
 \item{tau}{The maximum time of interest in a study, used for
@@ -82,7 +86,7 @@ Estimate a conditional survival function via local survival stacking
 
 # This is a small simulation example
 set.seed(123)
-n <- 100
+n <- 500
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 
 S0 <- function(t, x){
@@ -109,7 +113,7 @@ time <- time[sampled]
 event <- event[sampled]
 entry <- entry[sampled]
 
-SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+SL.library <- c("SL.mean", "SL.gam")
 
 fit <- stackL(time = time,
                event = event,
@@ -125,4 +129,12 @@ fit <- stackL(time = time,
 
 plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
 abline(0,1,col='red')
+
+}
+\references{
+Polley E.C. and van der Laan M.J. (2011).
+"Super Learning for Right-Censored Data" in Targeted Learning.
+
+Craig E., Zhong C., and Tibshirani R. (2021).
+“Survival stacking: casting survival analysis as a classification problem.”
 }

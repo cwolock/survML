@@ -54,7 +54,7 @@
 #'
 #' # This is a small simulation example
 #' set.seed(123)
-#' n <- 100
+#' n <- 500
 #' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 #'
 #' S0 <- function(t, x){
@@ -81,7 +81,7 @@
 #' event <- event[sampled]
 #' entry <- entry[sampled]
 #'
-#' SL.library <- c("SL.mean", "SL.glm", "SL.gam", "SL.earth")
+#' SL.library <- c("SL.mean", "SL.gam")
 #'
 #' fit <- stackL(time = time,
 #'                event = event,
@@ -97,6 +97,11 @@
 #'
 #' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
 #' abline(0,1,col='red')
+#'
+#' @references Polley E.C. and van der Laan M.J. (2011).
+#' "Super Learning for Right-Censored Data" in Targeted Learning.
+#' @references Craig E., Zhong C., and Tibshirani R. (2021).
+#' “Survival stacking: casting survival analysis as a classification problem.”
 stackL <- function(time,
                    event = rep(1, length(time)),
                    entry = NULL,
@@ -155,18 +160,18 @@ stackL <- function(time,
   }
 
   # create stacked dataset
-  stacked <- survML:::stack_haz(time = time,
-                                event = event,
-                                X = stackX,
-                                time_grid = time_grid,
-                                entry = entry,
-                                time_basis = "continuous")
+  stacked <- stack_haz(time = time,
+                       event = event,
+                       X = stackX,
+                       time_grid = time_grid,
+                       entry = entry,
+                       time_basis = "continuous")
   #print(stacked$event_indicators)
 
   # change t to dummy variable
   if (time_basis == "dummy"){
     stacked$t <- factor(stacked$t)
-    dummy_mat <- model.matrix(~-1 + t, data=stacked)
+    dummy_mat <- stats::model.matrix(~-1 + t, data=stacked)
     risk_set_names <- paste0("risk_set_", seq(1, (length(trunc_time_grid))))
     colnames(dummy_mat) <- risk_set_names
     stacked$t <- NULL
@@ -260,7 +265,8 @@ stackL <- function(time,
 
 predict.stackL <- function(object,
                            newX,
-                           newtimes){
+                           newtimes,
+                           ...){
 
   trunc_time_grid <- object$time_grid
 
