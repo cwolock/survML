@@ -6,10 +6,10 @@
 \alias{survML-package}
 \title{survML: Flexible Estimation of Conditional Survival Functions Using Machine Learning}
 \description{
-An open-source R package for flexible estimation of conditional survival functions using off-the-shelf machine learning tools.
+Tools for flexible estimation of conditional survival functions using off-the-shelf machine learning tools. Implements both global and local survival stacking. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2022+) < arXiv:2211.03031>.
 }
 \author{
-\strong{Maintainer}: Charles Wolock \email{cwolock@uw.edu} (\href{https://orcid.org/0000-0003-3527-1102}{ORCID})
+\strong{Maintainer}: Charles Wolock \email{cwolock@uw.edu} (\href{https://orcid.org/0000-0003-3527-1102}{ORCID}) [copyright holder]
 
 }
 \keyword{internal}
