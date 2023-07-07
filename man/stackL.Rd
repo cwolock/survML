@@ -141,5 +141,5 @@ Polley E.C. and van der Laan M.J. (2011).
 "Super Learning for Right-Censored Data" in Targeted Learning.
 
 Craig E., Zhong C., and Tibshirani R. (2021).
-“Survival stacking: casting survival analysis as a classification problem.”
+"Survival stacking: casting survival analysis as a classification problem."
 }
