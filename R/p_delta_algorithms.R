@@ -113,7 +113,7 @@ p_delta_xgboost <- function(event, X, xgb_control){
                                 subsample = subsample)
         test_X <- X[cv_folds[[j]],]
         test_event <- event[cv_folds[[j]]]
-        preds <- predict(fit, newdata = test_X)
+        preds <- stats::predict(fit, newdata = test_X)
         preds[preds == 1] <- 0.99 # this is a hack, but come back to it later
         truth <- test_event
         log_loss <- lapply(1:length(preds), function(x) { # using log loss right now
@@ -166,7 +166,7 @@ p_delta_xgboost <- function(event, X, xgb_control){
 #' @noRd
 predict.p_delta_xgboost <- function(fit, newX){
   X <- as.matrix(newX)
-  preds <- predict(fit$reg.object, newdata=X)
+  preds <- stats::predict(fit$reg.object, newdata=X)
   return(preds)
 }
 
