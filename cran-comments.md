@@ -1,6 +1,6 @@
 This is a resubmission. The following changes were made: 
 
-**NOTE: Examples with CPU or elapsed time > 5s
+**NOTE: Examples with CPU or elapsed time > 5s**
 * Changed examples in `stackG.R` and `stackL.R` to run in less time. 
 
 ## Test environmens
