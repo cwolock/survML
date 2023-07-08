@@ -118,7 +118,8 @@ time <- time[sampled]
 event <- event[sampled]
 entry <- entry[sampled]
 
-SL.library <- c("SL.mean", "SL.gam")
+# Note that this a very small Super Learner library, for computational purposes.
+SL.library <- c("SL.mean", "SL.glm")
 
 fit <- stackL(time = time,
                event = event,
@@ -127,7 +128,7 @@ fit <- stackL(time = time,
                newX = X,
                newtimes = seq(0, 15, .1),
                direction = "prospective",
-               bin_size = 0.02,
+               bin_size = 0.1,
                time_basis = "continuous",
                SL_control = list(SL.library = SL.library,
                                  V = 5))

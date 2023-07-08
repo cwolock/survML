@@ -112,7 +112,7 @@
 #' entry <- entry[sampled]
 #'
 #' # Note that this a very small Super Learner library, for computational purposes.
-#' SL.library <- c("SL.mean", "SL.gam")
+#' SL.library <- c("SL.mean", "SL.glm")
 #'
 #' fit <- stackG(time = time,
 #'               event = event,
@@ -121,7 +121,7 @@
 #'               newX = X,
 #'               newtimes = seq(0, 15, .1),
 #'               direction = "prospective",
-#'               bin_size = 0.02,
+#'               bin_size = 0.1,
 #'               time_basis = "continuous",
 #'               time_grid_approx = sort(unique(time)),
 #'               surv_form = "exp",
