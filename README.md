@@ -1,5 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- badges: start  -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/survML)](https://CRAN.R-project.org/package=survML)
+[![R-CMD-check](https://github.com/cwolock/survML/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/cwolock/survML/actions/workflows/R-CMD-check.yml)
+
+<!-- badges: end -->
 
 # `survML`: Conditional survival function estimation using machine learning
 
