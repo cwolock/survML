@@ -3,7 +3,7 @@ This is a resubmission. The following changes were made:
 **NOTE: Examples with CPU or elapsed time > 5s**
 * Changed examples in `stackG.R` and `stackL.R` to run in less time. 
 
-## Test environmens
+## Test environments
 
 * local Windows 10 install, R 4.3.1
 * Windows 10.0.20348, R 4.3.1 (GitHub actions)
