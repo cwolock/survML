@@ -8,6 +8,8 @@ version](https://img.shields.io/github/r-package/v/cwolock/survML)
 status](https://www.r-pkg.org/badges/version/survML)](https://CRAN.R-project.org/package=survML)
 ![GitHub](https://img.shields.io/github/license/cwolock/survML)
 [![R-CMD-check](https://github.com/cwolock/survML/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/cwolock/survML/actions/workflows/R-CMD-check.yml)
+[![Codecov test
+coverage](https://codecov.io/gh/cwolock/survML/branch/main/graph/badge.svg)](https://app.codecov.io/gh/cwolock/survML?branch=main)
 
 <!-- badges: end -->
 
