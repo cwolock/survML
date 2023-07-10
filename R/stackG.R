@@ -330,7 +330,7 @@ stackG <- function(time,
 predict.stackG <- function(object,
                            newX,
                            newtimes,
-                           surv_form = "PI",
+                           surv_form = object$surv_form,
                            ...){
 
   if (object$direction == "retrospective"){

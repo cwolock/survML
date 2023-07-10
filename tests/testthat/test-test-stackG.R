@@ -1,5 +1,6 @@
-# ensure basic functioning doesn't change
-
+#####################################
+### basic functioning with truncation
+#####################################
 set.seed(1)
 n <- 100
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
@@ -19,6 +20,7 @@ entry <- entry[sampled]
 
 SL.library <- c("SL.mean", "SL.gam")
 
+# exponential form
 fit <- stackG(time = time,
               event = event,
               entry = entry,
@@ -42,7 +44,7 @@ estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
 
 diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
 
-test_that("stackG() returns expected output (truncation)", {
+test_that("stackG() returns expected output (truncation, exponential)", {
   expect_equal(sum(diffs), 0)
 })
 
@@ -50,16 +52,59 @@ preds <- predict(fit,
                  newX = X[c(1,2,3),],
                  newtimes = seq(0, 15, 3))
 
+estimated_S_T_preds <- round(preds$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() predict() method is not broken (truncation, exponential)", {
+  expect_equal(sum(diffs), 0)
+})
+
+# PI form
+fit <- stackG(time = time,
+              event = event,
+              entry = entry,
+              X = X,
+              newX = X[c(1,2,3),],
+              newtimes = seq(0, 15, 3),
+              direction = "prospective",
+              bin_size = 0.05,
+              time_basis = "continuous",
+              time_grid_approx = sort(unique(time)),
+              SL_control = list(SL.library = SL.library,
+                                V = 5,
+                                method = "method.NNLS"),
+              surv_form = "PI")
+
+
+true_S_T_preds <- rbind(c(1, 0.800, 0.669, 0.643, 0.641, 0.641),
+                        c(1, 0.802, 0.796, 0.734, 0.667, 0.596),
+                        c(1, 0.816, 0.792, 0.671, 0.624, 0.599))
+
 estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
 
 diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
 
-test_that("stackG() predict() method is not broken (truncation)", {
+test_that("stackG() returns expected output (truncation, PI)", {
   expect_equal(sum(diffs), 0)
 })
 
+preds <- predict(fit,
+                 newX = X[c(1,2,3),],
+                 newtimes = seq(0, 15, 3),
+                 surv_form = "PI")
 
-# no truncation
+estimated_S_T_preds <- round(preds$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() predict() method is not broken (truncation, PI)", {
+  expect_equal(sum(diffs), 0)
+})
+
+########################################
+### basic functioning without truncation
+########################################
 set.seed(1)
 n <- 100
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
@@ -72,6 +117,7 @@ event <- as.numeric(T <= C)
 
 SL.library <- c("SL.mean", "SL.gam")
 
+# exponential form
 fit <- stackG(time = time,
               event = event,
               X = X,
@@ -94,10 +140,9 @@ estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
 
 diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
 
-test_that("stackG() returns expected output (no truncation)", {
+test_that("stackG() returns expected output (no truncation, exponential)", {
   expect_equal(sum(diffs), 0)
 })
-
 
 preds <- predict(fit,
                  newX = X[c(1,2,3),],
@@ -107,6 +152,75 @@ estimated_S_T_preds <- round(preds$S_T_preds, digits = 3)
 
 diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
 
-test_that("stackG() predict() method is not broken", {
+test_that("stackG() predict() method is not broken (no truncation, exponential)", {
+  expect_equal(sum(diffs), 0)
+})
+
+# PI form
+fit <- stackG(time = time,
+              event = event,
+              X = X,
+              newX = X[c(1,2,3),],
+              newtimes = seq(0, 15, 3),
+              direction = "prospective",
+              bin_size = 0.05,
+              time_basis = "continuous",
+              time_grid_approx = sort(unique(time)),
+              SL_control = list(SL.library = SL.library,
+                                V = 5,
+                                method = "method.NNLS"),
+              surv_form = "PI")
+
+true_S_T_preds <- rbind(c(1, 0.884, 0.714, 0.561, 0.510, 0.468),
+                        c(1, 0.667, 0.403, 0.252, 0.212, 0.182),
+                        c(1, 0.979, 0.939, 0.887, 0.865, 0.844))
+
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() returns expected output (no truncation, PI)", {
+  expect_equal(sum(diffs), 0)
+})
+
+preds <- predict(fit,
+                 newX = X[c(1,2,3),],
+                 newtimes = seq(0, 15, 3),
+                 surv_form = "PI")
+
+estimated_S_T_preds <- round(preds$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() predict() method is not broken (no truncation, PI)", {
+  expect_equal(sum(diffs), 0)
+})
+
+# dummy time
+set.seed(1)
+SL.library <- c("SL.mean", "SL.ranger")
+fit <- stackG(time = time,
+              event = event,
+              X = X,
+              newX = X[c(1,2,3),],
+              newtimes = seq(0, 15, 3),
+              direction = "prospective",
+              bin_size = 0.05,
+              time_basis = "dummy",
+              time_grid_approx = sort(unique(time)),
+              SL_control = list(SL.library = SL.library,
+                                V = 5,
+                                method = "method.NNLS"),
+              surv_form = "PI")
+
+true_S_T_preds <- rbind(c(1, 0.809, 0.462, 0.278, 0.278, 0.176),
+                        c(1, 0.780, 0.580, 0.421, 0.421, 0.288),
+                        c(1, 0.968, 0.875, 0.804, 0.804, 0.744))
+
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() returns expected output (no truncation, PI, dummy)", {
   expect_equal(sum(diffs), 0)
 })

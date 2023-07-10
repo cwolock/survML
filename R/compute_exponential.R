@@ -34,7 +34,7 @@ compute_exponential <- function(cdf_uncens,
     S_Y_1_pred_left <- c(1, 1-S_Y_1_curr[-length(S_Y_1_curr)])# probability of being "at risk" at time t
     ### CHECK TO MAKE SURE THIS IS CORRECT WITH THE DISCRETIZATION OF TIME
 
-    if (!truncation){ # truncation
+    if (!truncation){ # no truncation
       S_Y_0_curr <- cdf_cens[1:curr_length]
       S_Y_0_pred_left <- c(1, 1-S_Y_0_curr[-length(S_Y_0_curr)])# probability of being "at risk" at time t
       low_right <- S_Y_0_pred_left * (1 - p_uncens)
