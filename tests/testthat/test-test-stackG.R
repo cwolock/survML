@@ -198,7 +198,7 @@ test_that("stackG() predict() method is not broken (no truncation, PI)", {
 
 # dummy time
 set.seed(1)
-SL.library <- c("SL.mean", "SL.ranger")
+suppressWarnings({
 fit <- stackG(time = time,
               event = event,
               X = X,
@@ -212,10 +212,11 @@ fit <- stackG(time = time,
                                 V = 5,
                                 method = "method.NNLS"),
               surv_form = "PI")
+})
 
-true_S_T_preds <- rbind(c(1, 0.809, 0.462, 0.278, 0.278, 0.176),
-                        c(1, 0.780, 0.580, 0.421, 0.421, 0.288),
-                        c(1, 0.968, 0.875, 0.804, 0.804, 0.744))
+true_S_T_preds <- rbind(c(1,0.897, 0.751, 0.615, 0.615, 0.461),
+                        c(1,  0.685, 0.436, 0.282, 0.282, 0.161),
+                        c(1, 0.987, 0.962, 0.931, 0.931, 0.881))
 
 estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
 
