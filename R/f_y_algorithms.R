@@ -65,8 +65,7 @@ f_y_stack_SuperLearner <- function(time,
 
   stacked <- stack_cdf(time = time,
                        X = stackX,
-                       time_grid = time_grid,
-                       time_basis = "continuous")
+                       time_grid = time_grid)
 
   # change t to dummy variable
   if (time_basis == "dummy"){

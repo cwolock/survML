@@ -72,14 +72,13 @@ f_w_stack_SuperLearner <- function(time,
   stacked <- stack_entry(time = time,
                          entry = entry,
                          X = stackX,
-                         time_grid = time_grid,
-                         time_basis = "continuous")
+                         time_grid = time_grid)
 
   # change t to dummy variable
   if (time_basis == "dummy"){
     stacked$t <- factor(stacked$t)
     dummy_mat <- stats::model.matrix(~-1 + t, data=stacked)
-    risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid))))
+    risk_set_names <- paste0("risk_set_", seq(1, (length(time_grid)-1)))
     colnames(dummy_mat) <- risk_set_names
     stacked$t <- NULL
     stacked <- cbind(dummy_mat, stacked)

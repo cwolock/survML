@@ -102,6 +102,38 @@ test_that("stackG() predict() method is not broken (truncation, PI)", {
   expect_equal(sum(diffs), 0)
 })
 
+# dummy time
+set.seed(1)
+suppressWarnings({
+  fit <- stackG(time = time,
+                event = event,
+                entry = entry,
+                X = X,
+                newX = X[c(1,2,3),],
+                newtimes = seq(0, 15, 3),
+                direction = "prospective",
+                bin_size = 0.05,
+                time_basis = "dummy",
+                time_grid_approx = sort(unique(time)),
+                SL_control = list(SL.library = SL.library,
+                                  V = 5,
+                                  method = "method.NNLS"),
+                surv_form = "PI")
+})
+
+true_S_T_preds <- rbind(c(1,0.920, 0.506, 0.418, 0.413, 0.411),
+                        c(1,  0.913, 0.906, 0.809, 0.678, 0.452),
+                        c(1, 0.882, 0.842, 0.521, 0.367, 0.250))
+
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() returns expected output (truncation, PI, dummy)", {
+  expect_equal(sum(diffs), 0)
+})
+
+
 ########################################
 ### basic functioning without truncation
 ########################################
