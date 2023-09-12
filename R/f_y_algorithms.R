@@ -16,9 +16,26 @@ f_y_stack_SuperLearner <- function(time,
                                    X,
                                    censored,
                                    bin_size,
+                                   bin_variable,
                                    isotonize = TRUE,
                                    SL_control,
                                    time_basis){
+
+  if (bin_variable == "time"){
+    bin_variable <- time[as.logical(event)]
+  } else if (bin_variable == "entry"){
+    bin_variable <- entry[as.logical(event)]
+  }
+
+  # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
+  if (!is.null(bin_size)){
+    time_grid <- sort(unique(stats::quantile(bin_variable, probs = seq(0, 1, by = bin_size))))
+    time_grid <- c(0, time_grid) # 013123 changed this to try to get better predictions at time 0
+    #time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+  } else{
+    time_grid <- sort(unique(bin_variable))
+    time_grid <- c(0, time_grid)
+  }
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -41,16 +58,6 @@ f_y_stack_SuperLearner <- function(time,
   X <- as.matrix(X)
   time <- as.matrix(time)
   dat <- data.frame(X, time)
-
-  # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
-  if (!is.null(bin_size)){
-    time_grid <- sort(unique(stats::quantile(dat$time, probs = seq(0, 1, by = bin_size))))
-    time_grid <- c(0, time_grid) # 013123 changed this to try to get better predictions at time 0
-    #time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
-  } else{
-    time_grid <- sort(unique(time))
-    time_grid <- c(0, time_grid)
-  }
 
   ids <- seq(1:length(time))
 
@@ -125,7 +132,7 @@ f_y_stack_SuperLearner <- function(time,
 
 #' Prediction function for stacked SuperLearner CDF
 #'
-#' @param fit Fitted regression object
+#' @param fit Fitted regression object if (bin_variable == "time"){
 #' @param newX Values of covariates at which to make a prediction
 #' @param newtimes
 #'
