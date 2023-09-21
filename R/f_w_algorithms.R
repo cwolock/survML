@@ -15,27 +15,11 @@ f_w_stack_SuperLearner <- function(time,
                                    entry,
                                    X,
                                    censored,
+                                   time_grid,
                                    bin_size,
-                                   bin_variable,
                                    SL_control,
                                    time_basis,
                                    direction){
-
-  if (bin_variable == "time"){
-    bin_variable <- time[as.logical(event)]
-  } else if (bin_variable == "entry"){
-    bin_variable <- entry[as.logical(event)]
-  }
-  if (!is.null(bin_size)){
-    #time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
-    time_grid <- sort(unique(stats::quantile(bin_variable, probs = seq(0, 1, by = bin_size))))
-    time_grid <- c(0, time_grid) # 013123 changed this to try to get better predictions at time 0
-    #time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
-  } else{
-    time_grid <- sort(unique(bin_variable))
-    time_grid <- c(0, time_grid)
-
-  }
 
   if (!is.null(censored)){
     if (censored == TRUE){
@@ -56,14 +40,25 @@ f_w_stack_SuperLearner <- function(time,
     obsWeights <- SL_control$obsWeights
   }
 
+  if (is.null(time_grid)){
+    bin_variable <- time
+    if (!is.null(bin_size)){
+      #time_grid <- quantile(dat$time, probs = seq(0, 1, by = bin_size))
+      time_grid <- sort(unique(stats::quantile(bin_variable, probs = seq(0, 1, by = bin_size))))
+      time_grid <- c(0, time_grid) # 013123 changed this to try to get better predictions at time 0
+      #time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
+    } else{
+      time_grid <- sort(unique(bin_variable))
+      time_grid <- c(0, time_grid)
+    }
+  }
+
   cv_folds <- split(sample(1:length(time)), rep(1:SL_control$V, length = length(time)))
 
   X <- as.matrix(X)
   time <- as.matrix(time)
   entry <- as.matrix(entry)
   dat <- data.frame(X, time, entry)
-
-
 
   ids <- seq(1:length(time))
 
