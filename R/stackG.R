@@ -336,6 +336,7 @@ predict.stackG <- function(object,
                            newX,
                            newtimes,
                            surv_form = object$surv_form,
+                           time_grid_approx = object$time_grid_approx,
                            ...){
 
   if (object$direction == "retrospective"){
@@ -350,28 +351,28 @@ predict.stackG <- function(object,
   if (!is.null(object$fits$G_W_1)){
     G_W_1_opt_preds <- stats::predict(object$fits$G_W_1,
                                       newX = newX,
-                                      newtimes = object$time_grid_approx)
+                                      newtimes = time_grid_approx)
   } else{
-    G_W_1_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
+    G_W_1_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
   if (!is.null(object$fits$G_W_0)){
     G_W_0_opt_preds <- stats::predict(object$fits$G_W_0,
                                       newX = newX,
-                                      newtimes = object$time_grid_approx)
+                                      newtimes = time_grid_approx)
   } else{
-    G_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
+    G_W_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
   if (!is.null(object$fits$F_Y_0)){
     F_Y_0_opt_preds <- stats::predict(object$fits$F_Y_0,
                                       newX = newX,
-                                      newtimes = object$time_grid_approx)
+                                      newtimes = time_grid_approx)
   } else{
-    F_Y_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(object$time_grid_approx))
+    F_Y_0_opt_preds <- matrix(1, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
 
   F_Y_1_opt_preds <- stats::predict(object$fits$F_Y_1,
                                     newX = newX,
-                                    newtimes = object$time_grid_approx)
+                                    newtimes = time_grid_approx)
 
   estimate_S_T <- function(i){
     # get S_Y estimates up to t
@@ -387,14 +388,14 @@ predict.stackG <- function(object,
                                  entry_cens = G_W_0_curr,
                                  p_uncens = pi_curr,
                                  newtimes = newtimes,
-                                 time_grid = object$time_grid_approx)
+                                 time_grid = time_grid_approx)
       S_C_ests <-compute_prodint(cdf_uncens = F_Y_0_curr,
                                  cdf_cens = F_Y_1_curr,
                                  entry_uncens = G_W_0_curr,
                                  entry_cens = G_W_1_curr,
                                  p_uncens = 1 - pi_curr,
                                  newtimes = newtimes,
-                                 time_grid = object$time_grid_approx)
+                                 time_grid = time_grid_approx)
     } else if (surv_form == "exp"){
       S_T_ests <-compute_exponential(cdf_uncens = F_Y_1_curr,
                                      cdf_cens = F_Y_0_curr,
@@ -402,14 +403,14 @@ predict.stackG <- function(object,
                                      entry_cens = G_W_0_curr,
                                      p_uncens = pi_curr,
                                      newtimes = newtimes,
-                                     time_grid = object$time_grid_approx)
+                                     time_grid = time_grid_approx)
       S_C_ests <-compute_exponential(cdf_uncens = F_Y_0_curr,
                                      cdf_cens = F_Y_1_curr,
                                      entry_uncens = G_W_0_curr,
                                      entry_cens = G_W_1_curr,
                                      p_uncens = 1 - pi_curr,
                                      newtimes = newtimes,
-                                     time_grid = object$time_grid_approx)
+                                     time_grid = time_grid_approx)
     }
 
     return(list(S_T_ests = S_T_ests, S_C_ests = S_C_ests))
@@ -429,7 +430,8 @@ predict.stackG <- function(object,
 
   res <- list(S_T_preds = S_T_preds,
               S_C_preds = S_C_preds,
-              surv_form = surv_form)
+              surv_form = surv_form,
+              time_grid_approx = time_grid_approx)
   return(res)
 
 }
