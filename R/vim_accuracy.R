@@ -114,7 +114,7 @@ vim_accuracy <- function(time,
       reduced_plug_in[i] <- mean(CV_reduced_plug_ins)
     }
 
-    n_eff <- ifelse(sample_split, length(time), length(time)/2) # for sample splitting
+    n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
     cil[i] <- one_step[i] - 1.96*sqrt(var_est[i]/n_eff)
     ciu[i] <- one_step[i] + 1.96*sqrt(var_est[i]/n_eff)
     cil_1sided[i] <- one_step[i] - 1.645*sqrt(var_est[i]/n_eff)

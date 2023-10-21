@@ -104,7 +104,7 @@ vim_rmst_mse <- function(time,
     reduced_plug_in <- mean(CV_reduced_plug_ins)
   }
 
-  n_eff <- ifelse(sample_split, length(time), length(time)/2) # for sample splitting
+  n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
   cil <- one_step - 1.96*sqrt(var_est/n_eff)
   ciu <- one_step + 1.96*sqrt(var_est/n_eff)
   cil_1sided <- one_step - 1.645*sqrt(var_est/n_eff)
