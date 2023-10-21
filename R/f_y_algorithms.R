@@ -131,7 +131,7 @@ f_y_stack_SuperLearner <- function(time,
 
 #' Prediction function for stacked SuperLearner CDF
 #'
-#' @param fit Fitted regression object if (bin_variable == "time"){
+#' @param fit Fitted regression object
 #' @param newX Values of covariates at which to make a prediction
 #' @param newtimes
 #'

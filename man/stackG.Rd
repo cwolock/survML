@@ -12,6 +12,7 @@ stackG(
   newX = NULL,
   newtimes = NULL,
   direction = "prospective",
+  time_grid_fit = NULL,
   bin_size = NULL,
   time_basis,
   time_grid_approx = sort(unique(time)),
