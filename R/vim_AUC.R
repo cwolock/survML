@@ -32,7 +32,7 @@ vim_AUC <- function(time,
                     folds,
                     sample_split,
                     ss_folds,
-                    robust,
+                    robust = TRUE,
                     scale_est = FALSE){
 
   J1 <- length(landmark_times)
