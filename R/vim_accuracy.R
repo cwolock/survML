@@ -115,11 +115,11 @@ vim_accuracy <- function(time,
     }
 
     n_eff <- ifelse(sample_split, length(time), length(time)/2) # for sample splitting
-    cil[i] <- one_step - 1.96*sqrt(var_est/n_eff)
-    ciu[i] <- one_step + 1.96*sqrt(var_est/n_eff)
-    cil_1sided[i] <- one_step - 1.645*sqrt(var_est/n_eff)
-    p[i] <- pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE)
-    one_step[i] <- ifelse(scale_est, max(c(one_step, 0)), one_step)
+    cil[i] <- one_step[i] - 1.96*sqrt(var_est[i]/n_eff)
+    ciu[i] <- one_step[i] + 1.96*sqrt(var_est[i]/n_eff)
+    cil_1sided[i] <- one_step[i] - 1.645*sqrt(var_est[i]/n_eff)
+    p[i] <- pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE)
+    one_step[i] <- ifelse(scale_est, max(c(one_step[i], 0)), one_step[i])
 
   }
 

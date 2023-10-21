@@ -116,11 +116,11 @@ vim_brier <- function(time,
       reduced_plug_in[i] <- mean(CV_reduced_plug_ins)
     }
     n_eff <- ifelse(sample_split, length(time), length(time)/2) # for sample splitting
-    cil[i] <- one_step - 1.96*sqrt(var_est/n_eff)
-    ciu[i] <- one_step + 1.96*sqrt(var_est/n_eff)
-    cil_1sided[i] <- one_step - 1.645*sqrt(var_est/n_eff)
-    p[i] <- pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE)
-    one_step[i] <- ifelse(scale_est, max(c(one_step, 0)), one_step)
+    cil[i] <- one_step[i] - 1.96*sqrt(var_est[i]/n_eff)
+    ciu[i] <- one_step[i] + 1.96*sqrt(var_est[i]/n_eff)
+    cil_1sided[i] <- one_step[i] - 1.645*sqrt(var_est[i]/n_eff)
+    p[i] <- pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE)
+    one_step[i] <- ifelse(scale_est, max(c(one_step[i], 0)), one_step[i])
   }
 
   return(data.frame(t = landmark_times,
