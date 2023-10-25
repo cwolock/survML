@@ -123,7 +123,7 @@ vim_brier <- function(time,
     one_step[i] <- ifelse(scale_est, max(c(one_step[i], 0)), one_step[i])
   }
 
-  return(data.frame(t = landmark_times,
+  return(data.frame(tau = landmark_times,
                     full_one_step = full_one_step,
                     reduced_one_step = reduced_one_step,
                     one_step = one_step,
