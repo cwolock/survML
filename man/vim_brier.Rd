@@ -27,6 +27,9 @@ event and censoring times.}
 \item{event}{\code{n x 1} numeric vector of status indicators of
 whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 
+\item{approx_times}{Numeric vector of length J1 giving times at which to
+approximate integrals.}
+
 \item{landmark_times}{Numeric vector of length J2 giving
 times at which to estimate Brier score}
 
@@ -44,8 +47,7 @@ times at which to estimate Brier score}
 
 \item{sample_split}{Logical indicating whether or not to sample split}
 
-\item{time_grid_approx}{Numeric vector of length J1 giving times at which to
-approximate integrals.}
+\item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative}
 }
 \value{
 data frame giving results

@@ -49,6 +49,15 @@ This determines whether the data are treated as subject to left truncation and
 right censoring (\code{"prospective"}) or right truncation alone
 (\code{"retrospective"}).}
 
+\item{time_grid_fit}{Named list of numeric vectors of times of times on which to discretize
+for estimation of cumulative probability functions. This is an alternative to
+\code{bin_size} and allows for specially tailored time grids rather than simply
+using a quantile bin size. The list consists of vectors named
+\code{F_Y_1_grid}, \code{F_Y_0_grid}, \code{G_W_1_grid}, and \code{G_W_0_grid}. These denote,
+respectively, the grids used to estimate the conditional CDF of the \code{time} variable
+among uncensored and censored observations, and the grids used to estimate the conditional
+distribution of the \code{entry} variable among uncensored and censored observations.}
+
 \item{bin_size}{Size of time bin on which to discretize for estimation
 of cumulative probability functions. Can be a number between 0 and 1,
 indicating the size of quantile grid (e.g. \code{0.1} estimates

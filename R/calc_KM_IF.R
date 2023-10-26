@@ -29,8 +29,8 @@ calc_KM_IF <- function(time,
     }
     c(0,cumsum(vals))
   }))
-  S_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,S_hat[i,]), right = FALSE)(time[i]))
-  G_hat_Y <- sapply(1:n, function(i) stepfun(approx_times, c(1,G_hat[i,]), right = TRUE)(time[i]))
+  S_hat_Y <- sapply(1:n, function(i) stats::stepfun(approx_times, c(1,S_hat[i,]), right = FALSE)(time[i]))
+  G_hat_Y <- sapply(1:n, function(i) stats::stepfun(approx_times, c(1,G_hat[i,]), right = TRUE)(time[i]))
 
   calc_one <- function(i){
     t0 <- approx_times[i]

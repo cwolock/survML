@@ -5,7 +5,7 @@
 #' event and censoring times.
 #' @param event \code{n x 1} numeric vector of status indicators of
 #' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
-#' @param time_grid_approx Numeric vector of length J1 giving times at which to
+#' @param approx_times Numeric vector of length J1 giving times at which to
 #' approximate integrals.
 #' @param tau restriction time
 #' @param f_hat Full oracle predictions (n x J1 matrix)
@@ -15,6 +15,7 @@
 #' @param folds Numeric vector of length n giving cross-fitting folds
 #' @param sample_split Logical indicating whether or not to sample split
 #' @param ss_folds Numeric vector of length n giving sample-splitting folds
+#' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
 #'
 #' @return data frame giving results
 #'
@@ -53,14 +54,14 @@ vim_cindex <- function(time,
     time_holdout <- time[folds == j]
     event_holdout <- event[folds == j]
 
-    V_0 <- surVIM:::estimate_cindex(time = time_holdout,
+    V_0 <- estimate_cindex(time = time_holdout,
                            event = event_holdout,
                            approx_times = approx_times,
                            tau = tau,
                            preds = f_hat[[j]],
                            S_hat = S_hat[[j]],
                            G_hat = G_hat[[j]])
-    V_0s <- surVIM:::estimate_cindex(time = time_holdout,
+    V_0s <- estimate_cindex(time = time_holdout,
                             event = event_holdout,
                             approx_times = approx_times,
                             tau = tau,
@@ -109,7 +110,7 @@ vim_cindex <- function(time,
   cil <- one_step - 1.96*sqrt(var_est/n_eff)
   ciu <- one_step + 1.96*sqrt(var_est/n_eff)
   cil_1sided <- one_step - 1.645*sqrt(var_est/n_eff)
-  p <- pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE)
+  p <- stats::pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE)
   one_step <- ifelse(scale_est, max(c(one_step, 0)), one_step)
 
   return(data.frame(tau = tau,

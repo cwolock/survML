@@ -5,7 +5,7 @@
 #' event and censoring times.
 #' @param event \code{n x 1} numeric vector of status indicators of
 #' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
-#' @param time_grid_approx Numeric vector of length J1 giving times at which to
+#' @param approx_times Numeric vector of length J1 giving times at which to
 #' approximate integrals.
 #' @param landmark_times Numeric vector of length J2 giving
 #' times at which to estimate AUC
@@ -16,6 +16,9 @@
 #' @param folds Numeric vector of length n giving cross-fitting folds
 #' @param sample_split Logical indicating whether or not to sample split
 #' @param ss_folds Numeric vector of length n giving sample-splitting folds
+#' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
+#' @param robust Logical, whether or not to use the doubly-robust debiasing approach. This option
+#' is meant for illustration purposes only --- it should be left as \code{TRUE}.
 #'
 #' @return data frame giving results
 #'
@@ -124,7 +127,7 @@ vim_AUC <- function(time,
     cil[i] <- one_step[i] - 1.96*sqrt(var_est[i]/n_eff)
     ciu[i] <- one_step[i] + 1.96*sqrt(var_est[i]/n_eff)
     cil_1sided[i] <- one_step[i] - 1.645*sqrt(var_est[i]/n_eff)
-    p[i] <- pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE)
+    p[i] <- stats::pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE)
     one_step[i] <- ifelse(scale_est, max(c(one_step[i], 0)), one_step[i])
   }
 

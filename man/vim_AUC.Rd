@@ -16,7 +16,7 @@ vim_AUC(
   folds,
   sample_split,
   ss_folds,
-  robust,
+  robust = TRUE,
   scale_est = FALSE
 )
 }
@@ -27,6 +27,9 @@ event and censoring times.}
 
 \item{event}{\code{n x 1} numeric vector of status indicators of
 whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
+
+\item{approx_times}{Numeric vector of length J1 giving times at which to
+approximate integrals.}
 
 \item{landmark_times}{Numeric vector of length J2 giving
 times at which to estimate AUC}
@@ -45,8 +48,10 @@ times at which to estimate AUC}
 
 \item{ss_folds}{Numeric vector of length n giving sample-splitting folds}
 
-\item{time_grid_approx}{Numeric vector of length J1 giving times at which to
-approximate integrals.}
+\item{robust}{Logical, whether or not to use the doubly-robust debiasing approach. This option
+is meant for illustration purposes only --- it should be left as \code{TRUE}.}
+
+\item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative}
 }
 \value{
 data frame giving results
