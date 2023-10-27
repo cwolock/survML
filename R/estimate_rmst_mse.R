@@ -47,13 +47,13 @@ estimate_rmst_mse <- function(time,
   phi_01_combined <- unlist(lapply(1:n, FUN = calc_phi_01_combined))
 
   calc_phi_01 <- function(i){
-    -sum((preds[i] - approx_times_k)^2 * diff(KM_IFs_k[i,])) + (preds[i] - tau)^2*KM_IFs[i,which(approx_times == tau)]
+    -sum((preds[i] - approx_times_k)^2 * diff(KM_IFs_k[i,])) + (preds[i] - tau)^2*KM_IFs_k[i,which(approx_times == tau)]
   }
 
   phi_01 <- unlist(lapply(1:n, FUN = calc_phi_01))
 
   calc_phi_tilde_01 <- function(i){
-    -sum((preds[i] - approx_times_k)^2 * diff(S_hat_k[i,])) + (preds[i] - tau)^2*S_hat[i,which(approx_times == tau)]
+    -sum((preds[i] - approx_times_k)^2 * diff(S_hat_k[i,])) + (preds[i] - tau)^2*S_hat_k[i,which(approx_times == tau)]
   }
   phi_tilde_01 <- unlist(lapply(1:n, FUN = calc_phi_tilde_01))
 
