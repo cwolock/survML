@@ -6,7 +6,7 @@
 \alias{survML-package}
 \title{survML: Flexible Estimation of Conditional Survival Functions Using Machine Learning}
 \description{
-Tools for flexible estimation of conditional survival functions using off-the-shelf machine learning tools. Implements both global and local survival stacking. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2022+) \href{https://arxiv.org/abs/2211.03031}{arXiv:2211.03031}.
+Tools for flexible estimation of conditional survival functions using off-the-shelf machine learning tools. Implements both global and local survival stacking. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) \doi{10.1080/10618600.2024.2304070}.
 }
 \seealso{
 Useful links:

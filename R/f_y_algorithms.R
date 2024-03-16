@@ -42,7 +42,7 @@ f_y_stack_SuperLearner <- function(time,
 
     # if user gives bin size, set time grid based on quantiles. otherwise, every observed time
     if (!is.null(bin_size)){
-      time_grid <- sort(unique(stats::quantile(bin_variable, probs = seq(0, 1, by = bin_size))))
+      time_grid <- sort(unique(stats::quantile(bin_variable, type = 1, probs = seq(0, 1, by = bin_size))))
       time_grid <- c(0, time_grid) # 013123 changed this to try to get better predictions at time 0
       #time_grid[1] <- 0 # manually set first point to 0, instead of first observed time
     } else{
@@ -131,7 +131,7 @@ f_y_stack_SuperLearner <- function(time,
 
 #' Prediction function for stacked SuperLearner CDF
 #'
-#' @param fit Fitted regression object if (bin_variable == "time"){
+#' @param fit Fitted regression object
 #' @param newX Values of covariates at which to make a prediction
 #' @param newtimes
 #'

@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(survML)
 library(ggplot2)
+library(gam)
 ```
 
 # `survML`: Conditional survival function estimation using machine learning

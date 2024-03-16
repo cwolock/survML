@@ -10,7 +10,7 @@ Authors@R:
 Description: Tools for flexible estimation of conditional survival 
               functions using off-the-shelf machine learning tools. Implements both 
               global and local survival stacking. See Wolock CJ, Gilbert PB,
-              Simon N, and Carone M (2022+) <arXiv:2211.03031>. 
+              Simon N, and Carone M (2024) <doi:10.1080/10618600.2024.2304070>. 
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -24,7 +24,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    ggplot2 (>= 3.4.0)
+    ggplot2 (>= 3.4.0),
+    gam (>= 1.22.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 URL: https://github.com/cwolock/survML

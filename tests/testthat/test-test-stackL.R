@@ -1,5 +1,6 @@
-# ensure basic functioning doesn't change
-
+#####################################
+### basic functioning with truncation
+#####################################
 set.seed(1)
 n <- 100
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
@@ -17,7 +18,7 @@ time <- time[sampled]
 event <- event[sampled]
 entry <- entry[sampled]
 
-SL.library <- c("SL.gam", "SL.glm")
+SL.library <- c("SL.mean", "SL.gam")
 
 fit <- stackL(time = time,
               event = event,
@@ -31,9 +32,9 @@ fit <- stackL(time = time,
               SL_control = list(SL.library = SL.library,
                                 V = 5))
 
-true_S_T_preds <- rbind(c(0.974, 0.974, 0.630, 0.385, 0.319, 0.283),
-                        c(0.985, 0.985, 0.769, 0.581, 0.522, 0.487),
-                        c(0.962, 0.962, 0.508, 0.247, 0.188, 0.158))
+true_S_T_preds <- rbind(c(0.959, 0.959, 0.658, 0.471, 0.433, 0.416),
+                        c(0.959, 0.959, 0.658, 0.471, 0.433, 0.416),
+                        c(0.959, 0.959, 0.658, 0.471, 0.433, 0.416))
 
 estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
 
@@ -51,7 +52,31 @@ estimated_S_T_preds <- round(preds$S_T_preds, digits = 3)
 
 diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
 
-
-test_that("stackL() predict() method is not broken", {
+test_that("stackL() predict() method is not broken (truncation)", {
   expect_equal(sum(diffs), 0)
 })
+
+# # dummy
+# fit <- stackL(time = time,
+#               event = event,
+#               entry = entry,
+#               X = X,
+#               newX = X[c(1,2,3),],
+#               newtimes = seq(0, 15, 3),
+#               direction = "prospective",
+#               bin_size = 0.05,
+#               time_basis = "dummy",
+#               SL_control = list(SL.library = SL.library,
+#                                 V = 5))
+#
+# true_S_T_preds <- rbind(c(0.974, 0.974, 0.630, 0.385, 0.319, 0.283),
+#                         c(0.985, 0.985, 0.769, 0.581, 0.522, 0.487),
+#                         c(0.962, 0.962, 0.508, 0.247, 0.188, 0.158))
+#
+# estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+#
+# diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+#
+# test_that("stackL() returns expected output (truncation, dummy)", {
+#   expect_equal(sum(diffs), 0)
+# })

@@ -230,12 +230,12 @@ p
 
 ## References
 
-For details of global survival stacking, please see the following
-preprint:
+For details of global survival stacking, please see the following paper:
 
-Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. “A
-framework for leveraging machine learning tools to estimate personalized
-survival curves.” [arXiv: 2211.03031.](https://arxiv.org/abs/2211.03031)
+Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone.
+(2024). [“A framework for leveraging machine learning tools to estimate
+personalized survival
+curves.”](https://doi.org/10.1080/10618600.2024.2304070)
 
 Local survival stacking is described in:
 
