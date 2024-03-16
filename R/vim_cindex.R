@@ -110,7 +110,9 @@ vim_cindex <- function(time,
   cil <- one_step - 1.96*sqrt(var_est/n_eff)
   ciu <- one_step + 1.96*sqrt(var_est/n_eff)
   cil_1sided <- one_step - 1.645*sqrt(var_est/n_eff)
-  p <- stats::pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE)
+  p[i] <- ifelse(sample_split,
+                 stats::pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE),
+                 NA)
   one_step <- ifelse(scale_est, max(c(one_step, 0)), one_step)
 
   return(data.frame(tau = tau,

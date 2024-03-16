@@ -127,7 +127,9 @@ vim_AUC <- function(time,
     cil[i] <- one_step[i] - 1.96*sqrt(var_est[i]/n_eff)
     ciu[i] <- one_step[i] + 1.96*sqrt(var_est[i]/n_eff)
     cil_1sided[i] <- one_step[i] - 1.645*sqrt(var_est[i]/n_eff)
-    p[i] <- stats::pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE)
+    p[i] <- ifelse(sample_split,
+                   stats::pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE),
+                   NA)
     one_step[i] <- ifelse(scale_est, max(c(one_step[i], 0)), one_step[i])
   }
 
