@@ -1,3 +1,5 @@
+# survML 1.2.0
+
 # survML 1.1.0
 
 * Added `gam` to `SUGGESTS` in order to allow `SuperLearner` package to make corresponding change without breaking vignettes. 
