@@ -65,14 +65,14 @@ Parameters include \code{SL.library} (library of algorithms to include in the
 binary classification Super Learner), \code{V} (Number of cross validation folds on
 which to train the Super Learner classifier, defaults to 10), \code{method} (Method for
 estimating coefficients for the Super Learner, defaults to \code{"method.NNLS"}),
-code{stratifyCV} (logical indicating whether to stratify by outcome in \code{SuperLearner}'s cross-validation
+\code{stratifyCV} (logical indicating whether to stratify by outcome in \code{SuperLearner}'s cross-validation
 scheme), and \code{obsWeights}
 (observation weights, passed directly to prediction algorithms by \code{SuperLearner}).}
 
 \item{tau}{The maximum time of interest in a study, used for
 retrospective conditional survival estimation. Rather than dealing
 with right truncation separately than left truncation, it is simpler to
-estimate the survival function of \code{tau - time}. Defaults to code{NULL},
+estimate the survival function of \code{tau - time}. Defaults to \code{NULL},
 in which case the maximum study entry time is chosen as the
 reference point.}
 }
