@@ -2,6 +2,7 @@
 
 S3method(predict,stackG)
 S3method(predict,stackL)
+export(currstatCIR)
 export(stackG)
 export(stackL)
 importFrom(SuperLearner,SuperLearner)

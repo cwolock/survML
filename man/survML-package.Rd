@@ -4,9 +4,9 @@
 \name{survML-package}
 \alias{survML}
 \alias{survML-package}
-\title{survML: Flexible Estimation of Conditional Survival Functions Using Machine Learning}
+\title{survML: Tools for Flexible Survival Analysis Using Machine Learning}
 \description{
-Tools for flexible estimation of conditional survival functions using off-the-shelf machine learning tools. Implements both global and local survival stacking. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) \doi{10.1080/10618600.2024.2304070}.
+Statistical methods for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation and isotonic regression methods for current status data. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) \doi{10.1080/10618600.2024.2304070}.
 }
 \seealso{
 Useful links:
@@ -18,6 +18,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Charles Wolock \email{cwolock@gmail.com} (\href{https://orcid.org/0000-0003-3527-1102}{ORCID}) [copyright holder]
+
+Other contributors:
+\itemize{
+  \item Avi Kenny \email{avi.kenny@gmail.com} (\href{https://orcid.org/0000-0002-9465-7307}{ORCID}) [contributor]
+}
 
 }
 \keyword{internal}
