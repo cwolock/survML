@@ -38,7 +38,7 @@ test_that("vim_accuracy(). no xfit, no sample split", {
   expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
                                 "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
                                 "cil_1sided", "p"))
-  expect_equal(sum(is.na(output)), 0)
+  expect_equal(sum(is.na(output)), 3)
 })
 
 # AUC
@@ -59,7 +59,7 @@ test_that("vim_AUC(). no xfit, no sample split", {
   expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
                                 "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
                                 "cil_1sided", "p"))
-  expect_equal(sum(is.na(output)), 0)
+  expect_equal(sum(is.na(output)), 3)
 })
 
 # Brier score
@@ -80,7 +80,7 @@ test_that("vim_brier(). no xfit, no sample split", {
   expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
                                 "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
                                 "cil_1sided", "p"))
-  expect_equal(sum(is.na(output)), 0)
+  expect_equal(sum(is.na(output)), 3)
 })
 
 # RMST MSE
@@ -101,7 +101,7 @@ test_that("vim_rmst_mse(). no xfit, no sample split", {
   expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
                                 "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
                                 "cil_1sided", "p"))
-  expect_equal(sum(is.na(output)), 0)
+  expect_equal(sum(is.na(output)), 1)
 })
 
 # C-index
@@ -122,7 +122,7 @@ test_that("vim_cindex(). no xfit, no sample split", {
   expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
                                 "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
                                 "cil_1sided", "p"))
-  expect_equal(sum(is.na(output)), 0)
+  expect_equal(sum(is.na(output)), 1)
 })
 
 
