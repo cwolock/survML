@@ -14,17 +14,21 @@ currstatCIR <- function(time,
                                            V = 5),
                         deriv_method = "m-spline",
                         missing_method = "extended",
+                        eval_region,
                         n_eval_pts = 101){
 
-  s <- ifelse(is.na(time) & is.na(event), 0, 1)
-
-  event[s == 0] <- 0
-  time[s == 0] <- 0
+  s <- as.numeric(!is.na(event))
+  # if (missing_method == "extended"){
+  #   # determine upper bound on support over which to compute GCM
+  #   event[s == 0] <- 1
+  #   time[s == 0] <- missing_bound
+  # }
 
   if (missing_method == "cc"){
     time <- time[s == 1]
-    event <- time[s == 1]
+    event <- event[s == 1]
     W <- W[s == 1,]
+    s <- s[s == 1]
   }
   dat <- list(delta = event,
               y = time,
@@ -54,19 +58,24 @@ currstatCIR <- function(time,
   y_vals <- sort(unique(dat$y))
 
   if (any_missing){
-    alpha_n <- construct_alpha_n(dat = dat, SL_control = SL_control) # sampling weights
-    F_n <- construct_Phi_n(dat = dat,
-                           alpha_n = alpha_n,
-                           f_sIx_n = f_sIx_n,
-                           Riemann_grid = Riemann_grid) # debiased cdf estimate
-    F_ns <- sapply(y_vals, FUN = F_n)
+    # alpha_n <- construct_alpha_n(dat = dat, SL_control = SL_control) # sampling weights
+    # F_n <- construct_Phi_n(dat = dat,
+    #                        alpha_n = alpha_n,
+    #                        f_sIx_n = f_sIx_n,
+    #                        Riemann_grid = Riemann_grid) # debiased cdf estimate
+    # F_ns <- sapply(y_vals, FUN = F_n)
+    # F_n_inverse <- function(t){
+    #   if (any(F_ns >= t)){
+    #     val <- y_vals[min(which(F_ns >= t))]
+    #   } else{
+    #     val <- max(y_vals)
+    #   }
+    # }
+    F_n <- ecdf(dat$y)
     F_n_inverse <- function(t){
-      if (any(F_ns >= t)){
-        val <- y_vals[min(which(F_ns >= t))]
-      } else{
-        val <- max(y_vals)
-      }
+      quantile(dat$y, probs = t, type = 1)
     }
+    alpha_n <- function(w) return(1)
   } else{
     # if no missingness, can use the empirical cdf for F_n and the sampling weights are just 1
     F_n <- ecdf(dat$y)
@@ -80,10 +89,12 @@ currstatCIR <- function(time,
                                alpha_n = alpha_n, f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
   kappa_n <- construct_kappa_n(dat = dat, mu_n = mu_n, g_n = g_n, alpha_n = alpha_n)
 
-  gcm_x_vals <- sapply(y_vals, F_n)
+  # only estimate in the evaluation region, which doesn't include the upper bound
+  gcm_x_vals <- sapply(y_vals[y_vals <= eval_region[2]], F_n)
   inds_to_keep <- !base::duplicated(gcm_x_vals)
   gcm_x_vals <- gcm_x_vals[inds_to_keep]
-  gcm_y_vals <- sapply(y_vals[inds_to_keep], Gamma_n)
+  gcm_y_vals <- sapply(y_vals[y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
+  # gcm_y_vals <- sapply(y_vals[intersect(which(y_vals <= eval_region[2]),inds_to_keep)], Gamma_n)
   if (!any(gcm_x_vals==0)) {
     gcm_x_vals <- c(0, gcm_x_vals)
     gcm_y_vals <- c(0, gcm_y_vals)
@@ -97,17 +108,18 @@ currstatCIR <- function(time,
     f = 0
   )
 
+  eval_cdf_upper <- mean(dat$y <= eval_region[2])
   theta_prime <- construct_deriv(r_Mn = theta_n,
                                  deriv_method = deriv_method,
                                  dir = direction,
-                                 y = seq(0, 1, length.out = n_eval_pts))
+                                 y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
 
   # Compute estimates
-  ests <- sapply(seq(0,1,length.out = n_eval_pts), theta_n)
-  deriv_ests <- sapply(seq(0, 1, length.out = n_eval_pts), theta_prime)
+  ests <- sapply(seq(0,eval_cdf_upper,length.out = n_eval_pts), theta_n)
+  deriv_ests <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
   kappa_ests <- sapply(y_vals, kappa_n)
   # transform kappa to quantile scale
-  kappa_ests_rescaled <- sapply(seq(0, 1, length.out = n_eval_pts), function(x){
+  kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
     ind <- which(y_vals == F_n_inverse(x)) # this one is more general b/c any form of F_n_inverse can be given
     kappa_ests[ind]
   })
@@ -121,8 +133,8 @@ currstatCIR <- function(time,
 
   # Plot estimates vs true values
   results <- data.frame(
-    x = sapply(seq(0, 1, length.out = n_eval_pts), F_n_inverse), # this form is more general b/c any form of F_n_inverse can be given
-    x_quants = seq(0, 1, length.out = n_eval_pts),
+    x = sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse), # this form is more general b/c any form of F_n_inverse can be given
+    x_quants = seq(0, eval_cdf_upper, length.out = n_eval_pts),
     y = ests,
     y_low = cils,
     y_hi = cius
@@ -293,6 +305,8 @@ construct_Gamma_n <- function(dat, mu_n, g_n, alpha_n, f_sIx_n, Riemann_grid) {
 
   # piece 1 maps to (\Delta - \mu_n(Y_i, W_i))/g_n(Y_i, W_i)
   piece_1 <- (dat$delta-mu_ns) / g_ns
+  piece_1[is.na(piece_1)] <- 0 # there are NAs for missing values, but these get
+  # multiplied by 0 later anyway
 
   # since there aren't so many unique s values in my application
   # we can save a lot of time by only computing piece_2 on those ~100 unique
