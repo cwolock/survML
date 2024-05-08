@@ -350,11 +350,12 @@ construct_Gamma_n <- function(dat, mu_n, g_n, alpha_n, f_sIx_n, Riemann_grid) {
   fnc <- function(y) {
     piece_3 <- as.integer(dat$y<=y) * dat$s/alpha_ns
     obs_pieces <- (sum(piece_3*piece_1) + mean(piece_3*piece_2))/n_orig
-    piece_4_integrals <- apply(dat$w, MARGIN = 1, FUN = function(w){
-      unique_Riemann_integrals[which(colSums(t(w_distinct) == w) == ncol(w_distinct)),max(which(Riemann_grid <= y))]
-    })
-    unobs_pieces <- sum((1 - dat$s/alpha_ns) * piece_4_integrals)/n_orig
-    return(obs_pieces + unobs_pieces)
+    print("ignoring piece 4")
+    # piece_4_integrals <- apply(dat$w, MARGIN = 1, FUN = function(w){
+    #   unique_Riemann_integrals[which(colSums(t(w_distinct) == w) == ncol(w_distinct)),max(which(Riemann_grid <= y))]
+    # })
+    # unobs_pieces <- sum((1 - dat$s/alpha_ns) * piece_4_integrals)/n_orig
+    return(obs_pieces)
   }
 
   return(fnc)
