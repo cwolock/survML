@@ -114,13 +114,16 @@ vim_cindex <- function(time,
                  stats::pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE),
                  NA)
   one_step <- ifelse(scale_est, max(c(one_step, 0)), one_step)
+  cil <- ifelse(scale_est, max(c(cil, 0)), cil)
+  ciu <- ifelse(scale_est, max(c(ciu, 0)), ciu)
+  cil_1sided <- ifelse(scale_est, max(c(cil_1sided, 0)), cil_1sided)
 
-  return(data.frame(tau = tau,
-                    full_one_step = full_one_step,
-                    reduced_one_step = reduced_one_step,
-                    one_step = one_step,
-                    full_plug_in = full_plug_in,
-                    reduced_plug_in = reduced_plug_in,
+  return(data.frame(restriction_time = tau,
+                    # full_one_step = full_one_step,
+                    # reduced_one_step = reduced_one_step,
+                    est = one_step,
+                    # full_plug_in = full_plug_in,
+                    # reduced_plug_in = reduced_plug_in,
                     var_est = var_est,
                     cil = cil,
                     ciu = ciu,

@@ -14,6 +14,7 @@ currstatCIR(
     5),
   deriv_method = "m-spline",
   missing_method = "extended",
+  eval_region,
   n_eval_pts = 101
 )
 }

@@ -123,15 +123,18 @@ vim_accuracy <- function(time,
                    stats::pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE),
                    NA)
     one_step[i] <- ifelse(scale_est, max(c(one_step[i], 0)), one_step[i])
+    cil[i] <- ifelse(scale_est, max(c(cil[i], 0)), cil[i])
+    ciu[i] <- ifelse(scale_est, max(c(ciu[i], 0)), ciu[i])
+    cil_1sided[i] <- ifelse(scale_est, max(c(cil_1sided[i], 0)), cil_1sided[i])
 
   }
 
-  return(data.frame(tau = landmark_times,
-                    full_one_step = full_one_step,
-                    reduced_one_step = reduced_one_step,
-                    one_step = one_step,
-                    full_plug_in = full_plug_in,
-                    reduced_plug_in = reduced_plug_in,
+  return(data.frame(landmark_time = landmark_times,
+                    # full_one_step = full_one_step,
+                    # reduced_one_step = reduced_one_step,
+                    est = one_step,
+                    # full_plug_in = full_plug_in,
+                    # reduced_plug_in = reduced_plug_in,
                     var_est = var_est,
                     cil = cil,
                     ciu = ciu,
