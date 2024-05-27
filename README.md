@@ -13,7 +13,13 @@ coverage](https://codecov.io/gh/cwolock/survML/branch/main/graph/badge.svg)](htt
 
 <!-- badges: end -->
 
-# `survML`: Conditional survival function estimation using machine learning
+# `survML`: Tools for Flexible Survival Analysis Using Machine Learning
+
+**Note: The current development version of `survML` now has
+functionality for estimating variable importance, in addition to the
+original survival stacking functionality that was included in versions
+1.1.0 and earlier. Documentation for the new functionality, as well as a
+new version on CRAN, are forthcoming.**
 
 The `survML` package implements two methods for estimating a conditional
 survival function using off-the-shelf machine learning. The first,
@@ -232,10 +238,11 @@ p
 
 For details of global survival stacking, please see the following paper:
 
-Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone.
-(2024). [“A framework for leveraging machine learning tools to estimate
-personalized survival
+Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. [“A
+framework for leveraging machine learning tools to estimate personalized
+survival
 curves.”](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070)
+*Journal of Computational and Graphical Statistics* (2024).
 
 Local survival stacking is described in:
 
