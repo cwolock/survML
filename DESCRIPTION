@@ -12,10 +12,11 @@ Authors@R:
              role = c("ctb"),
              email = "avi.kenny@gmail.com",
              comment = c(ORCID = "0000-0002-9465-7307")))
-Description: Statistical methods for analyzing time-to-event data using
+Description: Statistical tools for analyzing time-to-event data using
              machine learning. Implements survival stacking for conditional 
-             survival estimation and isotonic regression methods for 
-             current status data. See Wolock CJ, Gilbert PB, Simon N, 
+             survival estimation, isotonic regression for 
+             current status data, and methods for algorithm-agnostic variable
+             importance. See Wolock CJ, Gilbert PB, Simon N, 
              and Carone M (2024) <doi:10.1080/10618600.2024.2304070>. 
 License: GPL (>= 3)
 Encoding: UTF-8
