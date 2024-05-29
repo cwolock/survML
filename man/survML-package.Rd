@@ -12,6 +12,7 @@ Statistical methods for analyzing time-to-event data using machine learning. Imp
 Useful links:
 \itemize{
   \item \url{https://github.com/cwolock/survML}
+  \item \url{https://cwolock.github.io/survML/}
   \item Report bugs at \url{https://github.com/cwolock/survML/issues}
 }
 
