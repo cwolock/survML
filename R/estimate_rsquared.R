@@ -38,8 +38,17 @@ estimate_rsquared <- function(time,
   # calculate two components of EIF
   phi0 <- 2*preds*KM_IFs - KM_IFs
   phi_tilde_0 <- 2*preds*S_hat_k - preds^2 - S_hat_k - mean(2*preds*S_hat_k - preds^2 - S_hat_k)
+  phi_tilde_0_uncentered <- 2*preds*S_hat_k - preds^2 - S_hat_k
 
-  EIF <- phi0 + phi_tilde_0
+  phi02 <- KM_IFs
+  phi_tilde02 <- S_hat_k - mean(S_hat_k)
+  phi_tilde02_uncentered <- S_hat_k
+
+  # EIF <- phi0 + phi_tilde_0
+
+  V_1 <- mean(phi_tilde_0_uncentered)
+  V_2 <- mean(phi_tilde02_uncentered) - (mean(phi_tilde02_uncentered))^2
+  EIF <- (phi0 + phi_tilde_0)/V_2 - V_1/(V_2^2)*(phi02 + phi_tilde02)
 
   one_step <- mean(2*preds*S_hat_k - preds^2 - S_hat_k) + mean(EIF)
   plug_in <- mean(2*preds*S_hat_k - preds^2 - S_hat_k)
