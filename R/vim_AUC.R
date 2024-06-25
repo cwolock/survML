@@ -17,6 +17,7 @@
 #' @param sample_split Logical indicating whether or not to sample split
 #' @param ss_folds Numeric vector of length n giving sample-splitting folds
 #' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
+#' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
 #' @param robust Logical, whether or not to use the doubly-robust debiasing approach. This option
 #' is meant for illustration purposes only --- it should be left as \code{TRUE}.
 #'
@@ -36,7 +37,8 @@ vim_AUC <- function(time,
                     sample_split,
                     ss_folds,
                     robust = TRUE,
-                    scale_est = FALSE){
+                    scale_est = FALSE,
+                    alpha = 0.05){
 
   J1 <- length(landmark_times)
   V <- length(unique(folds))
@@ -109,8 +111,8 @@ vim_AUC <- function(time,
       folds_1 <- sort(unique(folds[ss_folds == 1]))
       one_step[i] <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0]) -
         mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
-      # full_one_step[i] <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0])
-      # full_plug_in[i] <- mean(split_plug_in_fulls[folds_0])
+      full_one_step[i] <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0])
+      full_plug_in[i] <- mean(split_plug_in_fulls[folds_0])
       # reduced_one_step[i] <- mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
       # reduced_plug_in[i] <- mean(split_plug_in_reduceds[folds_1])
       var_est[i] <- mean(split_var_est_fulls[folds_0]) +
@@ -118,15 +120,15 @@ vim_AUC <- function(time,
     } else{
       one_step[i] <- mean(CV_full_numerators - CV_reduced_numerators)/mean(CV_denominators)#mean(CV_one_steps)
       var_est[i] <- mean(CV_var_ests)
-      # full_one_step[i] <- mean(CV_full_numerators)/mean(CV_denominators)#mean(CV_full_one_steps)
-      # reduced_one_step[i] <- mean(CV_reduced_numerators)/mean(CV_denominators)#mean(CV_reduced_one_steps)
+      full_one_step[i] <- mean(CV_full_numerators)/mean(CV_denominators)#mean(CV_full_one_steps)
+      reduced_one_step[i] <- mean(CV_reduced_numerators)/mean(CV_denominators)#mean(CV_reduced_one_steps)
       # full_plug_in[i] <- mean(CV_full_plug_ins)
       # reduced_plug_in[i] <- mean(CV_reduced_plug_ins)
     }
     n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
-    cil[i] <- one_step[i] - 1.96*sqrt(var_est[i]/n_eff)
-    ciu[i] <- one_step[i] + 1.96*sqrt(var_est[i]/n_eff)
-    cil_1sided[i] <- one_step[i] - 1.645*sqrt(var_est[i]/n_eff)
+    cil[i] <- one_step[i] - qnorm(1-alpha/2)*sqrt(var_est[i]/n_eff)
+    ciu[i] <- one_step[i] + qnorm(1-alpha/2)*sqrt(var_est[i]/n_eff)
+    cil_1sided[i] <- one_step[i] - qnorm(1-alpha)*sqrt(var_est[i]/n_eff)
     p[i] <- ifelse(sample_split,
                    stats::pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE),
                    NA)
@@ -137,14 +139,12 @@ vim_AUC <- function(time,
   }
 
   return(data.frame(landmark_time = landmark_times,
-                    # full_one_step = full_one_step,
-                    # reduced_one_step = reduced_one_step,
                     est = one_step,
-                    # full_plug_in = full_plug_in,
-                    # reduced_plug_in = reduced_plug_in,
                     var_est = var_est,
                     cil = cil,
                     ciu = ciu,
                     cil_1sided = cil_1sided,
-                    p = p))
+                    p = p,
+                    full_pred = full_one_step,
+                    reduced_pred = reduced_one_step))
 }

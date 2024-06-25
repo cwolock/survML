@@ -16,7 +16,8 @@ vim_rsquared(
   folds,
   ss_folds,
   sample_split,
-  scale_est = FALSE
+  scale_est = FALSE,
+  alpha = 0.05
 )
 }
 \arguments{
@@ -48,6 +49,8 @@ times at which to estimate Brier score}
 \item{sample_split}{Logical indicating whether or not to sample split}
 
 \item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative}
+
+\item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
 }
 \value{
 data frame giving results

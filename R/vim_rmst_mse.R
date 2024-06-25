@@ -16,6 +16,7 @@
 #' @param sample_split Logical indicating whether or not to sample split
 #' @param ss_folds Numeric vector of length n giving sample-splitting folds
 #' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
+#' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
 #'
 #' @return data frame giving results
 #'
@@ -32,21 +33,22 @@ vim_rmst_mse <- function(time,
                          folds,
                          sample_split,
                          ss_folds,
-                         scale_est = FALSE){
+                         scale_est = FALSE,
+                         alpha = 0.05){
 
   V <- length(unique(folds))
 
-  CV_full_plug_ins <- rep(NA, V)
-  CV_reduced_plug_ins <- rep(NA, V)
+  # CV_full_plug_ins <- rep(NA, V)
+  # CV_reduced_plug_ins <- rep(NA, V)
   CV_full_one_steps <- rep(NA, V)
   CV_reduced_one_steps <- rep(NA, V)
   CV_one_steps <- rep(NA, V)
   CV_plug_ins <- rep(NA, V)
   CV_var_ests <- rep(NA, V)
   split_one_step_fulls <- rep(NA, V)
-  split_plug_in_fulls <- rep(NA, V)
+  # split_plug_in_fulls <- rep(NA, V)
   split_one_step_reduceds <- rep(NA, V)
-  split_plug_in_reduceds <- rep(NA, V)
+  # split_plug_in_reduceds <- rep(NA, V)
   split_var_est_fulls <- rep(NA, V)
   split_var_est_reduceds <- rep(NA, V)
   for (j in 1:V){
@@ -70,15 +72,15 @@ vim_rmst_mse <- function(time,
                               G_hat = G_hat[[j]])
 
     CV_full_one_steps[j] <- V_0$one_step
-    CV_full_plug_ins[j] <- V_0$plug_in
+    # CV_full_plug_ins[j] <- V_0$plug_in
     CV_reduced_one_steps[j] <- V_0s$one_step
-    CV_reduced_plug_ins[j] <- V_0s$plug_in
+    # CV_reduced_plug_ins[j] <- V_0s$plug_in
     CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
-    CV_plug_ins[j] <-  V_0$plug_in -V_0s$plug_in
+    # CV_plug_ins[j] <-  V_0$plug_in -V_0s$plug_in
     split_one_step_fulls[j] <- V_0$one_step
-    split_plug_in_fulls[j] <- V_0$plug_in
+    # split_plug_in_fulls[j] <- V_0$plug_in
     split_one_step_reduceds[j] <- V_0s$one_step
-    split_plug_in_reduceds[j] <- V_0s$plug_in
+    # split_plug_in_reduceds[j] <- V_0s$plug_in
     split_var_est_fulls[j] <- mean(V_0$EIF^2)
     split_var_est_reduceds[j] <- mean(V_0s$EIF^2)
     EIF <- V_0$EIF - V_0s$EIF
@@ -91,9 +93,9 @@ vim_rmst_mse <- function(time,
     one_step <- mean(split_one_step_fulls[folds_0]) -
       mean(split_one_step_reduceds[folds_1])
     full_one_step <- mean(split_one_step_fulls[folds_0])
-    full_plug_in <- mean(split_plug_in_fulls[folds_0])
+    # full_plug_in <- mean(split_plug_in_fulls[folds_0])
     reduced_one_step <- mean(split_one_step_reduceds[folds_1])
-    reduced_plug_in <- mean(split_plug_in_reduceds[folds_1])
+    # reduced_plug_in <- mean(split_plug_in_reduceds[folds_1])
     var_est <- mean(split_var_est_fulls[folds_0]) +
       mean(split_var_est_reduceds[folds_1])
   } else{
@@ -101,14 +103,14 @@ vim_rmst_mse <- function(time,
     var_est <- mean(CV_var_ests)
     full_one_step <- mean(CV_full_one_steps)
     reduced_one_step <- mean(CV_reduced_one_steps)
-    full_plug_in <- mean(CV_full_plug_ins)
-    reduced_plug_in <- mean(CV_reduced_plug_ins)
+    # full_plug_in <- mean(CV_full_plug_ins)
+    # reduced_plug_in <- mean(CV_reduced_plug_ins)
   }
 
   n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
-  cil <- one_step - 1.96*sqrt(var_est/n_eff)
-  ciu <- one_step + 1.96*sqrt(var_est/n_eff)
-  cil_1sided <- one_step - 1.645*sqrt(var_est/n_eff)
+  cil <- one_step - qnorm(1-alpha/2)*sqrt(var_est/n_eff)
+  ciu <- one_step + qnorm(1-alpha/2)*sqrt(var_est/n_eff)
+  cil_1sided <- one_step - qnorm(1-alpha)*sqrt(var_est/n_eff)
   p <- ifelse(sample_split,
                  stats::pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE),
                  NA)
@@ -118,14 +120,12 @@ vim_rmst_mse <- function(time,
   cil_1sided <- ifelse(scale_est, max(c(cil_1sided, 0)), cil_1sided)
 
   return(data.frame(restriction_time = tau,
-                    # full_one_step = full_one_step,
-                    # reduced_one_step = reduced_one_step,
                     est = one_step,
-                    # full_plug_in = full_plug_in,
-                    # reduced_plug_in = reduced_plug_in,
                     var_est = var_est,
                     cil = cil,
                     ciu = ciu,
                     cil_1sided = cil_1sided,
-                    p = p))
+                    p = p,
+                    full_pred = full_one_step,
+                    reduced_pred = reduced_one_step))
 }
