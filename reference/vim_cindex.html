@@ -69,7 +69,8 @@
 <span>  <span class="va">folds</span>,</span>
 <span>  <span class="va">sample_split</span>,</span>
 <span>  <span class="va">ss_folds</span>,</span>
-<span>  scale_est <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  scale_est <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.05</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -125,6 +126,10 @@ approximate integrals.</p></dd>
 
 <dt>scale_est</dt>
 <dd><p>Logical, whether or not to force the VIM estimate to be nonnegative</p></dd>
+
+
+<dt>alpha</dt>
+<dd><p>The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05</p></dd>
 
 </dl></div>
     <div class="section level2">
