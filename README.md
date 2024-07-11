@@ -67,28 +67,36 @@ To submit a bug report or request a new feature, please submit a new
 
 For details of global survival stacking, please see the following paper:
 
-Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. [“A
-framework for leveraging machine learning tools to estimate personalized
-survival
-curves.”](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070)
-*Journal of Computational and Graphical Statistics* (2024).
+- Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. [“A
+  framework for leveraging machine learning tools to estimate
+  personalized survival
+  curves.”](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070)
+  *Journal of Computational and Graphical Statistics* (2024).
 
-The following preprint contains details on assessing variable importance
-in survival analysis:
+The following preprints contain details on assessing variable importance
+in survival analysis, and using isotonic regression to estimate survival
+curves from current status data, respectively:
 
-Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone.
-“Nonparametric variable importance for time-to-event outcomes with
-application to prediction of HIV infection.”
-[arXiv:2311.12726.](https://arxiv.org/abs/2311.12726)
+- Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone.
+  “Nonparametric variable importance for time-to-event outcomes with
+  application to prediction of HIV infection.”
+  [arXiv:2311.12726.](https://arxiv.org/abs/2311.12726)
+
+- Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
+  Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky,
+  Ana A. Weil, Helen Y. Chu and Marco Carone. “Investigating symptom
+  duration using current status data: a case study of post-acute
+  COVID-19 syndrome.”
+  [arXiv:2407.04214.](https://arxiv.org/abs/2407.04214)
 
 Local survival stacking is described in:
 
-Eric C. Polley and Mark J. van der Laan. “Super Learning for
-Right-Censored Data” in *Targeted Learning* (2011).
+- Eric C. Polley and Mark J. van der Laan. “Super Learning for
+  Right-Censored Data” in *Targeted Learning* (2011).
 
-Erin Craig, Chenyang Zhong, and Robert Tibshirani. “Survival stacking:
-casting survival analysis as a classification problem.”
-[arXiv:2107.13480.](https://arxiv.org/abs/2107.13480)
+- Erin Craig, Chenyang Zhong, and Robert Tibshirani. “Survival stacking:
+  casting survival analysis as a classification problem.”
+  [arXiv:2107.13480.](https://arxiv.org/abs/2107.13480)
 
 ## Citation
 
@@ -112,4 +120,14 @@ following:
              author={Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
              journal={arXiv preprint arXiv:2311.12726},
              year={2023}
+    }
+
+After using the functionality for current status data, please cite the
+following:
+
+    @article{wolock2024investigating,
+      title={Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome},
+      author={Wolock, Charles J and Jacob, Susan and Bennett, Julia C and Elias-Warren, Anna and O'Hanlon, Jessica and Kenny, Avi and Jewell, Nicholas P and Rotnitzky, Andrea and Weil, Ana A and Chu, Helen Y and Carone, Marco},
+      journal={arXiv preprint arXiv:2407.04214},
+      year={2024}
     }
