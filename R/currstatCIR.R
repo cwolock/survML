@@ -1,11 +1,23 @@
 #' Estimate a survival function under current status sampling
 #'
+#' @param time \code{n x 1} numeric vector of observed
+#' monitoring times
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed prior to the monitoring time.
+#' @param W Dataframe of covariates
+#' @param SL_control List of Super Learner control parameters
+#' @param HAL_control List of haldensify control parameters
+#' @param deriv_method Method for computing derivative
+#' @param missing_method Method for handling nonresponse (extended CIR vs. complete case, just for testing)
+#' @param eval_region Region over which to estimate the survival function
+#' @param n_eval_pts Number of points in grid on which to evaluate survival function
+#'
+#' @return data frame giving results
 #'
 #' @export
 currstatCIR <- function(time,
                         event,
                         W,
-                        direction = "increasing",
                         SL_control = list(SL.library = c("SL.mean"),
                                           V = 5,
                                           method = "method.NNLS"),
@@ -111,7 +123,7 @@ currstatCIR <- function(time,
   eval_cdf_upper <- mean(dat$y <= eval_region[2])
   theta_prime <- construct_deriv(r_Mn = theta_n,
                                  deriv_method = deriv_method,
-                                 dir = direction,
+                                 dir = "increasing",
                                  y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
 
   # Compute estimates

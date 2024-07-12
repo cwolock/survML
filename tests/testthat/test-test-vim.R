@@ -34,10 +34,9 @@ output <- vim_accuracy(time = y,
                        sample_split = FALSE)
 test_that("vim_accuracy(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 3)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 3)
 })
 
@@ -55,10 +54,9 @@ output <- vim_AUC(time = y,
                   sample_split = FALSE)
 test_that("vim_AUC(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 3)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 3)
 })
 
@@ -76,10 +74,9 @@ output <- vim_brier(time = y,
                     sample_split = FALSE)
 test_that("vim_brier(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 3)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 3)
 })
 
@@ -97,10 +94,9 @@ output <- vim_rmst_mse(time = y,
                        sample_split = FALSE)
 test_that("vim_rmst_mse(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 1)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 1)
 })
 
@@ -118,10 +114,9 @@ output <- vim_cindex(time = y,
                      sample_split = FALSE)
 test_that("vim_cindex(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 1)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 1)
 })
 
@@ -166,10 +161,9 @@ output <- vim_accuracy(time = y,
                        sample_split = TRUE)
 test_that("vim_accuracy(). no xfit, sample split", {
   expect_equal(dim(output)[1], 3)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 0)
 })
 
@@ -187,10 +181,9 @@ output <- vim_AUC(time = y,
                   sample_split = TRUE)
 test_that("vim_AUC(). no xfit, sample split", {
   expect_equal(dim(output)[1], 3)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 0)
 })
 
@@ -208,10 +201,9 @@ output <- vim_brier(time = y,
                     sample_split = TRUE)
 test_that("vim_brier(). no xfit, sample split", {
   expect_equal(dim(output)[1], 3)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 0)
 })
 
@@ -229,10 +221,9 @@ output <- vim_rmst_mse(time = y,
                        sample_split = TRUE)
 test_that("vim_rmst_mse(). no xfit, sample split", {
   expect_equal(dim(output)[1], 1)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 0)
 })
 
@@ -250,9 +241,8 @@ output <- vim_cindex(time = y,
                      sample_split = TRUE)
 test_that("vim_cindex(). no xfit, sample split", {
   expect_equal(dim(output)[1], 1)
-  expect_equal(dim(output)[2], 11)
-  expect_equal(names(output), c("tau", "full_one_step", "reduced_one_step", "one_step",
-                                "full_plug_in", "reduced_plug_in", "var_est", "cil", "ciu",
-                                "cil_1sided", "p"))
+  expect_equal(dim(output)[2], 9)
+  expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
+                                "cil_1sided", "p", "full_pred", "reduced_pred"))
   expect_equal(sum(is.na(output)), 0)
 })

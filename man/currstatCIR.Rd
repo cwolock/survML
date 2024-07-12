@@ -8,7 +8,6 @@ currstatCIR(
   time,
   event,
   W,
-  direction = "increasing",
   SL_control = list(SL.library = c("SL.mean"), V = 5, method = "method.NNLS"),
   HAL_control = list(n_bins = c(5, 10), grid_type = c("equal_range", "equal_mass"), V =
     5),
@@ -17,6 +16,30 @@ currstatCIR(
   eval_region,
   n_eval_pts = 101
 )
+}
+\arguments{
+\item{time}{\code{n x 1} numeric vector of observed
+monitoring times}
+
+\item{event}{\code{n x 1} numeric vector of status indicators of
+whether an event was observed prior to the monitoring time.}
+
+\item{W}{Dataframe of covariates}
+
+\item{SL_control}{List of Super Learner control parameters}
+
+\item{HAL_control}{List of haldensify control parameters}
+
+\item{deriv_method}{Method for computing derivative}
+
+\item{missing_method}{Method for handling nonresponse (extended CIR vs. complete case, just for testing)}
+
+\item{eval_region}{Region over which to estimate the survival function}
+
+\item{n_eval_pts}{Number of points in grid on which to evaluate survival function}
+}
+\value{
+data frame giving results
 }
 \description{
 Estimate a survival function under current status sampling
