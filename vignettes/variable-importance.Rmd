@@ -800,7 +800,7 @@ p_auc
 ```
 
 
-### References
+## References
 
 The survival variable importance methodology is described in
 
