@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Conditional survival estimation • survML</title>
+<title>Estimating a conditional survival function using off-the-shelf machine learning tools • survML</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Conditional survival estimation">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Estimating a conditional survival function using off-the-shelf machine learning tools">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,7 +33,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/conditional_survival.html">Conditional survival estimation</a></li>
+<li><a class="dropdown-item" href="../articles/conditional_survival.html">Estimating a conditional survival function using off-the-shelf machine learning tools</a></li>
     <li><a class="dropdown-item" href="../articles/variable-importance.html">Assessing variable importance in survival analysis using machine learning</a></li>
   </ul>
 </li>
@@ -57,7 +57,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Conditional survival estimation</h1>
+      <h1>Estimating a conditional survival function using off-the-shelf machine learning tools</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/cwolock/survML/blob/main/vignettes/conditional_survival.Rmd" class="external-link"><code>vignettes/conditional_survival.Rmd</code></a></small>
@@ -80,8 +80,7 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">gam</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="estimating-a-conditional-survival-function-using-off-the-shelf-machine-learning-tools">Estimating a conditional survival function using off-the-shelf
-machine learning tools<a class="anchor" aria-label="anchor" href="#estimating-a-conditional-survival-function-using-off-the-shelf-machine-learning-tools"></a>
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>The <code>survML</code> package implements two methods for estimating
 a conditional survival function using off-the-shelf machine learning.
@@ -97,9 +96,10 @@ function.</p>
 data (commonly seen in prospective studies) and right-truncated data
 (commonly seen in retrospective studies).</p>
 <p>More details on each method, as well as examples, follow.</p>
-<div class="section level3">
-<h3 id="global-survival-stacking">Global survival stacking<a class="anchor" aria-label="anchor" href="#global-survival-stacking"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="global-survival-stacking">Global survival stacking<a class="anchor" aria-label="anchor" href="#global-survival-stacking"></a>
+</h2>
 <p>In a basic survival analysis setting with right-censored data (for
 simplicity, we don’t discuss truncation here), the ideal data for each
 individual consist of a covariate vector
@@ -175,9 +175,9 @@ the <code>SuperLearner</code> package, or user-specified algorithms. See
 the <code>SuperLearner</code> package documentation for more
 information.</li>
 </ul>
-<div class="section level4">
-<h4 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
-</h4>
+<div class="section level3">
+<h3 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+</h3>
 <p>Here’s a small example applying <code>stackG</code> to simulated
 data.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -253,9 +253,9 @@ weights.</p>
 <p><img src="conditional_survival_files/figure-html/plot_stackG_example_cens-1.png" width="700"></p>
 </div>
 </div>
-<div class="section level3">
-<h3 id="local-survival-stacking">Local survival stacking<a class="anchor" aria-label="anchor" href="#local-survival-stacking"></a>
-</h3>
+<div class="section level2">
+<h2 id="local-survival-stacking">Local survival stacking<a class="anchor" aria-label="anchor" href="#local-survival-stacking"></a>
+</h2>
 <p>For discrete time-to-event variables, the hazard function at a single
 time is a conditional probability whose estimation can be framed as a
 binary regression problem: among those who have not experienced the
@@ -268,9 +268,9 @@ grid. These binary regressions are estimated jointly by “stacking” the
 data sets corresponding to all times in the grid. This idea dates back
 at least to work by Polley and van der Laan (2011) and was also recently
 described by Craig et al. (2021).</p>
-<div class="section level4">
-<h4 id="example-1">Example<a class="anchor" aria-label="anchor" href="#example-1"></a>
-</h4>
+<div class="section level3">
+<h3 id="example-1">Example<a class="anchor" aria-label="anchor" href="#example-1"></a>
+</h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stackL.html">stackL</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
 <span>              event <span class="op">=</span> <span class="va">event</span>,</span>
@@ -298,9 +298,9 @@ described by Craig et al. (2021).</p>
 <p><img src="conditional_survival_files/figure-html/plot_stackL_example-1.png" width="700"></p>
 </div>
 </div>
-<div class="section level3">
-<h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
-</h3>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
 <p>For details of global survival stacking, please see the following
 paper:</p>
 <p>Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. <a href="https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070" class="external-link">“A
@@ -312,7 +312,6 @@ Statistics</em> (2024).</p>
 Right-Censored Data” in <em>Targeted Learning</em> (2011).</p>
 <p>Erin Craig, Chenyang Zhong, and Robert Tibshirani. “Survival
 stacking: casting survival analysis as a classification problem.” <a href="https://arxiv.org/abs/2107.13480" class="external-link">arXiv:2107.13480</a>.</p>
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
