@@ -257,9 +257,11 @@ First, we consider the importance of each of the feature groups relative to the 
 
 Note that because censoring may be informed by covariates that are not part of the current reduced feature set, we estimate the residual oracle prediction function by regressing the full oracle predictions on the reduced feature set, rather than directly estimating the conditional survival function using the reduced feature set. 
 
+To reduce runtime, we use a very small Super Learner library. In actual analyses, it is generally a good idea to use a larger library of learners. 
+
 ```{r, fig.width=8, fig.height=8}
 # super learner library for global survival stacking
-SL.library <- c("SL.mean", "SL.glm", "SL.earth", "SL.gam")
+SL.library <- c("SL.mean", "SL.glm")
 
 # landmark times for AUC
 landmark_times <- c(500, 1000, 1500, 2000)
