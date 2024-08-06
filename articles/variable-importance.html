@@ -1036,33 +1036,32 @@ approach.</p>
 <p>Some example predictiveness measures, along with the corresponding
 oracle prediction functions, are given below.</p>
 <ul>
-<li><p>AUC: <span class="math display">$$\begin{align*}
+<li><p>AUC: <span class="math display">$$
 V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\}
 \hspace{0.5in} f_0(x) = 1 - S_0(\tau \mid x).
-\end{align*}$$</span></p></li>
-<li><p>Brier score: <span class="math display">$$\begin{align*}
+$$</span></p></li>
+<li><p>Brier score: <span class="math display">$$
 V(f, P_0) = E_{P_0}[\{f(X) - I(T &gt; \tau)\}^2] \hspace{0.5in} f_0(x) =
 S_0(\tau \mid x).
-\end{align*}$$</span></p></li>
-<li><p>Survival time MSE: <span class="math display">$$\begin{align*}
+$$</span></p></li>
+<li><p>Survival time MSE: <span class="math display">$$
 V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2] \hspace{0.5in} f_0(x)
 = \int_0^\tau S_0(t \mid x)dt.
-\end{align*}$$</span></p></li>
-<li><p>Proportion of explained variance: <span class="math display">$$\begin{align*}
+$$</span></p></li>
+<li><p>Proportion of explained variance: <span class="math display">$$
 V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T &gt; \tau)\}^2]}{var[I(T &gt;
 \tau)]} \hspace{0.5in} f_0(x) = S_0(\tau \mid x).
-\end{align*}$$</span></p></li>
-<li><p>Binary classification accuracy: <span class="math display">$$\begin{align*}
+$$</span></p></li>
+<li><p>Binary classification accuracy: <span class="math display">$$
 V(f, P_0) = P_0\{f(X) = I(T &gt; \tau)\} \hspace{0.5in} f_0(x) =
 I\{S_0(\tau \mid x) &gt; 0.5\}.
-\end{align*}$$</span></p></li>
-<li><p>C-index: <span class="math display">$$\begin{align*}
+$$</span></p></li>
+<li><p>C-index: <span class="math display">$$
 V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq T_2\} \hspace{0.5in}
 f_0(x) \hspace{0.1in} \text{[no closed form]}.
-\end{align*}$$</span> For the C-index, there is, to our knowledge, no
-closed form of the oracle prediction function; see the preprint for more
-details on our proposed procedure for direct numerical
-optimization.</p></li>
+$$</span> For the C-index, there is, to our knowledge, no closed form of
+the oracle prediction function; see the preprint for more details on our
+proposed procedure for direct numerical optimization.</p></li>
 </ul>
 </div>
 <div class="section level2">
