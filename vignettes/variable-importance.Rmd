@@ -804,9 +804,7 @@ p_auc
 Some example predictiveness measures, along with the corresponding oracle prediction functions, are given below. 
 
 * AUC: 
-$$
- V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\} \hspace{0.5in} f_0(x) = 1 - S_0(\tau \mid x). 
-$$
+$$ V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\} \hspace{0.5in} f_0(x) = 1 - S_0(\tau \mid x).$$
 
 * Brier score: 
 $$
