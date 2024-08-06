@@ -1036,10 +1036,9 @@ approach.</p>
 <p>Some example predictiveness measures, along with the corresponding
 oracle prediction functions, are given below.</p>
 <ul>
-<li><p>AUC: <span class="math display">$$
-V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\}
-\hspace{0.5in} f_0(x) = 1 - S_0(\tau \mid x).
-$$</span></p></li>
+<li><p>AUC: <span class="math display">$$ V(f, P_0) = P_0\{f(X_1) &gt;
+f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\} \hspace{0.5in} f_0(x) = 1 -
+S_0(\tau \mid x).$$</span></p></li>
 <li><p>Brier score: <span class="math display">$$
 V(f, P_0) = E_{P_0}[\{f(X) - I(T &gt; \tau)\}^2] \hspace{0.5in} f_0(x) =
 S_0(\tau \mid x).
