@@ -816,7 +816,7 @@ Some example predictiveness measures, along with the corresponding oracle predic
     * $f_0(x) = \int_0^\tau S_0(t \mid x)dt$
 
 * *Proportion of explained variance*: 
-    * $V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T > \tau)\}^2]}{var[I(T > \tau)]} $
+    * $V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T > \tau)\}^2]}{var[I(T > \tau)]}$
     * $f_0(x) = S_0(\tau \mid x)$
 
 * *Binary classification accuracy*: 
