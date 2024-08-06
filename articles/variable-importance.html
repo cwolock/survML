@@ -406,13 +406,12 @@ parameters.</p>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">CV_reduced_preds</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="estimating-subtractive-variable-importance">Estimating subtractive variable importance<a class="anchor" aria-label="anchor" href="#estimating-subtractive-variable-importance"></a>
+<h3 id="estimating-variable-importance-relative-to-all-features">Estimating variable importance relative to all features<a class="anchor" aria-label="anchor" href="#estimating-variable-importance-relative-to-all-features"></a>
 </h3>
 <p>First, we consider the importance of each of the feature groups
-relative to the full feature vector. We call this <em>subtractive</em>
-variable importance — the features of interest are subtracted from the
-full feature vector, with importance measured by the resulting loss in
-predictiveness.</p>
+relative to the full feature vector. Here, the features of interest are
+subtracted from the full feature vector, with importance measured by the
+resulting loss in predictiveness.</p>
 <p>Note that because censoring may be informed by covariates that are
 not part of the current reduced feature set, we estimate the residual
 oracle prediction function by regressing the full oracle predictions on
@@ -517,7 +516,7 @@ learners.</p>
 <span>        labels <span class="op">=</span> <span class="va">.</span><span class="op">$</span><span class="va">indx_name</span>,</span>
 <span>      <span class="op">)</span> <span class="op">+</span> </span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">landmark_time</span>, dir <span class="op">=</span> <span class="st">"v"</span>, strip.position <span class="op">=</span> <span class="st">"right"</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Subtractive AUC variable importance"</span><span class="op">)</span><span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"AUC variable importance relative to full feature vector"</span><span class="op">)</span><span class="op">+</span></span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>            strip.placement <span class="op">=</span> <span class="st">"outside"</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
@@ -580,7 +579,7 @@ learners.</p>
 <span>        labels <span class="op">=</span> <span class="va">.</span><span class="op">$</span><span class="va">indx_name</span>,</span>
 <span>      <span class="op">)</span> <span class="op">+</span></span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">landmark_time</span>, dir <span class="op">=</span> <span class="st">"v"</span>, strip.position <span class="op">=</span> <span class="st">"right"</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Subtractive AUC variable importance (groups)"</span><span class="op">)</span><span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"AUC variable importance relative to full feature vector (groups)"</span><span class="op">)</span><span class="op">+</span></span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>            strip.placement <span class="op">=</span> <span class="st">"outside"</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
@@ -588,24 +587,23 @@ learners.</p>
 <p><img src="variable-importance_files/figure-html/unnamed-chunk-4-1.png" width="768"></p>
 </div>
 <div class="section level3">
-<h3 id="estimating-additive-variable-importance">Estimating additive variable importance<a class="anchor" aria-label="anchor" href="#estimating-additive-variable-importance"></a>
+<h3 id="estimating-variable-importance-relative-to-base-model">Estimating variable importance relative to base model<a class="anchor" aria-label="anchor" href="#estimating-variable-importance-relative-to-base-model"></a>
 </h3>
 <p>Next, we consider the importance of each of the tumor-level features
-relative to a <em>baseline</em> set of person-level features. We call
-this <em>additive</em> variable importance — the feature of interest is
-added to a baseline set of features, with importance measured by the
-resulting gain in predictiveness.</p>
+relative to a <em>baseline</em> set of person-level features. Here, the
+feature of interest is added to a baseline set of features, with
+importance measured by the resulting gain in predictiveness.</p>
 <p>For this analysis, the “full” oracle predictions include baseline
 features plus the feature of interest, and the “residual” oracle
 predictions include only baseline features. Note that both the full and
 residual oracle prediction functions for this analysis are estimated by
 regressing the conditional survival function estimates given
 <strong>all</strong> features on the relevant reduced feature set. As in
-the subtractive analysis, this step is necessary to account for
-censoring that may be informed by covariates, even those which are not
-included in the current set of predictors.</p>
+the previous analysis, this step is necessary to account for censoring
+that may be informed by covariates, even those which are not included in
+the current set of predictors.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># For additive importance, the "reduced" model uses only person-level (baseline) features</span></span>
+<code class="sourceCode R"><span><span class="co"># For importance relative to baseline features, the "reduced" model uses only person-level (baseline) features</span></span>
 <span><span class="co"># The "full" model uses baseline + feature of interest</span></span>
 <span><span class="co"># We wrote generate_reduced_predictions() to leave out the "indx" argument. Need to keep that in mind!</span></span>
 <span><span class="va">size_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">size_index</span>, <span class="va">person_index</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
@@ -634,7 +632,7 @@ included in the current set of predictors.</p>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">indx_char</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="va">all_indx</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
-<span>  <span class="co"># leave out features *not* in indx for additive importance</span></span>
+<span>  <span class="co"># leave out features *not* in indx for this analysis</span></span>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="va">all_indx</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">all_indx</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">indx</span><span class="op">)</span><span class="op">]</span></span>
 <span>  </span>
 <span>  <span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
@@ -687,7 +685,7 @@ included in the current set of predictors.</p>
 <span>        labels <span class="op">=</span> <span class="va">.</span><span class="op">$</span><span class="va">indx_name</span>,</span>
 <span>      <span class="op">)</span> <span class="op">+</span> </span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">landmark_time</span>, dir <span class="op">=</span> <span class="st">"v"</span>, strip.position <span class="op">=</span> <span class="st">"right"</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Additive AUC variable importance"</span><span class="op">)</span><span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"AUC variable importance relative to person-level features"</span><span class="op">)</span><span class="op">+</span></span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>            strip.placement <span class="op">=</span> <span class="st">"outside"</span><span class="op">)</span><span class="co">#,</span></span>
 <span>  <span class="op">}</span></span>
@@ -734,7 +732,7 @@ by (1) estimating the full oracle prediction function
 (2) generating predictions for individuals in the training data, and
 then (3) regressing those predictions on the appropriate reduced
 covariate vector.</p>
-<p>Here, we repeat the subtractive variable importance analysis
+<p>Here, we analyze VIM relative to tumor-level covariates, while
 adjusting for person-level covariates.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">size_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">size_index</span>, <span class="va">person_index</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
@@ -815,7 +813,7 @@ adjusting for person-level covariates.</p>
 <span>        labels <span class="op">=</span> <span class="va">.</span><span class="op">$</span><span class="va">indx_name</span>,</span>
 <span>      <span class="op">)</span> <span class="op">+</span> </span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">landmark_time</span>, dir <span class="op">=</span> <span class="st">"v"</span>, strip.position <span class="op">=</span> <span class="st">"right"</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Adjusted subtractive AUC variable importance"</span><span class="op">)</span><span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Adjusted AUC variable importance relative to all tumor-level features"</span><span class="op">)</span><span class="op">+</span></span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>            strip.placement <span class="op">=</span> <span class="st">"outside"</span><span class="op">)</span><span class="co">#,</span></span>
 <span>  <span class="op">}</span></span>
@@ -927,8 +925,7 @@ doubly-robust estimator of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mrow><mn>0</mn><mo>,</mo><mi>s</mi></mrow></msub><annotation encoding="application/x-tex">f_{0,s}</annotation></semantics></math>.
 These doubly-robust estimated oracle prediction functions can be used in
 the usual manner to estimate variable importance. Here, we repeat the
-original subtractive analysis using the doubly-robust pseudo-outcome
-approach.</p>
+original analysis using the doubly-robust pseudo-outcome approach.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># reset feature groups</span></span>
 <span><span class="va">age_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">X_names</span> <span class="op">==</span> <span class="st">"age"</span><span class="op">)</span><span class="op">)</span></span>
@@ -1023,7 +1020,7 @@ approach.</p>
 <span>        labels <span class="op">=</span> <span class="va">.</span><span class="op">$</span><span class="va">indx_name</span>,</span>
 <span>      <span class="op">)</span> <span class="op">+</span> </span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">landmark_time</span>, dir <span class="op">=</span> <span class="st">"v"</span>, strip.position <span class="op">=</span> <span class="st">"right"</span>, scales <span class="op">=</span> <span class="st">"free_y"</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Subtractive AUC variable importance (doubly-robust pseudo-outcome)"</span><span class="op">)</span><span class="op">+</span></span>
+<span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"AUC variable importance relative to all features (doubly-robust pseudo-outcome)"</span><span class="op">)</span><span class="op">+</span></span>
 <span>      <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>strip.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>            strip.placement <span class="op">=</span> <span class="st">"outside"</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
@@ -1035,10 +1032,10 @@ approach.</p>
 </h2>
 <p>Some example predictiveness measures, along with the corresponding
 oracle prediction functions, are given below.</p>
-<ul>
-<li><p>AUC: <span class="math display">$$ V(f, P_0) = P_0\{f(X_1) &gt;
+<p>AUC: <span class="math display">$$ V(f, P_0) = P_0\{f(X_1) &gt;
 f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\} \hspace{0.5in} f_0(x) = 1 -
-S_0(\tau \mid x).$$</span></p></li>
+S_0(\tau \mid x).$$</span></p>
+<ul>
 <li><p>Brier score: <span class="math display">$$
 V(f, P_0) = E_{P_0}[\{f(X) - I(T &gt; \tau)\}^2] \hspace{0.5in} f_0(x) =
 S_0(\tau \mid x).
