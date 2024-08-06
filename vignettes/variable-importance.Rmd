@@ -803,34 +803,29 @@ p_auc
 
 Some example predictiveness measures, along with the corresponding oracle prediction functions, are given below. 
 
-AUC: 
-$$ V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\} \hspace{0.5in} f_0(x) = 1 - S_0(\tau \mid x).$$
+* *AUC*:
+    * $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\}$ 
+    * $f_0(x) = 1 - S_0(\tau \mid x)$
 
-* Brier score: 
-$$
-V(f, P_0) = E_{P_0}[\{f(X) - I(T > \tau)\}^2] \hspace{0.5in} f_0(x) = S_0(\tau \mid x).
-$$
+* *Brier score*: 
+    * $V(f, P_0) = E_{P_0}[\{f(X) - I(T > \tau)\}^2]$
+    * $f_0(x) = S_0(\tau \mid x)$
 
-* Survival time MSE: 
-$$
-V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2] \hspace{0.5in} f_0(x) = \int_0^\tau S_0(t \mid x)dt.
-$$
+* *Survival time MSE*: 
+    * $V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]$
+    * $f_0(x) = \int_0^\tau S_0(t \mid x)dt$
 
-* Proportion of explained variance: 
-$$
- V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T > \tau)\}^2]}{var[I(T > \tau)]} \hspace{0.5in} f_0(x) = S_0(\tau \mid x).
-$$
+* *Proportion of explained variance*: 
+    * $V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T > \tau)\}^2]}{var[I(T > \tau)]} $
+    * $f_0(x) = S_0(\tau \mid x)$
 
-* Binary classification accuracy: 
-$$
- V(f, P_0) = P_0\{f(X) = I(T > \tau)\} \hspace{0.5in} f_0(x) = I\{S_0(\tau \mid x) > 0.5\}.
-$$
+* *Binary classification accuracy*: 
+    * $V(f, P_0) = P_0\{f(X) = I(T > \tau)\}$
+    * $f_0(x) = I\{S_0(\tau \mid x) > 0.5\}$
 
-* C-index: 
-$$
- V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq T_2\} \hspace{0.5in} f_0(x) \hspace{0.1in} \text{[no closed form]}. 
-$$
-For the C-index, there is, to our knowledge, no closed form of the oracle prediction function; see the preprint for more details on our proposed procedure for direct numerical optimization. 
+* *C-index*: 
+    * $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq T_2\}$
+    * For the C-index, there is, to our knowledge, no closed form of the oracle prediction function; see the preprint for more details on our proposed procedure for direct numerical optimization. 
 
 
 
