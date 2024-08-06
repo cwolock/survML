@@ -251,9 +251,9 @@ CV_generate_reduced_predictions <- function(time,
 }
 ```
 
-### Estimating subtractive variable importance
+### Estimating variable importance relative to all features
 
-First, we consider the importance of each of the feature groups relative to the full feature vector. We call this *subtractive* variable importance --- the features of interest are subtracted from the full feature vector, with importance measured by the resulting loss in predictiveness. 
+First, we consider the importance of each of the feature groups relative to the full feature vector. Here, the features of interest are subtracted from the full feature vector, with importance measured by the resulting loss in predictiveness. 
 
 Note that because censoring may be informed by covariates that are not part of the current reduced feature set, we estimate the residual oracle prediction function by regressing the full oracle predictions on the reduced feature set, rather than directly estimating the conditional survival function using the reduced feature set. 
 
@@ -355,7 +355,7 @@ p_auc <- pooled_output %>%
         labels = .$indx_name,
       ) + 
       facet_wrap(~landmark_time, dir = "v", strip.position = "right", scales = "free_y", ncol = 1) + 
-      ggtitle("Subtractive AUC variable importance")+
+      ggtitle("AUC variable importance relative to full feature vector")+
       theme(strip.background = element_blank(),
             strip.placement = "outside")
   }
@@ -419,21 +419,21 @@ p_auc <- pooled_output %>%
         labels = .$indx_name,
       ) +
       facet_wrap(~landmark_time, dir = "v", strip.position = "right", scales = "free_y", ncol = 1) +
-      ggtitle("Subtractive AUC variable importance (groups)")+
+      ggtitle("AUC variable importance relative to full feature vector (groups)")+
       theme(strip.background = element_blank(),
             strip.placement = "outside")
   }
 p_auc
 ```
 
-### Estimating additive variable importance
+### Estimating variable importance relative to base model
 
-Next, we consider the importance of each of the tumor-level features relative to a *baseline* set of person-level features. We call this *additive* variable importance --- the feature of interest is added to a baseline set of features, with importance measured by the resulting gain in predictiveness. 
+Next, we consider the importance of each of the tumor-level features relative to a *baseline* set of person-level features. Here, the feature of interest is added to a baseline set of features, with importance measured by the resulting gain in predictiveness. 
 
-For this analysis, the "full" oracle predictions include baseline features plus the feature of interest, and the "residual" oracle predictions include only baseline features. Note that both the full and residual oracle prediction functions for this analysis are estimated by regressing the conditional survival function estimates given **all** features on the relevant reduced feature set. As in the subtractive analysis, this step is necessary to account for censoring that may be informed by covariates, even those which are not included in the current set of predictors.
+For this analysis, the "full" oracle predictions include baseline features plus the feature of interest, and the "residual" oracle predictions include only baseline features. Note that both the full and residual oracle prediction functions for this analysis are estimated by regressing the conditional survival function estimates given **all** features on the relevant reduced feature set. As in the previous analysis, this step is necessary to account for censoring that may be informed by covariates, even those which are not included in the current set of predictors.
 
 ```{r, fig.width=8, fig.height=7}
-# For additive importance, the "reduced" model uses only person-level (baseline) features
+# For importance relative to baseline features, the "reduced" model uses only person-level (baseline) features
 # The "full" model uses baseline + feature of interest
 # We wrote generate_reduced_predictions() to leave out the "indx" argument. Need to keep that in mind!
 size_index <- paste0(c(size_index, person_index), collapse = ",")
@@ -462,7 +462,7 @@ for (i in 1:length(feature_group_names)){
   indx <- as.numeric(strsplit(indx_char, split = ",")[[1]])
   
   all_indx <- 1:ncol(X)
-  # leave out features *not* in indx for additive importance
+  # leave out features *not* in indx for this analysis
   indx <- all_indx[-which(all_indx %in% indx)]
   
   CV_full_preds <- CV_generate_reduced_predictions(time = time,
@@ -515,7 +515,7 @@ p_auc <- pooled_output %>%
         labels = .$indx_name,
       ) + 
       facet_wrap(~landmark_time, dir = "v", strip.position = "right", scales = "free_y", ncol = 1) + 
-      ggtitle("Additive AUC variable importance")+
+      ggtitle("AUC variable importance relative to person-level features")+
       theme(strip.background = element_blank(),
             strip.placement = "outside")#,
   }
@@ -532,7 +532,7 @@ We use $r$ to denote the index set of adjustment variables, and again use $s$ to
 
 As usual, there are many possible approaches to estimating $f_{0,r}$ and $f_{0,(r \cup s)}$, depending on their explicit form. In the case of AUC predictiveness, we can simply estimate the prediction models $f_{0,r}$ and $f_{0,(r \cup s)}$ by (1) estimating the full oracle prediction function $f_0$, (2) generating predictions for individuals in the training data, and then (3) regressing those predictions on the appropriate reduced covariate vector. 
 
-Here, we repeat the subtractive variable importance analysis adjusting for person-level covariates. 
+Here, we analyze VIM relative to tumor-level covariates, while adjusting for person-level covariates. 
 
 ```{r, fig.width=8, fig.height=7}
 size_index <- paste0(c(size_index, person_index), collapse = ",")
@@ -613,7 +613,7 @@ p_auc <- pooled_output %>%
         labels = .$indx_name,
       ) + 
       facet_wrap(~landmark_time, dir = "v", strip.position = "right", scales = "free_y", ncol = 1) + 
-      ggtitle("Adjusted subtractive AUC variable importance")+
+      ggtitle("Adjusted AUC variable importance relative to all tumor-level features")+
       theme(strip.background = element_blank(),
             strip.placement = "outside")#,
   }
@@ -696,7 +696,7 @@ generate_DR_predictions <- function(time,
 }
 ```
 
-This doubly-robust estimator of $f_0$ can then be regressed on the reduced covariate vector to give a doubly-robust estimator of $f_{0,s}$. These doubly-robust estimated oracle prediction functions can be used in the usual manner to estimate variable importance. Here, we repeat the original subtractive analysis using the doubly-robust pseudo-outcome approach. 
+This doubly-robust estimator of $f_0$ can then be regressed on the reduced covariate vector to give a doubly-robust estimator of $f_{0,s}$. These doubly-robust estimated oracle prediction functions can be used in the usual manner to estimate variable importance. Here, we repeat the original analysis using the doubly-robust pseudo-outcome approach. 
 
 ```{r, fig.width=8, fig.height=8}
 # reset feature groups
@@ -792,7 +792,7 @@ p_auc <- pooled_output %>%
         labels = .$indx_name,
       ) + 
       facet_wrap(~landmark_time, dir = "v", strip.position = "right", scales = "free_y", ncol = 1) + 
-      ggtitle("Subtractive AUC variable importance (doubly-robust pseudo-outcome)")+
+      ggtitle("AUC variable importance relative to all features (doubly-robust pseudo-outcome)")+
       theme(strip.background = element_blank(),
             strip.placement = "outside")
   }
@@ -803,7 +803,7 @@ p_auc
 
 Some example predictiveness measures, along with the corresponding oracle prediction functions, are given below. 
 
-* AUC: 
+AUC: 
 $$ V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\} \hspace{0.5in} f_0(x) = 1 - S_0(\tau \mid x).$$
 
 * Brier score: 
