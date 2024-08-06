@@ -1032,32 +1032,51 @@ original analysis using the doubly-robust pseudo-outcome approach.</p>
 </h2>
 <p>Some example predictiveness measures, along with the corresponding
 oracle prediction functions, are given below.</p>
-<p>AUC: <span class="math display">$$ V(f, P_0) = P_0\{f(X_1) &gt;
-f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\} \hspace{0.5in} f_0(x) = 1 -
-S_0(\tau \mid x).$$</span></p>
 <ul>
-<li><p>Brier score: <span class="math display">$$
-V(f, P_0) = E_{P_0}[\{f(X) - I(T &gt; \tau)\}^2] \hspace{0.5in} f_0(x) =
-S_0(\tau \mid x).
-$$</span></p></li>
-<li><p>Survival time MSE: <span class="math display">$$
-V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2] \hspace{0.5in} f_0(x)
-= \int_0^\tau S_0(t \mid x)dt.
-$$</span></p></li>
-<li><p>Proportion of explained variance: <span class="math display">$$
-V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T &gt; \tau)\}^2]}{var[I(T &gt;
-\tau)]} \hspace{0.5in} f_0(x) = S_0(\tau \mid x).
-$$</span></p></li>
-<li><p>Binary classification accuracy: <span class="math display">$$
-V(f, P_0) = P_0\{f(X) = I(T &gt; \tau)\} \hspace{0.5in} f_0(x) =
-I\{S_0(\tau \mid x) &gt; 0.5\}.
-$$</span></p></li>
-<li><p>C-index: <span class="math display">$$
-V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq T_2\} \hspace{0.5in}
-f_0(x) \hspace{0.1in} \text{[no closed form]}.
-$$</span> For the C-index, there is, to our knowledge, no closed form of
-the oracle prediction function; see the preprint for more details on our
-proposed procedure for direct numerical optimization.</p></li>
+<li>
+<em>AUC</em>:
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><msub><mi>T</mi><mn>1</mn></msub><mo>≤</mo><mi>τ</mi><mo>,</mo><msub><mi>T</mi><mn>2</mn></msub><mo>&gt;</mo><mi>τ</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\}</annotation></semantics></math></li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = 1 - S_0(\tau \mid x)</annotation></semantics></math></li>
+</ul>
+</li>
+<li>
+<em>Brier score</em>:
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>&gt;</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">V(f, P_0) = E_{P_0}[\{f(X) - I(T &gt; \tau)\}^2]</annotation></semantics></math></li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = S_0(\tau \mid x)</annotation></semantics></math></li>
+</ul>
+</li>
+<li>
+<em>Survival time MSE</em>:
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>∧</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]</annotation></semantics></math></li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi>τ</mi></msubsup><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>d</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">f_0(x) = \int_0^\tau S_0(t \mid x)dt</annotation></semantics></math></li>
+</ul>
+</li>
+<li>
+<em>Proportion of explained variance</em>:
+<ul>
+<li>$V(f, P_0) = $</li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = S_0(\tau \mid x)</annotation></semantics></math></li>
+</ul>
+</li>
+<li>
+<em>Binary classification accuracy</em>:
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>&gt;</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X) = I(T &gt; \tau)\}</annotation></semantics></math></li>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>I</mi><mo stretchy="false" form="prefix">{</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mn>0.5</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">f_0(x) = I\{S_0(\tau \mid x) &gt; 0.5\}</annotation></semantics></math></li>
+</ul>
+</li>
+<li>
+<em>C-index</em>:
+<ul>
+<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><msub><mi>T</mi><mn>1</mn></msub><mo>≤</mo><msub><mi>T</mi><mn>2</mn></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq T_2\}</annotation></semantics></math></li>
+<li>For the C-index, there is, to our knowledge, no closed form of the
+oracle prediction function; see the preprint for more details on our
+proposed procedure for direct numerical optimization.</li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="section level2">
