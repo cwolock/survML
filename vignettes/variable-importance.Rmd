@@ -32,7 +32,7 @@ For intrinsic variable importance, we consider nested index sets $r \subset s$ a
 
 Due to right censoring, the VIM estimation procedure requires estimates of the conditional survival functions of $T$ and $C$ given $X$, which we define pointwise as $S_0(t \mid x) := P_0(T > t \mid X = x)$ and $G_0(t \mid x) := P_0(C > t \mid X = x)$, respectively. These functions must be estimated over the interval $(0, \tau]$ and may be obtained from any conditional survival estimation algorithm. This may be as simple as a Cox proportional hazards model (Cox, 1972) or parametric survival regression model, or as complex as a stacked regression procedure such as survival Super Learner (Westling et al., 2023) or global survival stacking (Wolock et al., 2024).
 
-We also require estimates of the oracle prediction functions $f_{0,r}$ and $f_{0,s}$, whose exact form depends on the chosen predictiveness measure. For several commonly used measures, the oracle prediction functions can be written in terms of $S_0(\cdot \mid x)$. The form of the oracle prediction function for the measures included in `survML` is given in Table XX. 
+We also require estimates of the oracle prediction functions $f_{0,r}$ and $f_{0,s}$, whose exact form depends on the chosen predictiveness measure. For several commonly used measures, the oracle prediction functions can be written in terms of $S_0(\cdot \mid x)$. The form of the oracle prediction function for the measures included in `survML` is given in the Appendix.
 
 ## Example: Predicting recurrence-free survival time in cancer patients
 
@@ -798,6 +798,42 @@ p_auc <- pooled_output %>%
   }
 p_auc
 ```
+
+## Appendix
+
+Some example predictiveness measures, along with the corresponding oracle prediction functions, are given below. 
+
+* AUC: 
+\begin{align*}
+ V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\} \hspace{0.5in} f_0(x) = 1 - S_0(\tau \mid x). 
+\end{align*}
+
+* Brier score: 
+\begin{align*}
+V(f, P_0) = E_{P_0}[\{f(X) - I(T > \tau)\}^2] \hspace{0.5in} f_0(x) = S_0(\tau \mid x).
+\end{align*}
+
+* Survival time MSE: 
+\begin{align*}
+V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2] \hspace{0.5in} f_0(x) = \int_0^\tau S_0(t \mid x)dt.
+\end{align*}
+
+* Proportion of explained variance: 
+\begin{align*}
+ V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T > \tau)\}^2]}{var[I(T > \tau)]} \hspace{0.5in} f_0(x) = S_0(\tau \mid x).
+\end{align*}
+
+* Binary classification accuracy: 
+\begin{align*}
+ V(f, P_0) = P_0\{f(X) = I(T > \tau)\} \hspace{0.5in} f_0(x) = I\{S_0(\tau \mid x) > 0.5\}.
+\end{align*}
+
+* C-index: 
+\begin{align*}
+ V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq T_2\} \hspace{0.5in} f_0(x) \hspace{0.1in} \text{[no closed form]}. 
+\end{align*}
+For the C-index, there is, to our knowledge, no closed form of the oracle prediction function; see the preprint for more details on our proposed procedure for direct numerical optimization. 
+
 
 
 ## References
