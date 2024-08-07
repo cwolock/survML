@@ -16,10 +16,11 @@ coverage](https://codecov.io/gh/cwolock/survML/branch/main/graph/badge.svg)](htt
 # `survML`: Tools for Flexible Survival Analysis Using Machine Learning
 
 **Note: The current development version of `survML` now has
-functionality for estimating variable importance, in addition to the
-original survival stacking functionality that was included in versions
-1.1.0 and earlier. Documentation for the new functionality, as well as a
-new version on CRAN, are forthcoming.**
+functionality for estimating variable importance and for estimating a
+covariate-adjusted survival curve under current status sampling, in
+addition to the original survival stacking functionality that was
+included in versions 1.1.0 and earlier. A new version on CRAN is
+forthcoming.**
 
 The `survML` package contains a variety of functions for analyzing
 survival data using machine learning. These include:
