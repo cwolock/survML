@@ -254,156 +254,88 @@ groups defined by tumor-level features and patient-level features.</p>
 parameters.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># estimate conditional survival functions</span></span>
-<span><span class="va">generate_full_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>, </span>
-<span>                                      <span class="va">event</span>, </span>
-<span>                                      <span class="va">X</span>, </span>
-<span>                                      <span class="va">X_holdout</span>, </span>
-<span>                                      <span class="va">landmark_times</span>, </span>
-<span>                                      <span class="va">approx_times</span>,</span>
-<span>                                      <span class="va">SL.library</span><span class="op">)</span><span class="op">{</span></span>
+<span><span class="va">generate_nuisance_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>, </span>
+<span>                                          <span class="va">event</span>, </span>
+<span>                                          <span class="va">X</span>, </span>
+<span>                                          <span class="va">X_holdout</span>, </span>
+<span>                                          <span class="va">newtimes</span>,</span>
+<span>                                          <span class="va">approx_times</span>,</span>
+<span>                                          <span class="va">SL.library</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>    <span class="va">surv_out</span> <span class="op">&lt;-</span> <span class="fu">survML</span><span class="fu">::</span><span class="fu"><a href="../reference/stackG.html">stackG</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                               event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                               X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                               newX <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">X_holdout</span>, <span class="va">X</span><span class="op">)</span>,</span>
-<span>                               newtimes <span class="op">=</span> <span class="va">approx_times</span>,</span>
-<span>                               time_grid_approx <span class="op">=</span> <span class="va">approx_times</span>,</span>
-<span>                               bin_size <span class="op">=</span> <span class="fl">0.05</span>,</span>
-<span>                               time_basis <span class="op">=</span> <span class="st">"continuous"</span>,</span>
-<span>                               surv_form <span class="op">=</span> <span class="st">"PI"</span>,</span>
-<span>                               SL_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
-<span>                                                 V <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">S_hat</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_T_preds</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span>,<span class="op">]</span></span>
-<span>    <span class="va">G_hat</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_C_preds</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span>,<span class="op">]</span></span>
-<span>    <span class="va">f_hat</span> <span class="op">&lt;-</span> <span class="va">S_hat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">approx_times</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">landmark_times</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
-<span>    <span class="va">S_hat_train</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_T_preds</span><span class="op">[</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span></span>
-<span>    <span class="va">G_hat_train</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_C_preds</span><span class="op">[</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span></span>
-<span>    <span class="va">f_hat_train</span> <span class="op">&lt;-</span> <span class="va">S_hat_train</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">approx_times</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">landmark_times</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
+<span>  <span class="va">surv_out</span> <span class="op">&lt;-</span> <span class="fu">survML</span><span class="fu">::</span><span class="fu"><a href="../reference/stackG.html">stackG</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                             event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                             X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                             newX <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">X_holdout</span>, <span class="va">X</span><span class="op">)</span>,</span>
+<span>                             newtimes <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                             time_grid_approx <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                             bin_size <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>                             time_basis <span class="op">=</span> <span class="st">"continuous"</span>,</span>
+<span>                             surv_form <span class="op">=</span> <span class="st">"PI"</span>,</span>
+<span>                             SL_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                               V <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">S_hat</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_T_preds</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span>,<span class="op">]</span></span>
+<span>  <span class="va">G_hat</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_C_preds</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span>,<span class="op">]</span></span>
+<span>  <span class="va">S_hat_train</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_T_preds</span><span class="op">[</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span></span>
+<span>  <span class="va">G_hat_train</span> <span class="op">&lt;-</span> <span class="va">surv_out</span><span class="op">$</span><span class="va">S_C_preds</span><span class="op">[</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fl">1</span><span class="op">)</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span><span class="op">+</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span>,<span class="op">]</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S_hat <span class="op">=</span> <span class="va">S_hat</span>,</span>
 <span>              G_hat <span class="op">=</span> <span class="va">G_hat</span>,</span>
-<span>              f_hat <span class="op">=</span> <span class="va">f_hat</span>,</span>
-<span>              f_hat_train <span class="op">=</span> <span class="va">f_hat_train</span>,</span>
 <span>              S_hat_train <span class="op">=</span> <span class="va">S_hat_train</span>,</span>
 <span>              G_hat_train <span class="op">=</span> <span class="va">G_hat_train</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># estimate residual oracle prediction function by regressing full predictions on reduced feature vector</span></span>
-<span><span class="va">generate_reduced_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">f_hat</span>,</span>
-<span>                                         <span class="va">X_reduced</span>,</span>
-<span>                                         <span class="va">X_reduced_holdout</span>,</span>
-<span>                                         <span class="va">landmark_times</span>,</span>
-<span>                                         <span class="va">SL.library</span><span class="op">)</span><span class="op">{</span></span>
+<span></span>
+<span><span class="va">generate_full_oracle_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>,</span>
+<span>                                             <span class="va">event</span>,</span>
+<span>                                             <span class="va">X</span>,</span>
+<span>                                             <span class="va">X_holdout</span>,</span>
+<span>                                             <span class="va">nuisance_preds</span>,</span>
+<span>                                             <span class="va">landmark_times</span>,</span>
+<span>                                             <span class="va">approx_times</span><span class="op">)</span><span class="op">{</span></span>
 <span>  </span>
-<span>  <span class="va">long_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>f_hat <span class="op">=</span> <span class="va">f_hat</span>, <span class="va">X_reduced</span><span class="op">)</span></span>
-<span>  <span class="va">long_new_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">X_reduced_holdout</span><span class="op">)</span></span>
-<span>  <span class="va">reduced_fit</span> <span class="op">&lt;-</span> <span class="fu">SuperLearner</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">long_dat</span><span class="op">$</span><span class="va">f_hat</span>,</span>
-<span>                                            X <span class="op">=</span> <span class="va">long_dat</span><span class="op">[</span>,<span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">long_dat</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span>,</span>
-<span>                                            family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                                            SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
-<span>                                            method <span class="op">=</span> <span class="st">"method.NNLS"</span>,</span>
-<span>                                            verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span>  <span class="va">fs_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">reduced_fit</span>, newdata <span class="op">=</span> <span class="va">long_new_dat</span><span class="op">)</span><span class="op">$</span><span class="va">pred</span>,</span>
-<span>                   nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_reduced_holdout</span><span class="op">)</span>,</span>
-<span>                   ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">f0_hat</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">S_preds</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">approx_times</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">landmark_times</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
+<span>  <span class="va">f0_hat_train</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">S_preds_train</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">approx_times</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">landmark_times</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>f0_hat <span class="op">=</span> <span class="va">f0_hat</span>,</span>
+<span>              f0_hat_train <span class="op">=</span> <span class="va">f0_hat_train</span><span class="op">)</span><span class="op">)</span></span>
 <span>  </span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>fs_hat <span class="op">=</span> <span class="va">fs_hat</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># produce cross-fitted full predictions</span></span>
-<span><span class="va">CV_generate_full_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>,</span>
-<span>                                         <span class="va">event</span>,</span>
-<span>                                         <span class="va">X</span>,</span>
-<span>                                         <span class="va">landmark_times</span>,</span>
-<span>                                         <span class="va">approx_times</span>,</span>
-<span>                                         <span class="va">folds</span>,</span>
-<span>                                         <span class="va">sample_split</span>,</span>
-<span>                                         <span class="va">SL.library</span>,</span>
-<span>                                         <span class="va">DR_pred</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">.V</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">folds</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">CV_full_preds_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">CV_S_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">CV_S_preds_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="va">CV_G_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">generate_reduced_oracle_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>,</span>
+<span>                                                <span class="va">event</span>,</span>
+<span>                                                <span class="va">X</span>,</span>
+<span>                                                <span class="va">X_holdout</span>,</span>
+<span>                                                <span class="va">nuisance_preds</span>,</span>
+<span>                                                <span class="va">landmark_times</span>,</span>
+<span>                                                <span class="va">approx_times</span>,</span>
+<span>                                                <span class="va">SL.library</span>,</span>
+<span>                                                <span class="va">indx</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">X_reduced_train</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span>,<span class="op">-</span><span class="va">indx</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
+<span>  <span class="va">X_reduced_holdout</span> <span class="op">&lt;-</span> <span class="va">X_holdout</span><span class="op">[</span>,<span class="op">-</span><span class="va">indx</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
+<span>  <span class="va">preds_j</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_reduced_holdout</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">preds_j_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_reduced_train</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span></span>
 <span>  </span>
-<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">.V</span><span class="op">)</span><span class="op">{</span></span>
-<span>    </span>
-<span>    <span class="va">time_train</span> <span class="op">&lt;-</span> <span class="va">time</span><span class="op">[</span><span class="va">folds</span> <span class="op">!=</span> <span class="va">j</span><span class="op">]</span></span>
-<span>    <span class="va">event_train</span> <span class="op">&lt;-</span> <span class="va">event</span><span class="op">[</span><span class="va">folds</span> <span class="op">!=</span> <span class="va">j</span><span class="op">]</span></span>
-<span>    <span class="va">X_train</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span><span class="va">folds</span> <span class="op">!=</span> <span class="va">j</span>,<span class="op">]</span></span>
-<span>    </span>
-<span>    <span class="va">X_holdout</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span><span class="va">folds</span> <span class="op">==</span> <span class="va">j</span>,<span class="op">]</span></span>
-<span>    <span class="va">full_preds</span> <span class="op">&lt;-</span> <span class="fu">generate_full_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time_train</span>,</span>
-<span>                                            event <span class="op">=</span> <span class="va">event_train</span>,</span>
-<span>                                            X <span class="op">=</span> <span class="va">X_train</span>,</span>
-<span>                                            X_holdout <span class="op">=</span> <span class="va">X_holdout</span>,</span>
-<span>                                            landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                            approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
-<span>                                            SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="va">DR_pred</span><span class="op">)</span><span class="op">{</span></span>
-<span>        <span class="va">CV_full_preds_train</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">f_hat_train</span></span>
-<span>        <span class="va">CV_full_preds</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">f_hat</span></span>
-<span>      <span class="op">}</span> <span class="kw">else</span><span class="op">{</span> <span class="co"># doubly-robust version --- see below</span></span>
-<span>        <span class="va">DR_preds</span> <span class="op">&lt;-</span> <span class="fu">generate_DR_predictions</span><span class="op">(</span></span>
-<span>          time <span class="op">=</span> <span class="va">time_train</span>,</span>
-<span>          event <span class="op">=</span> <span class="va">event_train</span>,</span>
-<span>          X <span class="op">=</span> <span class="va">X_train</span>,</span>
-<span>          X_holdout <span class="op">=</span> <span class="va">X_holdout</span>,</span>
-<span>          landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>          approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
-<span>          S_hat <span class="op">=</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">S_hat_train</span>,</span>
-<span>          G_hat <span class="op">=</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">G_hat_train</span>,</span>
-<span>          SL.library <span class="op">=</span> <span class="va">SL.library</span></span>
-<span>        <span class="op">)</span></span>
-<span>        <span class="va">CV_full_preds_train</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">DR_preds</span><span class="op">$</span><span class="va">f_hat_train</span></span>
-<span>        <span class="va">CV_full_preds</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">DR_preds</span><span class="op">$</span><span class="va">f_hat</span></span>
-<span>      <span class="op">}</span></span>
-<span>    <span class="va">CV_S_preds</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">S_hat</span></span>
-<span>    <span class="va">CV_G_preds</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">G_hat</span></span>
-<span>    <span class="va">CV_S_preds_train</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">S_hat_train</span></span>
-<span>  <span class="op">}</span></span>
-<span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>CV_full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>              CV_full_preds <span class="op">=</span> <span class="va">CV_full_preds</span>,</span>
-<span>              CV_S_preds <span class="op">=</span> <span class="va">CV_S_preds</span>,</span>
-<span>              CV_S_preds_train <span class="op">=</span> <span class="va">CV_S_preds_train</span>,</span>
-<span>              CV_G_preds <span class="op">=</span> <span class="va">CV_G_preds</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="co"># produce cross-fitted reduced predictions</span></span>
-<span><span class="va">CV_generate_reduced_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>,</span>
-<span>                                            <span class="va">event</span>,</span>
-<span>                                            <span class="va">X</span>,</span>
-<span>                                            <span class="va">landmark_times</span>,</span>
-<span>                                            <span class="va">folds</span>,</span>
-<span>                                            <span class="va">indx</span>,</span>
-<span>                                            <span class="va">sample_split</span>,</span>
-<span>                                            <span class="va">full_preds_train</span>,</span>
-<span>                                            <span class="va">SL.library</span><span class="op">)</span><span class="op">{</span></span>
-<span>  <span class="va">.V</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">folds</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  </span>
-<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">.V</span><span class="op">)</span><span class="op">{</span></span>
-<span>    </span>
-<span>    <span class="va">X_reduced_train</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span><span class="va">folds</span> <span class="op">!=</span> <span class="va">j</span>,<span class="op">-</span><span class="va">indx</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
-<span>    <span class="va">X_reduced_holdout</span> <span class="op">&lt;-</span> <span class="va">X</span><span class="op">[</span><span class="va">folds</span> <span class="op">==</span> <span class="va">j</span>,<span class="op">-</span><span class="va">indx</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span></span>
-<span>    </span>
-<span>    <span class="va">preds_j</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_reduced_holdout</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="va">landmark_times</span><span class="op">)</span><span class="op">{</span></span>
-<span>      <span class="va">outcomes</span> <span class="op">&lt;-</span> <span class="va">full_preds_train</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">landmark_times</span> <span class="op">==</span> <span class="va">t</span><span class="op">)</span><span class="op">]</span></span>
-<span>      <span class="va">reduced_preds</span> <span class="op">&lt;-</span> <span class="fu">generate_reduced_predictions</span><span class="op">(</span>f_hat <span class="op">=</span> <span class="va">outcomes</span>,</span>
-<span>                                                    X_reduced <span class="op">=</span> <span class="va">X_reduced_train</span>,</span>
-<span>                                                    X_reduced_holdout <span class="op">=</span> <span class="va">X_reduced_holdout</span>,</span>
-<span>                                                    landmark_times <span class="op">=</span> <span class="va">t</span>,</span>
-<span>                                                    SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
-<span>      </span>
-<span>      <span class="va">preds_j</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">landmark_times</span> <span class="op">==</span> <span class="va">t</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">reduced_preds</span><span class="op">$</span><span class="va">fs_hat</span></span>
-<span>    <span class="op">}</span></span>
-<span>    </span>
-<span>    <span class="va">CV_reduced_preds</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">preds_j</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="va">landmark_times</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="va">outcomes</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">full_preds_train</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">landmark_times</span> <span class="op">==</span> <span class="va">t</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">long_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>f_hat <span class="op">=</span> <span class="va">outcomes</span>, <span class="va">X_reduced_train</span><span class="op">)</span></span>
+<span>    <span class="va">long_new_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">X_reduced_holdout</span><span class="op">)</span></span>
+<span>    <span class="va">long_new_dat_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">X_reduced_train</span><span class="op">)</span></span>
+<span>    <span class="va">reduced_fit</span> <span class="op">&lt;-</span> <span class="fu">SuperLearner</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">long_dat</span><span class="op">$</span><span class="va">f_hat</span>,</span>
+<span>                                              X <span class="op">=</span> <span class="va">long_dat</span><span class="op">[</span>,<span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">long_dat</span><span class="op">)</span>,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span>,</span>
+<span>                                              family <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                                              SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                              method <span class="op">=</span> <span class="st">"method.NNLS"</span>,</span>
+<span>                                              verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>    <span class="va">reduced_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">reduced_fit</span>, newdata <span class="op">=</span> <span class="va">long_new_dat</span><span class="op">)</span><span class="op">$</span><span class="va">pred</span>,</span>
+<span>                            nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_reduced_holdout</span><span class="op">)</span>,</span>
+<span>                            ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>    <span class="va">reduced_preds_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">reduced_fit</span>, newdata <span class="op">=</span> <span class="va">long_new_dat_train</span><span class="op">)</span><span class="op">$</span><span class="va">pred</span>,</span>
+<span>                                  nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_reduced_train</span><span class="op">)</span>,</span>
+<span>                                  ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>    <span class="va">preds_j</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">landmark_times</span> <span class="op">==</span> <span class="va">t</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">reduced_preds</span></span>
+<span>    <span class="va">preds_j_train</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">landmark_times</span> <span class="op">==</span> <span class="va">t</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">reduced_preds_train</span></span>
 <span>  <span class="op">}</span></span>
 <span>  </span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">CV_reduced_preds</span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>f0_hat <span class="op">=</span> <span class="va">preds_j</span>,</span>
+<span>              f0_hat_train <span class="op">=</span> <span class="va">preds_j_train</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="estimating-variable-importance-relative-to-all-features">Estimating variable importance relative to all features<a class="anchor" aria-label="anchor" href="#estimating-variable-importance-relative-to-all-features"></a>
@@ -440,38 +372,52 @@ learners.</p>
 <span>                              <span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># generate nuisance estimates</span></span>
-<span><span class="va">V0_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_full_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                         event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                         X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                         landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                         approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
-<span>                                         folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                         sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                                         SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
-<span>                                         DR_pred <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">nuisance_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_surv_preds.html">crossfit_surv_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                      <span class="va">event</span>,</span>
+<span>                                      X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                      newtimes <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                      folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                      pred_generator <span class="op">=</span> <span class="va">generate_nuisance_predictions</span>,</span>
+<span>                                      SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                      approx_times <span class="op">=</span> <span class="va">approx_times</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_full_preds</span></span>
-<span><span class="va">CV_full_preds_train</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_full_preds_train</span></span>
-<span><span class="va">CV_S_preds</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_S_preds</span></span>
-<span><span class="va">CV_S_preds_train</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_S_preds_train</span></span>
-<span><span class="va">CV_G_preds</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_G_preds</span></span>
+<span><span class="va">CV_S_preds</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">S_preds</span></span>
+<span><span class="va">CV_S_preds_train</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">S_preds_train</span></span>
+<span><span class="va">CV_G_preds</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">G_preds</span></span>
+<span></span>
+<span><span class="va">full_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                    event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                    X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                    folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                    nuisance_preds <span class="op">=</span> <span class="va">nuisance_preds</span>,</span>
+<span>                                    pred_generator <span class="op">=</span> <span class="va">generate_full_oracle_predictions</span>,</span>
+<span>                                    landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                    approx_times <span class="op">=</span> <span class="va">approx_times</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
+<span><span class="va">CV_full_preds_train</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">oracle_preds_train</span></span>
+<span></span>
+<span><span class="va">augmented_nuisance_preds</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span></span>
+<span><span class="va">augmented_nuisance_preds</span><span class="op">$</span><span class="va">full_preds_train</span> <span class="op">&lt;-</span> <span class="va">CV_full_preds_train</span></span>
 <span></span>
 <span><span class="co"># iterate over feature groups</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature_group_names</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">indx_char</span> <span class="op">&lt;-</span> <span class="va">feature_groups</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="va">feature_group_names</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">indx_char</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="co"># estimate residual oracle prediction function for this feature group</span></span>
-<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                              event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                              X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                              landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                              folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                              sample_split <span class="op">=</span> <span class="va">sample_split</span>,</span>
-<span>                                              indx <span class="op">=</span> <span class="va">indx</span>,</span>
-<span>                                              full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>                                              SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">reduced_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                         event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                         X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                         folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                         nuisance_preds <span class="op">=</span> <span class="va">augmented_nuisance_preds</span>,</span>
+<span>                                         pred_generator <span class="op">=</span> <span class="va">generate_reduced_oracle_predictions</span>,</span>
+<span>                                         landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                         approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                         SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                         indx <span class="op">=</span> <span class="va">indx</span><span class="op">)</span></span>
+<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="va">reduced_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
+<span>  </span>
 <span>  <span class="co"># estimate VIM - note the oracle for AUC is the conditional cdf, not survival function, </span></span>
 <span>  <span class="co"># so need to take 1 - S(tau | x)</span></span>
 <span>  <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim_AUC.html">vim_AUC</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
@@ -528,16 +474,19 @@ learners.</p>
 <span>  <span class="va">indx_char</span> <span class="op">&lt;-</span> <span class="va">feature_groups2</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="va">feature_group_names2</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">indx_char</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                              event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                              X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                              landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                              folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                              sample_split <span class="op">=</span> <span class="va">sample_split</span>,</span>
-<span>                                              indx <span class="op">=</span> <span class="va">indx</span>,</span>
-<span>                                              full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>                                              SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">reduced_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                         event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                         X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                         folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                         nuisance_preds <span class="op">=</span> <span class="va">augmented_nuisance_preds</span>,</span>
+<span>                                         pred_generator <span class="op">=</span> <span class="va">generate_reduced_oracle_predictions</span>,</span>
+<span>                                         landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                         approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                         SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                         indx <span class="op">=</span> <span class="va">indx</span><span class="op">)</span></span>
+<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="va">reduced_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
+<span>  </span>
 <span>  <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim_AUC.html">vim_AUC</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
 <span>                    event <span class="op">=</span> <span class="va">event</span>,</span>
 <span>                    approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
@@ -616,15 +565,17 @@ the current set of predictors.</p>
 <span><span class="va">feature_groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">size_index</span>, <span class="va">nodes_index</span>,</span>
 <span>                    <span class="va">pgr_index</span>, <span class="va">er_index</span>, <span class="va">grade_index</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                                    event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                                    X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                                    landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                                    folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                                    sample_split <span class="op">=</span> <span class="va">sample_split</span>,</span>
-<span>                                                    indx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">tum_index</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>                                                    full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>                                                    SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
+<span><span class="va">reduced_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                       event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                       X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                       folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                       nuisance_preds <span class="op">=</span> <span class="va">augmented_nuisance_preds</span>,</span>
+<span>                                       pred_generator <span class="op">=</span> <span class="va">generate_reduced_oracle_predictions</span>,</span>
+<span>                                       landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                       approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                       SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                       indx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">tum_index</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="va">reduced_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
 <span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature_group_names</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">indx_char</span> <span class="op">&lt;-</span> <span class="va">feature_groups</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
@@ -635,15 +586,18 @@ the current set of predictors.</p>
 <span>  <span class="co"># leave out features *not* in indx for this analysis</span></span>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="va">all_indx</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">all_indx</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">indx</span><span class="op">)</span><span class="op">]</span></span>
 <span>  </span>
-<span>  <span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                                   event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                                   X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                                   landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                                   folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                                   sample_split <span class="op">=</span> <span class="va">sample_split</span>,</span>
-<span>                                                   indx <span class="op">=</span> <span class="va">indx</span>,</span>
-<span>                                                   full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>                                                   SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
+<span>  <span class="va">full_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                      event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                      X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                      folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                      nuisance_preds <span class="op">=</span> <span class="va">augmented_nuisance_preds</span>,</span>
+<span>                                      pred_generator <span class="op">=</span> <span class="va">generate_reduced_oracle_predictions</span>,</span>
+<span>                                      landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                      approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                      SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                      indx <span class="op">=</span> <span class="va">indx</span><span class="op">)</span></span>
+<span>  <span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
+<span>  </span>
 <span>  <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim_AUC.html">vim_AUC</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
 <span>                    event <span class="op">=</span> <span class="va">event</span>,</span>
 <span>                    approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
@@ -748,30 +702,35 @@ adjusting for person-level covariates.</p>
 <span><span class="co"># in this analysis, "full" predictions are obtained by regressing the conditional survival</span></span>
 <span><span class="co"># function estimates given all features on the tumor-level features, i.e., leaving out</span></span>
 <span><span class="co"># person features</span></span>
-<span><span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                                    event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                                    X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                                    landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                                    folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                                    sample_split <span class="op">=</span> <span class="va">sample_split</span>,</span>
-<span>                                                    indx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">person_index</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>                                                    full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>                                                    SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
+<span><span class="va">full_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                    event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                    X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                    folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                    nuisance_preds <span class="op">=</span> <span class="va">augmented_nuisance_preds</span>,</span>
+<span>                                    pred_generator <span class="op">=</span> <span class="va">generate_reduced_oracle_predictions</span>,</span>
+<span>                                    landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                    approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                    SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                    indx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">person_index</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
 <span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature_group_names</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">indx_char</span> <span class="op">&lt;-</span> <span class="va">feature_groups</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="va">feature_group_names</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">indx_char</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span>  </span>
-<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                                   event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                                   X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                                   landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                                   folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                                   sample_split <span class="op">=</span> <span class="va">sample_split</span>,</span>
-<span>                                                   indx <span class="op">=</span> <span class="va">indx</span>,</span>
-<span>                                                   full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>                                                   SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
+<span>  <span class="va">reduced_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                         event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                         X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                         folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                         nuisance_preds <span class="op">=</span> <span class="va">augmented_nuisance_preds</span>,</span>
+<span>                                         pred_generator <span class="op">=</span> <span class="va">generate_reduced_oracle_predictions</span>,</span>
+<span>                                         landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                         approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                         SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                         indx <span class="op">=</span> <span class="va">indx</span><span class="op">)</span></span>
+<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="va">reduced_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
+<span></span>
 <span>  <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim_AUC.html">vim_AUC</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
 <span>                    event <span class="op">=</span> <span class="va">event</span>,</span>
 <span>                    approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
@@ -852,16 +811,19 @@ the following code constructs a doubly-robust estimate of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">S_0(\tau \mid x)</annotation></semantics></math>
 using Super Learner.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">generate_DR_predictions</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>,</span>
-<span>                                    <span class="va">event</span>,</span>
-<span>                                    <span class="va">X</span>,</span>
-<span>                                    <span class="va">X_holdout</span>,</span>
-<span>                                    <span class="va">landmark_times</span>,</span>
-<span>                                    <span class="va">approx_times</span>,</span>
-<span>                                    <span class="va">S_hat</span>,</span>
-<span>                                    <span class="va">G_hat</span>,</span>
-<span>                                    <span class="va">SL.library</span><span class="op">)</span><span class="op">{</span></span>
-<span></span>
+<code class="sourceCode R"><span></span>
+<span><span class="va">generate_full_oracle_predictions_DR</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>,</span>
+<span>                                             <span class="va">event</span>,</span>
+<span>                                             <span class="va">X</span>,</span>
+<span>                                             <span class="va">X_holdout</span>,</span>
+<span>                                             <span class="va">nuisance_preds</span>,</span>
+<span>                                             <span class="va">landmark_times</span>,</span>
+<span>                                             <span class="va">approx_times</span>,</span>
+<span>                                             <span class="va">SL.library</span><span class="op">)</span><span class="op">{</span></span>
+<span>  </span>
+<span>  <span class="va">S_hat</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">S_preds_train</span></span>
+<span>  <span class="va">G_hat</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span><span class="op">$</span><span class="va">G_preds_train</span></span>
+<span>  </span>
 <span>  <span class="va">DR_predictions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X_holdout</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">DR_predictions_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
@@ -916,7 +878,9 @@ using Super Learner.</p>
 <span>    <span class="va">DR_predictions_train</span><span class="op">[</span>,<span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">SL_preds_train</span></span>
 <span></span>
 <span>  <span class="op">}</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>f_hat <span class="op">=</span> <span class="va">DR_predictions</span>, f_hat_train <span class="op">=</span> <span class="va">DR_predictions_train</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>f0_hat <span class="op">=</span> <span class="va">DR_predictions</span>,</span>
+<span>              f0_hat_train <span class="op">=</span> <span class="va">DR_predictions_train</span><span class="op">)</span><span class="op">)</span></span>
+<span>  </span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>This doubly-robust estimator of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>f</mi><mn>0</mn></msub><annotation encoding="application/x-tex">f_0</annotation></semantics></math>
@@ -943,39 +907,42 @@ original analysis using the doubly-robust pseudo-outcome approach.</p>
 <span><span class="va">feature_groups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">age_index</span>, <span class="va">meno_index</span>, <span class="va">size_index</span>, <span class="va">nodes_index</span>,</span>
 <span>                    <span class="va">pgr_index</span>, <span class="va">er_index</span>, <span class="va">hormon_index</span>, <span class="va">grade_index</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># generate nuisance estimates</span></span>
-<span><span class="va">V0_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_full_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                         event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                         X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                         landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                         approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
-<span>                                         folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                         sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                                         SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
-<span>                                         DR_pred <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co"># generate full oracle estimates</span></span>
+<span><span class="va">full_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                    event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                    X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                    folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                    nuisance_preds <span class="op">=</span> <span class="va">nuisance_preds</span>,</span>
+<span>                                    pred_generator <span class="op">=</span> <span class="va">generate_full_oracle_predictions_DR</span>,</span>
+<span>                                    landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                    approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                    SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_full_preds</span></span>
-<span><span class="va">CV_full_preds_train</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_full_preds_train</span></span>
-<span><span class="va">CV_S_preds</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_S_preds</span></span>
-<span><span class="va">CV_S_preds_train</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_S_preds_train</span></span>
-<span><span class="va">CV_G_preds</span> <span class="op">&lt;-</span> <span class="va">V0_preds</span><span class="op">$</span><span class="va">CV_G_preds</span></span>
+<span><span class="va">CV_full_preds</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
+<span><span class="va">CV_full_preds_train</span> <span class="op">&lt;-</span> <span class="va">full_preds</span><span class="op">$</span><span class="va">oracle_preds_train</span></span>
+<span></span>
+<span><span class="va">augmented_nuisance_preds</span> <span class="op">&lt;-</span> <span class="va">nuisance_preds</span></span>
+<span><span class="va">augmented_nuisance_preds</span><span class="op">$</span><span class="va">full_preds_train</span> <span class="op">&lt;-</span> <span class="va">CV_full_preds_train</span></span>
 <span></span>
 <span><span class="co"># iterate over feature groups</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">feature_group_names</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">indx_char</span> <span class="op">&lt;-</span> <span class="va">feature_groups</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="va">feature_group_names</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">indx_char</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span></span>
+<span>  </span>
 <span>  <span class="co"># estimate residual oracle prediction function for this feature group</span></span>
-<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="fu">CV_generate_reduced_predictions</span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                                              event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                                              X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                                              landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                                              folds <span class="op">=</span> <span class="va">folds</span>,</span>
-<span>                                              sample_split <span class="op">=</span> <span class="va">sample_split</span>,</span>
-<span>                                              indx <span class="op">=</span> <span class="va">indx</span>,</span>
-<span>                                              full_preds_train <span class="op">=</span> <span class="va">CV_full_preds_train</span>,</span>
-<span>                                              SL.library <span class="op">=</span> <span class="va">SL.library</span><span class="op">)</span></span>
+<span>  <span class="va">reduced_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/crossfit_oracle_preds.html">crossfit_oracle_preds</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                                         event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                                         X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                                         folds <span class="op">=</span> <span class="va">folds</span>,</span>
+<span>                                         nuisance_preds <span class="op">=</span> <span class="va">augmented_nuisance_preds</span>,</span>
+<span>                                         pred_generator <span class="op">=</span> <span class="va">generate_reduced_oracle_predictions</span>,</span>
+<span>                                         landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                                         approx_times <span class="op">=</span> <span class="va">approx_times</span>,</span>
+<span>                                         SL.library <span class="op">=</span> <span class="va">SL.library</span>,</span>
+<span>                                         indx <span class="op">=</span> <span class="va">indx</span><span class="op">)</span></span>
+<span>  <span class="va">CV_reduced_preds</span> <span class="op">&lt;-</span> <span class="va">reduced_preds</span><span class="op">$</span><span class="va">oracle_preds</span></span>
+<span></span>
 <span>  <span class="co"># estimate VIM - note the oracle for AUC is the conditional cdf, not survival function, </span></span>
 <span>  <span class="co"># so need to take 1 - S(tau | x)</span></span>
 <span>  <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim_AUC.html">vim_AUC</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">time</span>,</span>
