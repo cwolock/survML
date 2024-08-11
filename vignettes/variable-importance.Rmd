@@ -98,156 +98,88 @@ Next, we write some functions to estimate all the relevant nuisance parameters.
 
 ```{r}
 # estimate conditional survival functions
-generate_full_predictions <- function(time, 
-                                      event, 
-                                      X, 
-                                      X_holdout, 
-                                      landmark_times, 
-                                      approx_times,
-                                      SL.library){
+generate_nuisance_predictions <- function(time, 
+                                          event, 
+                                          X, 
+                                          X_holdout, 
+                                          newtimes,
+                                          approx_times,
+                                          SL.library){
   
-    surv_out <- survML::stackG(time = time,
-                               event = event,
-                               X = X,
-                               newX = rbind(X_holdout, X),
-                               newtimes = approx_times,
-                               time_grid_approx = approx_times,
-                               bin_size = 0.05,
-                               time_basis = "continuous",
-                               surv_form = "PI",
-                               SL_control = list(SL.library = SL.library,
-                                                 V = 5))
-    S_hat <- surv_out$S_T_preds[1:nrow(X_holdout),]
-    G_hat <- surv_out$S_C_preds[1:nrow(X_holdout),]
-    f_hat <- S_hat[,which(approx_times %in% landmark_times),drop=FALSE]
-    S_hat_train <- surv_out$S_T_preds[(nrow(X_holdout)+1):(nrow(X_holdout)+nrow(X)),]
-    G_hat_train <- surv_out$S_C_preds[(nrow(X_holdout)+1):(nrow(X_holdout)+nrow(X)),]
-    f_hat_train <- S_hat_train[,which(approx_times %in% landmark_times),drop=FALSE]
+  surv_out <- survML::stackG(time = time,
+                             event = event,
+                             X = X,
+                             newX = rbind(X_holdout, X),
+                             newtimes = approx_times,
+                             time_grid_approx = approx_times,
+                             bin_size = 0.05,
+                             time_basis = "continuous",
+                             surv_form = "PI",
+                             SL_control = list(SL.library = SL.library,
+                                               V = 5))
+  S_hat <- surv_out$S_T_preds[1:nrow(X_holdout),]
+  G_hat <- surv_out$S_C_preds[1:nrow(X_holdout),]
+  S_hat_train <- surv_out$S_T_preds[(nrow(X_holdout)+1):(nrow(X_holdout)+nrow(X)),]
+  G_hat_train <- surv_out$S_C_preds[(nrow(X_holdout)+1):(nrow(X_holdout)+nrow(X)),]
   return(list(S_hat = S_hat,
               G_hat = G_hat,
-              f_hat = f_hat,
-              f_hat_train = f_hat_train,
               S_hat_train = S_hat_train,
               G_hat_train = G_hat_train))
 }
 
-# estimate residual oracle prediction function by regressing full predictions on reduced feature vector
-generate_reduced_predictions <- function(f_hat,
-                                         X_reduced,
-                                         X_reduced_holdout,
-                                         landmark_times,
-                                         SL.library){
+
+generate_full_oracle_predictions <- function(time,
+                                             event,
+                                             X,
+                                             X_holdout,
+                                             nuisance_preds,
+                                             landmark_times,
+                                             approx_times){
   
-  long_dat <- data.frame(f_hat = f_hat, X_reduced)
-  long_new_dat <- data.frame(X_reduced_holdout)
-  reduced_fit <- SuperLearner::SuperLearner(Y = long_dat$f_hat,
-                                            X = long_dat[,2:ncol(long_dat),drop=FALSE],
-                                            family = stats::gaussian(),
-                                            SL.library = SL.library,
-                                            method = "method.NNLS",
-                                            verbose = FALSE)
-  fs_hat <- matrix(predict(reduced_fit, newdata = long_new_dat)$pred,
-                   nrow = nrow(X_reduced_holdout),
-                   ncol = length(landmark_times))
+  f0_hat <- nuisance_preds$S_preds[,which(approx_times %in% landmark_times),drop=FALSE]
+  f0_hat_train <- nuisance_preds$S_preds_train[,which(approx_times %in% landmark_times),drop=FALSE]
+  return(list(f0_hat = f0_hat,
+              f0_hat_train = f0_hat_train))
   
-  return(list(fs_hat = fs_hat))
 }
 
-# produce cross-fitted full predictions
-CV_generate_full_predictions <- function(time,
-                                         event,
-                                         X,
-                                         landmark_times,
-                                         approx_times,
-                                         folds,
-                                         sample_split,
-                                         SL.library,
-                                         DR_pred){
-  .V <- length(unique(folds))
-  CV_full_preds_train <- list()
-  CV_full_preds <- list()
-  CV_S_preds <- list()
-  CV_S_preds_train <- list()
-  CV_G_preds <- list()
+generate_reduced_oracle_predictions <- function(time,
+                                                event,
+                                                X,
+                                                X_holdout,
+                                                nuisance_preds,
+                                                landmark_times,
+                                                approx_times,
+                                                SL.library,
+                                                indx){
+  X_reduced_train <- X[,-indx,drop=FALSE]
+  X_reduced_holdout <- X_holdout[,-indx,drop=FALSE]
+  preds_j <- matrix(NA, nrow = nrow(X_reduced_holdout), ncol = length(landmark_times))
+  preds_j_train <- matrix(NA, nrow = nrow(X_reduced_train), ncol = length(landmark_times))
   
-  for (j in 1:.V){
-    
-    time_train <- time[folds != j]
-    event_train <- event[folds != j]
-    X_train <- X[folds != j,]
-    
-    X_holdout <- X[folds == j,]
-    full_preds <- generate_full_predictions(time = time_train,
-                                            event = event_train,
-                                            X = X_train,
-                                            X_holdout = X_holdout,
-                                            landmark_times = landmark_times,
-                                            approx_times = approx_times,
-                                            SL.library = SL.library)
-    if (!DR_pred){
-        CV_full_preds_train[[j]] <- full_preds$f_hat_train
-        CV_full_preds[[j]] <- full_preds$f_hat
-      } else{ # doubly-robust version --- see below
-        DR_preds <- generate_DR_predictions(
-          time = time_train,
-          event = event_train,
-          X = X_train,
-          X_holdout = X_holdout,
-          landmark_times = landmark_times,
-          approx_times = approx_times,
-          S_hat = full_preds$S_hat_train,
-          G_hat = full_preds$G_hat_train,
-          SL.library = SL.library
-        )
-        CV_full_preds_train[[j]] <- DR_preds$f_hat_train
-        CV_full_preds[[j]] <- DR_preds$f_hat
-      }
-    CV_S_preds[[j]] <- full_preds$S_hat
-    CV_G_preds[[j]] <- full_preds$G_hat
-    CV_S_preds_train[[j]] <- full_preds$S_hat_train
-  }
-
-  return(list(CV_full_preds_train = CV_full_preds_train,
-              CV_full_preds = CV_full_preds,
-              CV_S_preds = CV_S_preds,
-              CV_S_preds_train = CV_S_preds_train,
-              CV_G_preds = CV_G_preds))
-}
-
-# produce cross-fitted reduced predictions
-CV_generate_reduced_predictions <- function(time,
-                                            event,
-                                            X,
-                                            landmark_times,
-                                            folds,
-                                            indx,
-                                            sample_split,
-                                            full_preds_train,
-                                            SL.library){
-  .V <- length(unique(folds))
-  CV_reduced_preds <- list()
-  
-  for (j in 1:.V){
-    
-    X_reduced_train <- X[folds != j,-indx,drop=FALSE]
-    X_reduced_holdout <- X[folds == j,-indx,drop=FALSE]
-    
-    preds_j <- matrix(NA, nrow = nrow(X_reduced_holdout), ncol = length(landmark_times))
-    for (t in landmark_times){
-      outcomes <- full_preds_train[[j]][,which(landmark_times == t)]
-      reduced_preds <- generate_reduced_predictions(f_hat = outcomes,
-                                                    X_reduced = X_reduced_train,
-                                                    X_reduced_holdout = X_reduced_holdout,
-                                                    landmark_times = t,
-                                                    SL.library = SL.library)
-      
-      preds_j[,which(landmark_times == t)] <- reduced_preds$fs_hat
-    }
-    
-    CV_reduced_preds[[j]] <- preds_j
+  for (t in landmark_times){
+    outcomes <- nuisance_preds$full_preds_train[,which(landmark_times == t)]
+    long_dat <- data.frame(f_hat = outcomes, X_reduced_train)
+    long_new_dat <- data.frame(X_reduced_holdout)
+    long_new_dat_train <- data.frame(X_reduced_train)
+    reduced_fit <- SuperLearner::SuperLearner(Y = long_dat$f_hat,
+                                              X = long_dat[,2:ncol(long_dat),drop=FALSE],
+                                              family = stats::gaussian(),
+                                              SL.library = SL.library,
+                                              method = "method.NNLS",
+                                              verbose = FALSE)
+    reduced_preds <- matrix(predict(reduced_fit, newdata = long_new_dat)$pred,
+                            nrow = nrow(X_reduced_holdout),
+                            ncol = 1)
+    reduced_preds_train <- matrix(predict(reduced_fit, newdata = long_new_dat_train)$pred,
+                                  nrow = nrow(X_reduced_train),
+                                  ncol = 1)
+    preds_j[,which(landmark_times == t)] <- reduced_preds
+    preds_j_train[,which(landmark_times == t)] <- reduced_preds_train
   }
   
-  return(CV_reduced_preds)
+  return(list(f0_hat = preds_j,
+              f0_hat_train = preds_j_train))
 }
 ```
 
@@ -279,38 +211,52 @@ approx_times <- sort(unique(c(time[event == 1 & time <= max(landmark_times)],
                               landmark_times)))
 
 # generate nuisance estimates
-V0_preds <- CV_generate_full_predictions(time = time,
-                                         event = event,
-                                         X = X,
-                                         landmark_times = landmark_times,
-                                         approx_times = approx_times,
-                                         folds = folds,
-                                         sample_split = TRUE,
-                                         SL.library = SL.library,
-                                         DR_pred = FALSE)
+nuisance_preds <- crossfit_surv_preds(time = time,
+                                      event,
+                                      X = X,
+                                      newtimes = approx_times,
+                                      folds = folds,
+                                      pred_generator = generate_nuisance_predictions,
+                                      SL.library = SL.library,
+                                      approx_times = approx_times)
 
-CV_full_preds <- V0_preds$CV_full_preds
-CV_full_preds_train <- V0_preds$CV_full_preds_train
-CV_S_preds <- V0_preds$CV_S_preds
-CV_S_preds_train <- V0_preds$CV_S_preds_train
-CV_G_preds <- V0_preds$CV_G_preds
+CV_S_preds <- nuisance_preds$S_preds
+CV_S_preds_train <- nuisance_preds$S_preds_train
+CV_G_preds <- nuisance_preds$G_preds
+
+full_preds <- crossfit_oracle_preds(time = time,
+                                    event = event,
+                                    X = X,
+                                    folds = folds,
+                                    nuisance_preds = nuisance_preds,
+                                    pred_generator = generate_full_oracle_predictions,
+                                    landmark_times = landmark_times,
+                                    approx_times = approx_times)
+
+CV_full_preds <- full_preds$oracle_preds
+CV_full_preds_train <- full_preds$oracle_preds_train
+
+augmented_nuisance_preds <- nuisance_preds
+augmented_nuisance_preds$full_preds_train <- CV_full_preds_train
 
 # iterate over feature groups
 for (i in 1:length(feature_group_names)){
   indx_char <- feature_groups[i]
   indx_name <- feature_group_names[i]
   indx <- as.numeric(strsplit(indx_char, split = ",")[[1]])
-
-  # estimate residual oracle prediction function for this feature group
-  CV_reduced_preds <- CV_generate_reduced_predictions(time = time,
-                                              event = event,
-                                              X = X,
-                                              landmark_times = landmark_times,
-                                              folds = folds,
-                                              sample_split = sample_split,
-                                              indx = indx,
-                                              full_preds_train = CV_full_preds_train,
-                                              SL.library = SL.library)
+  
+  reduced_preds <- crossfit_oracle_preds(time = time,
+                                         event = event,
+                                         X = X,
+                                         folds = folds,
+                                         nuisance_preds = augmented_nuisance_preds,
+                                         pred_generator = generate_reduced_oracle_predictions,
+                                         landmark_times = landmark_times,
+                                         approx_times = approx_times,
+                                         SL.library = SL.library,
+                                         indx = indx)
+  CV_reduced_preds <- reduced_preds$oracle_preds
+  
   # estimate VIM - note the oracle for AUC is the conditional cdf, not survival function, 
   # so need to take 1 - S(tau | x)
   output <- vim_AUC(time = time,
@@ -368,16 +314,19 @@ for (i in 1:length(feature_group_names2)){
   indx_char <- feature_groups2[i]
   indx_name <- feature_group_names2[i]
   indx <- as.numeric(strsplit(indx_char, split = ",")[[1]])
-
-  CV_reduced_preds <- CV_generate_reduced_predictions(time = time,
-                                              event = event,
-                                              X = X,
-                                              landmark_times = landmark_times,
-                                              folds = folds,
-                                              sample_split = sample_split,
-                                              indx = indx,
-                                              full_preds_train = CV_full_preds_train,
-                                              SL.library = SL.library)
+  
+  reduced_preds <- crossfit_oracle_preds(time = time,
+                                         event = event,
+                                         X = X,
+                                         folds = folds,
+                                         nuisance_preds = augmented_nuisance_preds,
+                                         pred_generator = generate_reduced_oracle_predictions,
+                                         landmark_times = landmark_times,
+                                         approx_times = approx_times,
+                                         SL.library = SL.library,
+                                         indx = indx)
+  CV_reduced_preds <- reduced_preds$oracle_preds
+  
   output <- vim_AUC(time = time,
                     event = event,
                     approx_times = approx_times,
@@ -446,15 +395,17 @@ feature_group_names <- c("size", "nodes", "prog.", "estro.", "grade")
 feature_groups <- c(size_index, nodes_index,
                     pgr_index, er_index, grade_index)
 
-CV_reduced_preds <- CV_generate_reduced_predictions(time = time,
-                                                    event = event,
-                                                    X = X,
-                                                    landmark_times = landmark_times,
-                                                    folds = folds,
-                                                    sample_split = sample_split,
-                                                    indx = as.numeric(strsplit(tum_index, split = ",")[[1]]),
-                                                    full_preds_train = CV_full_preds_train,
-                                                    SL.library = SL.library)
+reduced_preds <- crossfit_oracle_preds(time = time,
+                                       event = event,
+                                       X = X,
+                                       folds = folds,
+                                       nuisance_preds = augmented_nuisance_preds,
+                                       pred_generator = generate_reduced_oracle_predictions,
+                                       landmark_times = landmark_times,
+                                       approx_times = approx_times,
+                                       SL.library = SL.library,
+                                       indx = as.numeric(strsplit(tum_index, split = ",")[[1]]))
+CV_reduced_preds <- reduced_preds$oracle_preds
 
 for (i in 1:length(feature_group_names)){
   indx_char <- feature_groups[i]
@@ -465,15 +416,18 @@ for (i in 1:length(feature_group_names)){
   # leave out features *not* in indx for this analysis
   indx <- all_indx[-which(all_indx %in% indx)]
   
-  CV_full_preds <- CV_generate_reduced_predictions(time = time,
-                                                   event = event,
-                                                   X = X,
-                                                   landmark_times = landmark_times,
-                                                   folds = folds,
-                                                   sample_split = sample_split,
-                                                   indx = indx,
-                                                   full_preds_train = CV_full_preds_train,
-                                                   SL.library = SL.library)
+  full_preds <- crossfit_oracle_preds(time = time,
+                                      event = event,
+                                      X = X,
+                                      folds = folds,
+                                      nuisance_preds = augmented_nuisance_preds,
+                                      pred_generator = generate_reduced_oracle_predictions,
+                                      landmark_times = landmark_times,
+                                      approx_times = approx_times,
+                                      SL.library = SL.library,
+                                      indx = indx)
+  CV_full_preds <- full_preds$oracle_preds
+  
   output <- vim_AUC(time = time,
                     event = event,
                     approx_times = approx_times,
@@ -548,30 +502,35 @@ feature_groups <- c(size_index, nodes_index,
 # in this analysis, "full" predictions are obtained by regressing the conditional survival
 # function estimates given all features on the tumor-level features, i.e., leaving out
 # person features
-CV_full_preds <- CV_generate_reduced_predictions(time = time,
-                                                    event = event,
-                                                    X = X,
-                                                    landmark_times = landmark_times,
-                                                    folds = folds,
-                                                    sample_split = sample_split,
-                                                    indx = as.numeric(strsplit(person_index, split = ",")[[1]]),
-                                                    full_preds_train = CV_full_preds_train,
-                                                    SL.library = SL.library)
+full_preds <- crossfit_oracle_preds(time = time,
+                                    event = event,
+                                    X = X,
+                                    folds = folds,
+                                    nuisance_preds = augmented_nuisance_preds,
+                                    pred_generator = generate_reduced_oracle_predictions,
+                                    landmark_times = landmark_times,
+                                    approx_times = approx_times,
+                                    SL.library = SL.library,
+                                    indx = as.numeric(strsplit(person_index, split = ",")[[1]]))
+CV_full_preds <- full_preds$oracle_preds
 
 for (i in 1:length(feature_group_names)){
   indx_char <- feature_groups[i]
   indx_name <- feature_group_names[i]
   indx <- as.numeric(strsplit(indx_char, split = ",")[[1]])
   
-  CV_reduced_preds <- CV_generate_reduced_predictions(time = time,
-                                                   event = event,
-                                                   X = X,
-                                                   landmark_times = landmark_times,
-                                                   folds = folds,
-                                                   sample_split = sample_split,
-                                                   indx = indx,
-                                                   full_preds_train = CV_full_preds_train,
-                                                   SL.library = SL.library)
+  reduced_preds <- crossfit_oracle_preds(time = time,
+                                         event = event,
+                                         X = X,
+                                         folds = folds,
+                                         nuisance_preds = augmented_nuisance_preds,
+                                         pred_generator = generate_reduced_oracle_predictions,
+                                         landmark_times = landmark_times,
+                                         approx_times = approx_times,
+                                         SL.library = SL.library,
+                                         indx = indx)
+  CV_reduced_preds <- reduced_preds$oracle_preds
+
   output <- vim_AUC(time = time,
                     event = event,
                     approx_times = approx_times,
@@ -628,16 +587,19 @@ The VIM estimation procedure implemented in `survML` is doubly-robust with respe
 In many cases, the oracle prediction functions $f_0$ and $f_{0,s}$ can themselves be estimated in a doubly-robust manner. For example, for AUC and Brier score VIMs evaluated at landmark time $\tau$, the oracle prediction function is simply $S_0(\tau \mid x)$. The pseudo-outcome approach of Rubin and van der Laan (2007) can be used to construct a doubly-robust estimator of a conditional survival function at a single time-point, at the computational cost of performing an additional regression step. Given initial estimates of $S_0$ and $G_0$, the following code constructs a doubly-robust estimate of $S_0(\tau \mid x)$ using Super Learner. 
 
 ```{r}
-generate_DR_predictions <- function(time,
-                                    event,
-                                    X,
-                                    X_holdout,
-                                    landmark_times,
-                                    approx_times,
-                                    S_hat,
-                                    G_hat,
-                                    SL.library){
 
+generate_full_oracle_predictions_DR <- function(time,
+                                             event,
+                                             X,
+                                             X_holdout,
+                                             nuisance_preds,
+                                             landmark_times,
+                                             approx_times,
+                                             SL.library){
+  
+  S_hat <- nuisance_preds$S_preds_train
+  G_hat <- nuisance_preds$G_preds_train
+  
   DR_predictions <- matrix(NA, nrow = nrow(X_holdout), ncol = length(landmark_times))
   DR_predictions_train <- matrix(NA, nrow = nrow(X), ncol = length(landmark_times))
   for (i in 1:length(landmark_times)){
@@ -692,7 +654,9 @@ generate_DR_predictions <- function(time,
     DR_predictions_train[,i] <- SL_preds_train
 
   }
-  return(list(f_hat = DR_predictions, f_hat_train = DR_predictions_train))
+  return(list(f0_hat = DR_predictions,
+              f0_hat_train = DR_predictions_train))
+  
 }
 ```
 
@@ -715,39 +679,42 @@ feature_group_names <- c("age", "meno.", "size", "nodes",
 feature_groups <- c(age_index, meno_index, size_index, nodes_index,
                     pgr_index, er_index, hormon_index, grade_index)
 
-# generate nuisance estimates
-V0_preds <- CV_generate_full_predictions(time = time,
-                                         event = event,
-                                         X = X,
-                                         landmark_times = landmark_times,
-                                         approx_times = approx_times,
-                                         folds = folds,
-                                         sample_split = TRUE,
-                                         SL.library = SL.library,
-                                         DR_pred = TRUE)
+# generate full oracle estimates
+full_preds <- crossfit_oracle_preds(time = time,
+                                    event = event,
+                                    X = X,
+                                    folds = folds,
+                                    nuisance_preds = nuisance_preds,
+                                    pred_generator = generate_full_oracle_predictions_DR,
+                                    landmark_times = landmark_times,
+                                    approx_times = approx_times,
+                                    SL.library = SL.library)
 
-CV_full_preds <- V0_preds$CV_full_preds
-CV_full_preds_train <- V0_preds$CV_full_preds_train
-CV_S_preds <- V0_preds$CV_S_preds
-CV_S_preds_train <- V0_preds$CV_S_preds_train
-CV_G_preds <- V0_preds$CV_G_preds
+CV_full_preds <- full_preds$oracle_preds
+CV_full_preds_train <- full_preds$oracle_preds_train
+
+augmented_nuisance_preds <- nuisance_preds
+augmented_nuisance_preds$full_preds_train <- CV_full_preds_train
 
 # iterate over feature groups
 for (i in 1:length(feature_group_names)){
   indx_char <- feature_groups[i]
   indx_name <- feature_group_names[i]
   indx <- as.numeric(strsplit(indx_char, split = ",")[[1]])
-
+  
   # estimate residual oracle prediction function for this feature group
-  CV_reduced_preds <- CV_generate_reduced_predictions(time = time,
-                                              event = event,
-                                              X = X,
-                                              landmark_times = landmark_times,
-                                              folds = folds,
-                                              sample_split = sample_split,
-                                              indx = indx,
-                                              full_preds_train = CV_full_preds_train,
-                                              SL.library = SL.library)
+  reduced_preds <- crossfit_oracle_preds(time = time,
+                                         event = event,
+                                         X = X,
+                                         folds = folds,
+                                         nuisance_preds = augmented_nuisance_preds,
+                                         pred_generator = generate_reduced_oracle_predictions,
+                                         landmark_times = landmark_times,
+                                         approx_times = approx_times,
+                                         SL.library = SL.library,
+                                         indx = indx)
+  CV_reduced_preds <- reduced_preds$oracle_preds
+
   # estimate VIM - note the oracle for AUC is the conditional cdf, not survival function, 
   # so need to take 1 - S(tau | x)
   output <- vim_AUC(time = time,

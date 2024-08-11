@@ -2,6 +2,8 @@
 
 S3method(predict,stackG)
 S3method(predict,stackL)
+export(crossfit_oracle_preds)
+export(crossfit_surv_preds)
 export(currstatCIR)
 export(stackG)
 export(stackL)
