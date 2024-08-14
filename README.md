@@ -116,8 +116,8 @@ please cite the following:
 After using the variable importance functions, please cite the
 following:
 
-    @article{wolock2023nonparametric,
-             title={Nonparametric variable importance for time-to-event outcomes with application to prediction of HIV infection},
+    @article{wolock2023assessing,
+             title={Assessing variable importance in survival analysis using machine learning},
              author={Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
              journal={arXiv preprint arXiv:2311.12726},
              year={2023}
