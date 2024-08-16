@@ -182,6 +182,6 @@ abline(0,1,col='red')
 
 }
 \references{
-Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2022).
+Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
 "A framework for leveraging machine learning tools to estimate personalized survival curves."
 }

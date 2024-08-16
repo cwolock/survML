@@ -140,7 +140,7 @@
 #' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
 #' abline(0,1,col='red')
 #'
-#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2022).
+#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
 #'   "A framework for leveraging machine learning tools to estimate personalized survival curves."
 stackG <- function(time,
                    event = rep(1, length(time)),

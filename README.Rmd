@@ -97,6 +97,9 @@ After using the `survML` package for conditional survival estimation, please cit
         author={Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
         journal={Journal of Computational and Graphical Statistics},
         year={2024},
+        volume = {33},
+        number = {3},
+        pages = {1098--1108},
         publisher={Taylor \& Francis},
         doi={10.1080/10618600.2024.2304070}
 }
