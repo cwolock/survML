@@ -35,7 +35,7 @@ knitr::opts_chunk$set(
 
 The `survML` package contains a variety of functions for analyzing survival data using machine learning. These include: 
 
-1. *Global and local survival stacking*: Use off-the-shelf machine learning tools to estimate conditional survival functions. 
+1. *Global and local survival stacking*: Use off-the-shelf machine learning tools to estimate conditional survival functions.  
 
 2. *Algorithm-agnostic variable importance*: Use debiased machine learning to estimate and make inference on variable importance for prediction of time-to-event outcomes. 
 
@@ -59,6 +59,9 @@ Alternatively, the development version of `survML` is available on GitHub. You c
 install_github(repo = "cwolock/survML")
 ```
 
+## Integration with `CFsurvival`
+
+The `CFsurvival` package can be used to estimate a covariate-adjusted counterfactual survival curve from observational data. This approach requires estimating the conditional event and censoring distributions. In [this fork](https://github.com/cwolock/CFsurvival) of the `CFsurvival` package, we have added `stackG()` from `survML` as an option for estimating these nuisance parameters. 
 
 ## Documentation
 

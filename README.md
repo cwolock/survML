@@ -54,6 +54,15 @@ GitHub. You can install it using the `devtools` package as follows:
 install_github(repo = "cwolock/survML")
 ```
 
+## Integration with `CFsurvival`
+
+The `CFsurvival` package can be used to estimate a covariate-adjusted
+counterfactual survival curve from observational data. This approach
+requires estimating the conditional event and censoring distributions.
+In [this fork](https://github.com/cwolock/CFsurvival) of the
+`CFsurvival` package, we have added `stackG()` from `survML` as an
+option for estimating these nuisance parameters.
+
 ## Documentation
 
 Full documentation can be found on the `survML` website at
