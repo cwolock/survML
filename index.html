@@ -80,6 +80,12 @@
 <span><span class="fu">install_github</span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"cwolock/survML"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="integration-with-cfsurvival">Integration with <code>CFsurvival</code>
+<a class="anchor" aria-label="anchor" href="#integration-with-cfsurvival"></a>
+</h2>
+<p>The <code>CFsurvival</code> package can be used to estimate a covariate-adjusted counterfactual survival curve from observational data. This approach requires estimating the conditional event and censoring distributions. In <a href="https://github.com/cwolock/CFsurvival" class="external-link">this fork</a> of the <code>CFsurvival</code> package, we have added <code><a href="reference/stackG.html">stackG()</a></code> from <code>survML</code> as an option for estimating these nuisance parameters.</p>
+</div>
+<div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <p>Full documentation can be found on the <code>survML</code> website at <a href="https://cwolock.github.io/survML/" class="uri">https://cwolock.github.io/survML/</a>.</p>
