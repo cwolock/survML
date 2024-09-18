@@ -37,6 +37,6 @@ crossfit_oracle_preds <- function(time,
     CV_oracle_preds_train[[j]] <- preds$f0_hat_train
   }
 
-  return(list(oracle_preds = CV_oracle_preds,
-              oracle_preds_train = CV_oracle_preds_train))
+  return(list(f_hat = CV_oracle_preds,
+              f_hat_train = CV_oracle_preds_train))
 }

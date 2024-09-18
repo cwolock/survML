@@ -126,6 +126,6 @@ vim_survival_time_mse <- function(time,
                     ciu = ciu,
                     cil_1sided = cil_1sided,
                     p = p,
-                    full_pred = full_one_step,
-                    reduced_pred = reduced_one_step))
+                    large_predictiveness = full_one_step,
+                    small_predictiveness = reduced_one_step))
 }

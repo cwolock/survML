@@ -50,10 +50,10 @@ generate_oracle_predictions_SL <- function(time,
   preds_j_train <- matrix(NA, nrow = nrow(X_reduced_train), ncol = length(landmark_times))
 
   for (t in landmark_times){
-    if (is.null(nuisance_preds$large_oracle_preds_train)){
-      outcomes <- nuisance_preds$S_preds_train[,which(approx_times == t),drop=FALSE]
+    if (is.null(nuisance_preds$f_hat_train)){
+      outcomes <- nuisance_preds$S_hat_train[,which(approx_times == t),drop=FALSE]
     } else{
-      outcomes <- nuisance_preds$large_oracle_preds_train[,which(landmark_times == t)]
+      outcomes <- nuisance_preds$f_hat_train[,which(landmark_times == t)]
     }
 
     long_dat <- data.frame(f_hat = outcomes, X_reduced_train)
@@ -80,6 +80,9 @@ generate_oracle_predictions_SL <- function(time,
               f0_hat_train = preds_j_train))
 }
 
+#' Estimate full oracle prediction function using DR pseudo-outcome regression
+#'
+#' @noRd
 generate_oracle_predictions_DR <- function(time,
                                            event,
                                            X,
@@ -91,8 +94,8 @@ generate_oracle_predictions_DR <- function(time,
                                            V = 5,
                                            indx){
 
-  S_hat <- nuisance_preds$S_preds_train
-  G_hat <- nuisance_preds$G_preds_train
+  S_hat <- nuisance_preds$S_hat_train
+  G_hat <- nuisance_preds$G_hat_train
 
   if (sum(indx) != 0){ # only remove column if there is a column to remove
     X <- X[,-indx,drop=FALSE]

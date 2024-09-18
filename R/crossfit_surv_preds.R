@@ -40,8 +40,8 @@ crossfit_surv_preds <- function(time,
     CV_G_preds_train[[j]] <- preds$G_hat_train
   }
 
-  return(list(S_preds = CV_S_preds,
-              S_preds_train = CV_S_preds_train,
-              G_preds = CV_G_preds,
-              G_preds_train = CV_G_preds_train))
+  return(list(S_hat = CV_S_preds,
+              S_hat_train = CV_S_preds_train,
+              G_hat = CV_G_preds,
+              G_hat_train = CV_G_preds_train))
 }

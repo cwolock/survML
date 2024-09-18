@@ -14,12 +14,9 @@ vim(
   approx_times = NULL,
   large_feature_vector,
   small_feature_vector,
-  f_hat = NULL,
-  fs_hat = NULL,
-  S_hat = NULL,
-  G_hat = NULL,
-  S_hat_train = NULL,
-  G_hat_train = NULL,
+  conditional_surv_preds = NULL,
+  large_oracle_preds = NULL,
+  small_oracle_preds = NULL,
   conditional_surv_generator = NULL,
   conditional_surv_generator_control = NULL,
   large_oracle_generator = NULL,
@@ -36,6 +33,8 @@ vim(
 )
 }
 \arguments{
+\item{type}{Type of VIM to compute}
+
 \item{time}{\code{n x 1} numeric vector of observed
 follow-up times If there is censoring, these are the minimum of the
 event and censoring times.}
@@ -46,16 +45,14 @@ whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 \item{landmark_times}{Numeric vector of length J2 giving
 times at which to estimate AUC}
 
+\item{restriction_time}{Maximum follow-up time for calculation of C-index or restricted survival time}
+
 \item{approx_times}{Numeric vector of length J1 giving times at which to
 approximate integrals.}
 
-\item{f_hat}{Full oracle predictions (n x J1 matrix)}
+\item{cf_folds}{Numeric vector of length n giving cross-fitting folds}
 
-\item{fs_hat}{Residual oracle predictions (n x J1 matrix)}
-
-\item{S_hat}{Estimates of conditional event time survival function (n x J2 matrix)}
-
-\item{G_hat}{Estimate of conditional censoring time survival function (n x J2 matrix)}
+\item{cf_fold_num}{The number of cross-fitting folds, if not providing \code{cf_folds}}
 
 \item{sample_split}{Logical indicating whether or not to sample split}
 
@@ -67,8 +64,6 @@ is meant for illustration purposes only --- it should be left as \code{TRUE}.}
 \item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative}
 
 \item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
-
-\item{folds}{Numeric vector of length n giving cross-fitting folds}
 }
 \value{
 data frame giving results
