@@ -13,7 +13,7 @@ vim_AUC(
   fs_hat,
   S_hat,
   G_hat,
-  folds,
+  cf_folds,
   sample_split,
   ss_folds,
   robust = TRUE,
@@ -43,7 +43,7 @@ times at which to estimate AUC}
 
 \item{G_hat}{Estimate of conditional censoring time survival function (n x J2 matrix)}
 
-\item{folds}{Numeric vector of length n giving cross-fitting folds}
+\item{cf_folds}{Numeric vector of length n giving cross-fitting folds}
 
 \item{sample_split}{Logical indicating whether or not to sample split}
 

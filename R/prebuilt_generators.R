@@ -31,24 +31,6 @@ generate_nuisance_predictions_stackG <- function(time,
               G_hat_train = G_hat_train))
 }
 
-#' Estimate oracle prediction function using conditional surv. function
-#'
-#' @noRd
-# generate_full_oracle_predictions_conditional_surv <- function(time,
-#                                                               event,
-#                                                               X,
-#                                                               X_holdout,
-#                                                               nuisance_preds,
-#                                                               landmark_times,
-#                                                               approx_times){
-#
-#   f0_hat <- nuisance_preds$S_preds[,which(approx_times %in% landmark_times),drop=FALSE]
-#   f0_hat_train <- nuisance_preds$S_preds_train[,which(approx_times %in% landmark_times),drop=FALSE]
-#   return(list(f0_hat = f0_hat,
-#               f0_hat_train = f0_hat_train))
-#
-# }
-
 #' Estimate residual oracle prediction function using SL regression
 #'
 #' @noRd

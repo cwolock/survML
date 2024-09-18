@@ -13,7 +13,8 @@ DR_pseudo_outcome_regression(
   G_hat,
   newtimes,
   approx_times,
-  SL.library
+  SL.library,
+  V
 )
 }
 \value{

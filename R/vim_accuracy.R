@@ -13,7 +13,7 @@
 #' @param fs_hat Residual oracle predictions (n x J1 matrix)
 #' @param S_hat Estimates of conditional event time survival function (n x J2 matrix)
 #' @param G_hat Estimate of conditional censoring time survival function (n x J2 matrix)
-#' @param folds Numeric vector of length n giving cross-fitting folds
+#' @param cf_folds Numeric vector of length n giving cross-fitting folds
 #' @param sample_split Logical indicating whether or not to sample split
 #' @param ss_folds Numeric vector of length n giving sample-splitting folds
 #' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
@@ -31,14 +31,14 @@ vim_accuracy <- function(time,
                          fs_hat,
                          S_hat,
                          G_hat,
-                         folds,
+                         cf_folds,
                          sample_split,
                          ss_folds,
                          scale_est = FALSE,
                          alpha = 0.05){
 
   J1 <- length(landmark_times)
-  V <- length(unique(folds))
+  V <- length(unique(cf_folds))
   one_step <- rep(NA, J1)
   var_est <- rep(NA, J1)
   full_one_step <- rep(NA, J1)
@@ -65,8 +65,8 @@ vim_accuracy <- function(time,
     split_var_est_fulls <- rep(NA, V)
     split_var_est_reduceds <- rep(NA, V)
     for (j in 1:V){
-      time_holdout <- time[folds == j]
-      event_holdout <- event[folds == j]
+      time_holdout <- time[cf_folds == j]
+      event_holdout <- event[cf_folds == j]
       V_0 <- estimate_accuracy(time = time_holdout,
                                event = event_holdout,
                                approx_times = approx_times,
@@ -98,8 +98,8 @@ vim_accuracy <- function(time,
     }
 
     if (sample_split){
-      folds_0 <- sort(unique(folds[ss_folds == 0]))
-      folds_1 <- sort(unique(folds[ss_folds == 1]))
+      folds_0 <- sort(unique(cf_folds[ss_folds == 0]))
+      folds_1 <- sort(unique(cf_folds[ss_folds == 1]))
       one_step[i] <- mean(split_one_step_fulls[folds_0]) -
         mean(split_one_step_reduceds[folds_1])
       full_one_step[i] <- mean(split_one_step_fulls[folds_0])

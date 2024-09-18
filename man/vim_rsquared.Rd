@@ -13,7 +13,7 @@ vim_rsquared(
   fs_hat,
   S_hat,
   G_hat,
-  folds,
+  cf_folds,
   ss_folds,
   sample_split,
   scale_est = FALSE,
@@ -42,7 +42,7 @@ times at which to estimate Brier score}
 
 \item{G_hat}{Estimate of conditional censoring time survival function (n x J2 matrix)}
 
-\item{folds}{Numeric vector of length n giving cross-fitting folds}
+\item{cf_folds}{Numeric vector of length n giving cross-fitting folds}
 
 \item{ss_folds}{Numeric vector of length n giving sample-splitting folds}
 

@@ -8,12 +8,12 @@ vim_cindex(
   time,
   event,
   approx_times,
-  tau,
+  restriction_time,
   f_hat,
   fs_hat,
   S_hat,
   G_hat,
-  folds,
+  cf_folds,
   sample_split,
   ss_folds,
   scale_est = FALSE,
@@ -31,7 +31,7 @@ whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 \item{approx_times}{Numeric vector of length J1 giving times at which to
 approximate integrals.}
 
-\item{tau}{restriction time}
+\item{restriction_time}{restriction time}
 
 \item{f_hat}{Full oracle predictions (n x J1 matrix)}
 
@@ -41,7 +41,7 @@ approximate integrals.}
 
 \item{G_hat}{Estimate of conditional censoring time survival function (n x J2 matrix)}
 
-\item{folds}{Numeric vector of length n giving cross-fitting folds}
+\item{cf_folds}{Numeric vector of length n giving cross-fitting folds}
 
 \item{sample_split}{Logical indicating whether or not to sample split}
 

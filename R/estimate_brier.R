@@ -24,6 +24,7 @@ estimate_brier <- function(time,
                            S_hat,
                            G_hat){
 
+  preds <- 1 - preds # user will give cdf; switch to survival function
   KM_IFs <- calc_KM_IF(time = time,
                        event = event,
                        S_hat = S_hat,
