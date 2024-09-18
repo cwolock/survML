@@ -16,13 +16,13 @@
 #' @return An estimate of the MSE
 #'
 #' @noRd
-estimate_rmst_mse <- function(time,
-                              event,
-                              approx_times,
-                              preds,
-                              S_hat,
-                              G_hat,
-                              tau){
+estimate_survival_time_mse <- function(time,
+                                       event,
+                                       approx_times,
+                                       preds,
+                                       S_hat,
+                                       G_hat,
+                                       tau){
 
   n <- length(time)
 

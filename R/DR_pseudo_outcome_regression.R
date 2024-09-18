@@ -11,7 +11,8 @@ DR_pseudo_outcome_regression <- function(time,
                                          G_hat,
                                          newtimes,
                                          approx_times,
-                                         SL.library){
+                                         SL.library,
+                                         V){
   DR_predictions <- matrix(NA, nrow = nrow(newX), ncol = length(newtimes))
   for (i in 1:length(newtimes)){
     tau <- newtimes[i]
@@ -58,6 +59,7 @@ DR_pseudo_outcome_regression <- function(time,
                                          family = stats::gaussian(),
                                          SL.library = SL.library,
                                          method = "method.NNLS",
+                                         cvControl = list(V = V),
                                          verbose = FALSE)
     SL_preds <- predict(SL_fit, newdata = newX)$pred
     DR_predictions[,i] <- SL_preds
