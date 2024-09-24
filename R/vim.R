@@ -1,23 +1,46 @@
 #' Estimate AUC VIM
 #'
-#' @param type Type of VIM to compute
+#' @param type Type of VIM to compute. Options include \code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}
+#' \code{"C-index"}, and \code{"survival_time_MSE"}.
 #' @param time \code{n x 1} numeric vector of observed
 #' follow-up times If there is censoring, these are the minimum of the
 #' event and censoring times.
 #' @param event \code{n x 1} numeric vector of status indicators of
-#' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
-#' @param approx_times Numeric vector of length J1 giving times at which to
+#' whether an event was observed.
+#' @param landmark_times Numeric vector of length J1 giving
+#' landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).
+#' @param restriction_time Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}.
+#' @param approx_times Numeric vector of length J2 giving times at which to
 #' approximate integrals.
-#' @param landmark_times Numeric vector of length J2 giving
-#' times at which to estimate AUC
-#' @param restriction_time Maximum follow-up time for calculation of C-index or restricted survival time
-#' @param conditional_surv_preds
-#' @param large_oracle_preds
-#' @param small_oracle_preds
-#' @param cf_folds Numeric vector of length n giving cross-fitting folds
+#' @param large_feature_vector Numeric vector giving indices of features to include in the 'large' prediction model.
+#' @param small_feature_vector Numeric vector giving indices of features to include in the 'small' prediction model. Must be a
+#' subset of \code{large_feature_vector}.
+#' @param conditional_surv_preds User-provided estimates of the conditional survival functions of the event and censoring
+#' variables given the full covariate vector (if not using the \code{vim()} function to compute these nuisance estimates).
+#' Must be a named list of lists with elements \code{S_hat}, \code{S_hat_train}, \code{G_hat}, and \code{G_hat_train}. Each of these is itself
+#' a list of length \code{K}, where \code{K} is the number of cross-fitting folds. Each element of these lists is a matrix with J2 columns and number of rows
+#' equal to either the number of samples in the \code{k}th fold (for \code{S_hat} or \code{G_hat}) or the number of samples used to compute the nuisance estimator
+#' for the \code{k}th fold.
+#' @param large_oracle_preds User-provided estimates of the oracle prediction function using \code{large_feature_vector}. Must be a named list of lists
+#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is iself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
+#' (for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).
+#' @param small_oracle_preds User-provided estimates of the oracle prediction function using \code{small_feature_vector}. Must be a named list of lists
+#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is iself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
+#' (for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).
+#' @param conditional_surv_generator A user-written function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
+#' \code{time}, \code{event}, \code{folds} (cross-fitting fold identifiers), and
+#' \code{newtimes} (times at which to generate predictions).
+#' @param conditional_surv_generator_control A list of arguments to pass to \code{conditional_surv_generator}.
+#' @param large_oracle_generator A user-written function to estimate the oracle prediction function using \code{large_feature_vector}.Must take arguments
+#' \code{time}, \code{event}, and \code{folds} (cross-fitting fold identifiers).
+#' @param large_oracle_generator_control A list of arguments to pass to \code{large_oracle_generator}.
+#' @param small_oracle_generator  A user-written function to estimate the oracle prediction function using \code{small_feature_vector}.Must take arguments
+#' \code{time}, \code{event}, and \code{folds} (cross-fitting fold identifiers).
+#' @param small_oracle_generator_control A list of arguments to pass to \code{small_oracle_generator}.
+#' @param cf_folds Numeric vector of length \code{n} giving cross-fitting folds
 #' @param cf_fold_num The number of cross-fitting folds, if not providing \code{cf_folds}
 #' @param sample_split Logical indicating whether or not to sample split
-#' @param ss_folds Numeric vector of length n giving sample-splitting folds
+#' @param ss_folds Numeric vector of length \code{n} giving sample-splitting folds
 #' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
 #' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
 #' @param robust Logical, whether or not to use the doubly-robust debiasing approach. This option
