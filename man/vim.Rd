@@ -29,7 +29,8 @@ vim(
   ss_folds = NULL,
   robust = TRUE,
   scale_est = FALSE,
-  alpha = 0.05
+  alpha = 0.05,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -101,6 +102,8 @@ is meant for illustration purposes only --- it should be left as \code{TRUE}.}
 \item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative}
 
 \item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
+
+\item{verbose}{Whether to print progress messages.}
 }
 \value{
 data frame giving results

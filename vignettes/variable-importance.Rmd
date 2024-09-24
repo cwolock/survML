@@ -2,15 +2,15 @@
 title: "Assessing variable importance in survival analysis using machine learning"
 output: rmarkdown::html_vignette
 vignette: >
-%\VignetteIndexEntry{Assessing variable importance in survival analysis using machine learning}
+  %\VignetteIndexEntry{Assessing variable importance in survival analysis using machine learning}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  ---
+---
   
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-collapse = TRUE,
-comment = "#>"
+  collapse = TRUE,
+  comment = "#>"
 )
 ```
 

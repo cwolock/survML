@@ -45,6 +45,7 @@
 #' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
 #' @param robust Logical, whether or not to use the doubly-robust debiasing approach. This option
 #' is meant for illustration purposes only --- it should be left as \code{TRUE}.
+#' @param verbose Whether to print progress messages.
 #'
 #' @return data frame giving results
 #'
@@ -74,15 +75,16 @@ vim <- function(type,
                 ss_folds = NULL,
                 robust = TRUE,
                 scale_est = FALSE,
-                alpha = 0.05){
+                alpha = 0.05,
+                verbose = FALSE){
 
   if (is.null(cf_folds)){
-    print("Setting up cross-fitting and sample-splitting folds...")
+    if (verbose){print("Setting up cross-fitting and sample-splitting folds...")}
     folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = sample_split)
     cf_folds <- folds$cf_folds
     ss_folds <- folds$ss_folds
   } else{
-    print("Using user-provided folds...")
+    if (verbose){print("Using user-provided folds...")}
   }
 
   if (!is.null(conditional_surv_preds$S_hat) & !is.null(conditional_surv_preds$G_hat) & !is.null(conditional_surv_preds$S_hat_train) & !is.null(conditional_surv_preds$G_hat_train) & is.null(approx_times)){
@@ -103,7 +105,7 @@ vim <- function(type,
 
   # estimate S and G if any of them are not provided by user
   if ((is.null(conditional_surv_preds$S_hat) | is.null(conditional_surv_preds$G_hat) | is.null(conditional_surv_preds$S_hat_train) | is.null(conditional_surv_preds$G_hat_train))){
-    print("Estimating conditional survival nuisance functions...")
+    if (verbose){print("Estimating conditional survival nuisance functions...")}
     if (is.null(conditional_surv_generator)){
       conditional_surv_generator <- generate_nuisance_predictions_stackG
     }
@@ -127,12 +129,12 @@ vim <- function(type,
                                  conditional_surv_generator_control))
 
   } else{
-    print("Using pre-computed conditional survival function estimates...")
+    if (verbose){print("Using pre-computed conditional survival function estimates...")}
   }
 
   # switch <- FALSE
   if (is.null(large_oracle_preds)){
-    print("Estimating 'big' oracle prediction function...")
+    if (verbose){print("Estimating 'big' oracle prediction function...")}
     if (is.null(large_oracle_generator_control)){
       large_oracle_generator_control <- list()
     }
@@ -163,13 +165,13 @@ vim <- function(type,
                                  pred_generator = large_oracle_generator),
                             large_oracle_generator_control))
   } else{
-    print("Using pre-computed 'big' oracle prediction function estimates...")
+    if (verbose){print("Using pre-computed 'big' oracle prediction function estimates...")}
   }
 
   augmented_nuisance_preds <- c(conditional_surv_preds, large_oracle_preds)
 
   if (is.null(small_oracle_preds)){
-    print("Estimating 'small' oracle prediction function...")
+    if (verbose){print("Estimating 'small' oracle prediction function...")}
 
     if (is.null(small_oracle_generator_control)){
       small_oracle_generator_control <- list()
@@ -206,10 +208,10 @@ vim <- function(type,
                                     pred_generator = small_oracle_generator),
                                small_oracle_generator_control))
   } else{
-    print("Using pre-computed 'small' oracle prediction function estimates...")
+    if (verbose){print("Using pre-computed 'small' oracle prediction function estimates...")}
   }
 
-  print("Estimating variable importance...")
+  if (verbose){print("Estimating variable importance...")}
   if (type == "AUC"){
     res <- vim_AUC(time = time,
                    event = event,
