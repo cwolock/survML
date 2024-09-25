@@ -26,7 +26,7 @@ crossfit_oracle_preds <- function(time,
       X_train <- X[folds != j,]
     }
     X_holdout <- X[folds == j,]
-    nuisance_preds_j <- sapply(nuisance_preds, "[[", j)
+    nuisance_preds_j <- sapply(nuisance_preds, "[", j)
     preds <- pred_generator(time = time_train,
                             event = event_train,
                             X = X_train,

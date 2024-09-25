@@ -6,7 +6,7 @@
 generate_folds <- function(n, V, sample_split){
   cf_fold_num <- V
   ss_fold_num <- 2*cf_fold_num
-  .V <- ss_fold_num
+  .V <- ifelse(sample_split, ss_fold_num, cf_fold_num)
   cf_folds <- sample(rep(seq_len(.V), length = n)) # 2V of them
   if (sample_split){
     ss_folds <- c(rep(1, .V/2), rep(2, .V/2))
