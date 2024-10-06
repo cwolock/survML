@@ -96,6 +96,15 @@ vim <- function(type,
 
   landmark_vims <- c("AUC", "Brier", "accuracy", "R-squared")
   global_vims <- c("C-index", "survival_time_MSE")
+
+  if (type %in% landmark_vims){
+    outcome <- "survival_probability"
+  } else if (type == "survival_time_MSE"){
+    outcome <- "restricted_survival_time"
+  } else{
+    outcome <- NA
+  }
+
   if (!is.null(landmark_times) & type %in% landmark_vims){
     approx_times <- sort(unique(c(time[event == 1 & time <= max(landmark_times)], landmark_times)))
   }
@@ -120,13 +129,13 @@ vim <- function(type,
     conditional_surv_generator_control[which(!(names(conditional_surv_generator_control)%in%generator_args))] <- NULL
 
     conditional_surv_preds <- do.call(crossfit_surv_preds,
-                               c(list(time = time,
-                                      event = event,
-                                      X = X,
-                                      newtimes = approx_times,
-                                      folds = cf_folds,
-                                      pred_generator = conditional_surv_generator),
-                                 conditional_surv_generator_control))
+                                      c(list(time = time,
+                                             event = event,
+                                             X = X,
+                                             newtimes = approx_times,
+                                             folds = cf_folds,
+                                             pred_generator = conditional_surv_generator),
+                                        conditional_surv_generator_control))
 
   } else{
     if (verbose){print("Using pre-computed conditional survival function estimates...")}
@@ -139,6 +148,7 @@ vim <- function(type,
       large_oracle_generator_control <- list()
     }
     large_oracle_generator_control$indx <- which(!(1:ncol(X) %in% large_feature_vector))
+    large_oracle_generator_control$outcome <- outcome
 
     if (is.null(large_oracle_generator_control$approx_times)){
       large_oracle_generator_control$approx_times <- approx_times
@@ -149,21 +159,26 @@ vim <- function(type,
     if (is.null(large_oracle_generator_control$nuisance_preds)){
       large_oracle_generator_control$nuisance_preds <- conditional_surv_preds
     }
+    if (is.null(large_oracle_generator_control$restriction_time)){
+      large_oracle_generator_control$restriction_time <- restriction_time
+    }
 
-    if (is.null(large_oracle_generator)){
+    if (is.null(large_oracle_generator) & type != "C-index"){
       large_oracle_generator <- generate_oracle_predictions_DR
+    } else if (is.null(large_oracle_generator) & type == "C-index"){
+      large_oracle_generator <- generate_oracle_predictions_boost
     }
 
     generator_args <- formalArgs(large_oracle_generator)
     large_oracle_generator_control[which(!(names(large_oracle_generator_control)%in%generator_args))] <- NULL
 
     large_oracle_preds <- do.call(crossfit_oracle_preds,
-                          c(list(time = time,
-                                 event = event,
-                                 X = X,
-                                 folds = cf_folds,
-                                 pred_generator = large_oracle_generator),
-                            large_oracle_generator_control))
+                                  c(list(time = time,
+                                         event = event,
+                                         X = X,
+                                         folds = cf_folds,
+                                         pred_generator = large_oracle_generator),
+                                    large_oracle_generator_control))
   } else{
     if (verbose){print("Using pre-computed 'big' oracle prediction function estimates...")}
   }
@@ -179,9 +194,12 @@ vim <- function(type,
 
     small_oracle_generator_control$indx <- which(1:ncol(X) %in% large_feature_vector &
                                                    !(1:ncol(X) %in% small_feature_vector))
+    small_oracle_generator_control$outcome <- outcome
 
-    if (is.null(small_oracle_generator)){
+    if (is.null(small_oracle_generator) & type != "C-index"){
       small_oracle_generator <- generate_oracle_predictions_SL
+    } else if (is.null(small_oracle_generator) & type == "C-index"){
+      small_oracle_generator <- generate_oracle_predictions_boost
     }
 
     if (is.null(small_oracle_generator_control$approx_times)){
@@ -201,12 +219,12 @@ vim <- function(type,
     small_oracle_generator_control[which(!(names(small_oracle_generator_control)%in%generator_args))] <- NULL
 
     small_oracle_preds <- do.call(crossfit_oracle_preds,
-                             c(list(time = time,
-                                    event = event,
-                                    X = X,
-                                    folds = cf_folds,
-                                    pred_generator = small_oracle_generator),
-                               small_oracle_generator_control))
+                                  c(list(time = time,
+                                         event = event,
+                                         X = X,
+                                         folds = cf_folds,
+                                         pred_generator = small_oracle_generator),
+                                    small_oracle_generator_control))
   } else{
     if (verbose){print("Using pre-computed 'small' oracle prediction function estimates...")}
   }
@@ -241,7 +259,7 @@ vim <- function(type,
                      ss_folds = ss_folds,
                      scale_est = scale_est,
                      alpha = alpha)
-  } else if (type == "C_index"){
+  } else if (type == "C-index"){
     res <- vim_cindex(time = time,
                       event = event,
                       restriction_time = restriction_time,
@@ -256,20 +274,20 @@ vim <- function(type,
                       scale_est = scale_est,
                       alpha = alpha)
   } else if (type == "survival_time_MSE"){
-    res <- vim_rmse_mse(time = time,
-                        event = event,
-                        restriction_time = restriction_time,
-                        approx_times = approx_times,
-                        f_hat = large_oracle_preds$f_hat,
-                        fs_hat = small_oracle_preds$f_hat,
-                        S_hat = conditional_surv_preds$S_hat,
-                        G_hat = conditional_surv_preds$G_hat,
-                        cf_folds = cf_folds,
-                        sample_split = sample_split,
-                        ss_folds = ss_folds,
-                        scale_est = scale_est,
-                        alpha = alpha)
-  } else if (type == "R_squared"){
+    res <- vim_survival_time_mse(time = time,
+                                 event = event,
+                                 restriction_time = restriction_time,
+                                 approx_times = approx_times,
+                                 f_hat = large_oracle_preds$f_hat,
+                                 fs_hat = small_oracle_preds$f_hat,
+                                 S_hat = conditional_surv_preds$S_hat,
+                                 G_hat = conditional_surv_preds$G_hat,
+                                 cf_folds = cf_folds,
+                                 sample_split = sample_split,
+                                 ss_folds = ss_folds,
+                                 scale_est = scale_est,
+                                 alpha = alpha)
+  } else if (type == "R-squared"){
     res <- vim_rsquared(time = time,
                         event = event,
                         landmark_times = landmark_times,

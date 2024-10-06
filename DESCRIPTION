@@ -30,7 +30,9 @@ Imports:
     haldensify (>= 0.2.3),
     fdrtool (>= 1.2.17),
     ChernoffDist (>= 0.1.0),
-    dplyr (>= 1.0.10)
+    dplyr (>= 1.0.10),
+    gtools (>= 3.9.5),
+    mboost (>= 2.9.0)
 Suggests: 
     knitr,
     rmarkdown,
