@@ -12,6 +12,7 @@ DR_pseudo_outcome_regression(
   S_hat,
   G_hat,
   newtimes,
+  outcome,
   approx_times,
   SL.library,
   V
