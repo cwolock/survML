@@ -106,6 +106,12 @@ A named list of class \code{stackG}, with the following components:
 \item{S_C_preds}{An \code{m x k} matrix of estimated censoring time survival probabilities at the
 \code{m} covariate vector values and \code{k} times provided by the user in
 \code{newX} and \code{newtimes}, respectively.}
+\item{Lambda_T_preds}{An \code{m x k} matrix of estimated event time cumulative hazard function values at the
+\code{m} covariate vector values and \code{k} times provided by the user in
+\code{newX} and \code{newtimes}, respectively.}
+\item{Lambda_C_preds}{An \code{m x k} matrix of estimated censoring time cumulative hazard function values at the
+\code{m} covariate vector values and \code{k} times provided by the user in
+\code{newX} and \code{newtimes}, respectively.}
 \item{time_grid_approx}{The approximation grid for the product integral or cumulative hazard integral,
 (user-specified).}
 \item{direction}{Whether the data come from a prospective or retrospective study (user-specified).}

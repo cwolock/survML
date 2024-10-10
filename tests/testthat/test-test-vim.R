@@ -29,14 +29,14 @@ output <- vim_accuracy(time = y,
                        fs_hat = fs_hat,
                        S_hat = S_hat,
                        G_hat = G_hat,
-                       folds = folds,
+                       cf_folds = folds,
                        ss_folds = ss_folds,
                        sample_split = FALSE)
 test_that("vim_accuracy(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 3)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 3)
 })
 
@@ -49,14 +49,14 @@ output <- vim_AUC(time = y,
                   fs_hat = fs_hat,
                   S_hat = S_hat,
                   G_hat = G_hat,
-                  folds = folds,
+                  cf_folds = folds,
                   ss_folds = ss_folds,
                   sample_split = FALSE)
 test_that("vim_AUC(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 3)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 3)
 })
 
@@ -69,34 +69,34 @@ output <- vim_brier(time = y,
                     fs_hat = fs_hat,
                     S_hat = S_hat,
                     G_hat = G_hat,
-                    folds = folds,
+                    cf_folds = folds,
                     ss_folds = ss_folds,
                     sample_split = FALSE)
 test_that("vim_brier(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 3)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 3)
 })
 
 # RMST MSE
-output <- vim_rmst_mse(time = y,
-                       event = delta,
-                       approx_times = approx_times,
-                       tau = landmark_times[3],
-                       f_hat = lapply(f_hat, function(x) x[,1]),
-                       fs_hat = lapply(fs_hat, function(x) x[,1]),
-                       S_hat = S_hat,
-                       G_hat = G_hat,
-                       folds = folds,
-                       ss_folds = ss_folds,
-                       sample_split = FALSE)
+output <- vim_survival_time_mse(time = y,
+                                event = delta,
+                                approx_times = approx_times,
+                                restriction_time = landmark_times[3],
+                                f_hat = lapply(f_hat, function(x) x[,1]),
+                                fs_hat = lapply(fs_hat, function(x) x[,1]),
+                                S_hat = S_hat,
+                                G_hat = G_hat,
+                                cf_folds = folds,
+                                ss_folds = ss_folds,
+                                sample_split = FALSE)
 test_that("vim_rmst_mse(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 1)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 1)
 })
 
@@ -104,19 +104,19 @@ test_that("vim_rmst_mse(). no xfit, no sample split", {
 output <- vim_cindex(time = y,
                      event = delta,
                      approx_times = approx_times,
-                     tau = landmark_times[3],
+                     restriction_time = landmark_times[3],
                      f_hat = lapply(f_hat, function(x) x[,1]),
                      fs_hat = lapply(fs_hat, function(x) x[,1]),
                      S_hat = S_hat,
                      G_hat = G_hat,
-                     folds = folds,
+                     cf_folds = folds,
                      ss_folds = ss_folds,
                      sample_split = FALSE)
 test_that("vim_cindex(). no xfit, no sample split", {
   expect_equal(dim(output)[1], 1)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 1)
 })
 
@@ -156,14 +156,14 @@ output <- vim_accuracy(time = y,
                        fs_hat = fs_hat,
                        S_hat = S_hat,
                        G_hat = G_hat,
-                       folds = folds,
+                       cf_folds = folds,
                        ss_folds = ss_folds,
                        sample_split = TRUE)
 test_that("vim_accuracy(). no xfit, sample split", {
   expect_equal(dim(output)[1], 3)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 0)
 })
 
@@ -176,14 +176,14 @@ output <- vim_AUC(time = y,
                   fs_hat = fs_hat,
                   S_hat = S_hat,
                   G_hat = G_hat,
-                  folds = folds,
+                  cf_folds = folds,
                   ss_folds = ss_folds,
                   sample_split = TRUE)
 test_that("vim_AUC(). no xfit, sample split", {
   expect_equal(dim(output)[1], 3)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 0)
 })
 
@@ -196,34 +196,34 @@ output <- vim_brier(time = y,
                     fs_hat = fs_hat,
                     S_hat = S_hat,
                     G_hat = G_hat,
-                    folds = folds,
+                    cf_folds = folds,
                     ss_folds = ss_folds,
                     sample_split = TRUE)
 test_that("vim_brier(). no xfit, sample split", {
   expect_equal(dim(output)[1], 3)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("landmark_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 0)
 })
 
 # RMST MSE
-output <- vim_rmst_mse(time = y,
-                       event = delta,
-                       approx_times = approx_times,
-                       tau = landmark_times[3],
-                       f_hat = lapply(f_hat, function(x) x[,1]),
-                       fs_hat = lapply(fs_hat, function(x) x[,1]),
-                       S_hat = S_hat,
-                       G_hat = G_hat,
-                       folds = folds,
-                       ss_folds = ss_folds,
-                       sample_split = TRUE)
+output <- vim_survival_time_mse(time = y,
+                                event = delta,
+                                approx_times = approx_times,
+                                restriction_time = landmark_times[3],
+                                f_hat = lapply(f_hat, function(x) x[,1]),
+                                fs_hat = lapply(fs_hat, function(x) x[,1]),
+                                S_hat = S_hat,
+                                G_hat = G_hat,
+                                cf_folds = folds,
+                                ss_folds = ss_folds,
+                                sample_split = TRUE)
 test_that("vim_rmst_mse(). no xfit, sample split", {
   expect_equal(dim(output)[1], 1)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 0)
 })
 
@@ -231,18 +231,18 @@ test_that("vim_rmst_mse(). no xfit, sample split", {
 output <- vim_cindex(time = y,
                      event = delta,
                      approx_times = approx_times,
-                     tau = landmark_times[3],
+                     restriction_time = landmark_times[3],
                      f_hat = lapply(f_hat, function(x) x[,1]),
                      fs_hat = lapply(fs_hat, function(x) x[,1]),
                      S_hat = S_hat,
                      G_hat = G_hat,
-                     folds = folds,
+                     cf_folds = folds,
                      ss_folds = ss_folds,
                      sample_split = TRUE)
 test_that("vim_cindex(). no xfit, sample split", {
   expect_equal(dim(output)[1], 1)
   expect_equal(dim(output)[2], 9)
   expect_equal(names(output), c("restriction_time", "est", "var_est", "cil", "ciu",
-                                "cil_1sided", "p", "full_pred", "reduced_pred"))
+                                "cil_1sided", "p", "large_predictiveness", "small_predictiveness"))
   expect_equal(sum(is.na(output)), 0)
 })
