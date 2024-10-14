@@ -144,3 +144,6 @@ Polley E.C. and van der Laan M.J. (2011).
 Craig E., Zhong C., and Tibshirani R. (2021).
 "Survival stacking: casting survival analysis as a classification problem."
 }
+\seealso{
+\link{predict.stackL} for \code{stackL} prediction method.
+}
