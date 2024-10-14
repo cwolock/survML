@@ -83,14 +83,14 @@ For details of global survival stacking, please see the following paper:
   curves.”](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070)
   *Journal of Computational and Graphical Statistics* (2024).
 
-The following preprints contain details on assessing variable importance
-in survival analysis, and using isotonic regression to estimate survival
+The following papers contain details on assessing variable importance in
+survival analysis, and using isotonic regression to estimate survival
 curves from current status data, respectively:
 
 - Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone.
-  “Nonparametric variable importance for time-to-event outcomes with
-  application to prediction of HIV infection.”
-  [arXiv:2311.12726.](https://arxiv.org/abs/2311.12726)
+  [“Assessing variable importance in survival analysis using machine
+  learning.”](https://arxiv.org/abs/2311.12726) In press, *Biometrika*
+  (2024).
 
 - Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
   Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky,
