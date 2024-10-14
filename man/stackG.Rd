@@ -191,3 +191,6 @@ abline(0,1,col='red')
 Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
 "A framework for leveraging machine learning tools to estimate personalized survival curves."
 }
+\seealso{
+\link{predict.stackG} for \code{stackG} prediction method.
+}
