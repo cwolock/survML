@@ -195,9 +195,6 @@ stackG <- function(time,
     event <- rep(1, length(time))
     newtimes <- tau - newtimes
     time_grid_approx <- sort(tau - time_grid_approx)
-    P_Delta_opt_preds <- rep(1, nrow(newX))
-    F_Y_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
-    G_W_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
 
   # if there is a censoring probability to estimate, i.e. if there is censoring
@@ -220,6 +217,10 @@ stackG <- function(time,
     F_Y_0_opt_preds <- stats::predict(F_Y_0_opt,
                                       newX = newX,
                                       newtimes = time_grid_approx)
+  } else{ # otherwise just set relevant predictions to 0 or 1 as needed
+    P_Delta_opt_preds <- rep(1, nrow(newX))
+    F_Y_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
+    G_W_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
 
   F_Y_1_opt <- f_y_stack(time = time,

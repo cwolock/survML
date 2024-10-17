@@ -257,3 +257,48 @@ diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
 test_that("stackG() returns expected output (no truncation, PI, dummy)", {
   expect_equal(sum(diffs), 0)
 })
+
+####################################################
+### basic functioning with truncation, retrospective
+####################################################
+set.seed(1)
+n <- 100
+X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+entry <- runif(n, 0, 15)
+
+time <- T
+
+sampled <- which(time <= entry)
+X <- X[sampled,]
+time <- time[sampled]
+entry <- entry[sampled]
+
+SL.library <- c("SL.mean")
+
+# exponential form
+fit <- stackG(time = time,
+              entry = entry,
+              X = X,
+              newX = X[c(1,2,3),],
+              newtimes = seq(0, 15, 3),
+              direction = "retrospective",
+              bin_size = 0.05,
+              time_basis = "continuous",
+              time_grid_approx = sort(unique(time)),
+              SL_control = list(SL.library = SL.library,
+                                V = 5,
+                                method = "method.NNLS"),
+              surv_form = "exp")
+
+true_S_T_preds <- rbind(c(0.426, 0.426, 0.426, 0.426, 0, 0),
+                        c(0.426, 0.426, 0.426, 0.426, 0, 0),
+                        c(0.426, 0.426, 0.426, 0.426, 0, 0))
+
+estimated_S_T_preds <- round(fit$S_T_preds, digits = 3)
+
+diffs <- (abs(true_S_T_preds - estimated_S_T_preds) > 0.01)
+
+test_that("stackG() returns expected output (right truncation, exponential)", {
+  expect_equal(sum(diffs), 0)
+})
