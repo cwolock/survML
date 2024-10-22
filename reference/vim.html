@@ -49,7 +49,7 @@
 <span>  <span class="va">time</span>,</span>
 <span>  <span class="va">event</span>,</span>
 <span>  <span class="va">X</span>,</span>
-<span>  landmark_times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  landmark_times <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span>, probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fl">0.75</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  restriction_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>  approx_times <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">large_feature_vector</span>,</span>
@@ -85,13 +85,17 @@
 
 <dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
 <dd><p><code>n x 1</code> numeric vector of observed
-follow-up times If there is censoring, these are the minimum of the
+follow-up times. If there is censoring, these are the minimum of the
 event and censoring times.</p></dd>
 
 
 <dt id="arg-event">event<a class="anchor" aria-label="anchor" href="#arg-event"></a></dt>
 <dd><p><code>n x 1</code> numeric vector of status indicators of
 whether an event was observed.</p></dd>
+
+
+<dt id="arg-x">X<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p><code>n x p</code> data.frame of observed covariate values</p></dd>
 
 
 <dt id="arg-landmark-times">landmark_times<a class="anchor" aria-label="anchor" href="#arg-landmark-times"></a></dt>
