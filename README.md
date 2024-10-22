@@ -75,24 +75,23 @@ To submit a bug report or request a new feature, please submit a new
 
 ## References
 
-For details of global survival stacking, please see the following paper:
+For details of the methods implemented in this package, please see the
+following papers:
 
-- Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. [“A
-  framework for leveraging machine learning tools to estimate
-  personalized survival
+- **Global survival stacking:** Charles J. Wolock, Peter B. Gilbert,
+  Noah Simon and Marco Carone. [“A framework for leveraging machine
+  learning tools to estimate personalized survival
   curves.”](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070)
   *Journal of Computational and Graphical Statistics* (2024).
 
-The following papers contain details on assessing variable importance in
-survival analysis, and using isotonic regression to estimate survival
-curves from current status data, respectively:
-
-- Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone.
-  [“Assessing variable importance in survival analysis using machine
+- **Survival variable importance:** Charles J. Wolock, Peter B. Gilbert,
+  Noah Simon and Marco Carone. [“Assessing variable importance in
+  survival analysis using machine
   learning.”](https://arxiv.org/abs/2311.12726) In press, *Biometrika*
   (2024).
 
-- Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
+- **Covariate-adjusted survival curves from current status data:**
+  Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
   Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky,
   Ana A. Weil, Helen Y. Chu and Marco Carone. “Investigating symptom
   duration using current status data: a case study of post-acute

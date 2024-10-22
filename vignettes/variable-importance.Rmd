@@ -432,7 +432,7 @@ Some example predictiveness measures, along with the corresponding oracle predic
 
 The survival variable importance methodology is described in
 
-Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. "Assessing variable importance in survival analysis using machine learning." [arXiv:2311.12726](https://arxiv.org/abs/2311.12726).
+Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. ["Assessing variable importance in survival analysis using machine learning."](https://arxiv.org/abs/2311.12726) In press, *Biometrika* (2024). 
 
 Other references: 
 
