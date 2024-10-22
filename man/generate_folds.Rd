@@ -6,8 +6,15 @@
 \usage{
 generate_folds(n, V, sample_split)
 }
+\arguments{
+\item{n}{Total sample size}
+
+\item{V}{Number of cross-fitting folds to use}
+
+\item{sample_split}{Logical, whether or not sample-splitting is being used}
+}
 \value{
-data frame giving results
+Named list of cross-fitting and sample-splitting folds
 }
 \description{
 Generate cross-fitting and sample-splitting folds

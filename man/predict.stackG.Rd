@@ -31,6 +31,8 @@ saved in \code{object}.}
 \item{time_grid_approx}{Numeric vector of times at which to
 approximate product integral or cumulative hazard interval. Defaults to the value
 saved in \code{object}.}
+
+\item{...}{Further arguments passed to or from other methods.}
 }
 \value{
 A named list with the following components:

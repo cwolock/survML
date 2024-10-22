@@ -47,10 +47,10 @@ currstatCIR <- function(time,
               s = s,
               w = W)
 
-  dat$w <- data.frame(model.matrix(as.formula(paste("~",
-                                                    paste(names(dat$w),
-                                                          collapse =  "+"))),
-                                   dat$w)[,-1])
+  dat$w <- data.frame(stats::model.matrix(stats::as.formula(paste("~",
+                                                                  paste(names(dat$w),
+                                                                        collapse =  "+"))),
+                                          dat$w)[,-1])
   names(dat$w) <- paste("w", 1:ncol(dat$w), sep="")
 
   any_missing <- (sum(dat$s) != length(dat$s))
@@ -83,16 +83,16 @@ currstatCIR <- function(time,
     #     val <- max(y_vals)
     #   }
     # }
-    F_n <- ecdf(dat$y)
+    F_n <- stats::ecdf(dat$y)
     F_n_inverse <- function(t){
-      quantile(dat$y, probs = t, type = 1)
+      stats::quantile(dat$y, probs = t, type = 1)
     }
     alpha_n <- function(w) return(1)
   } else{
     # if no missingness, can use the empirical cdf for F_n and the sampling weights are just 1
-    F_n <- ecdf(dat$y)
+    F_n <- stats::ecdf(dat$y)
     F_n_inverse <- function(t){
-      quantile(dat$y, probs = t, type = 1)
+      stats::quantile(dat$y, probs = t, type = 1)
     }
     alpha_n <- function(w) return(1)
   }
@@ -248,7 +248,7 @@ construct_f_sIx_n <- function(dat, HAL_control){
   newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
   newW$w_index <- NULL
 
-  pred <- predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
+  pred <- stats::predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
 
   newW$index <- c(1:nrow(newW))
 

@@ -1,6 +1,10 @@
 #' Generate cross-fitting and sample-splitting folds
 #'
-#' @return data frame giving results
+#' @param n Total sample size
+#' @param V Number of cross-fitting folds to use
+#' @param sample_split Logical, whether or not sample-splitting is being used
+#'
+#' @return Named list of cross-fitting and sample-splitting folds
 #'
 #' @export
 generate_folds <- function(n, V, sample_split){

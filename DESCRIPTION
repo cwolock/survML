@@ -32,7 +32,10 @@ Imports:
     ChernoffDist (>= 0.1.0),
     dplyr (>= 1.0.10),
     gtools (>= 3.9.5),
-    mboost (>= 2.9.0)
+    mboost (>= 2.9.0),
+    survival (>= 3.5.0),
+    stats (>= 4.3.2),
+    methods (>= 4.3.2)
 Suggests: 
     knitr,
     rmarkdown,

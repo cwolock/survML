@@ -275,6 +275,7 @@ stackL <- function(time,
 #' Must have the same names and structure as \code{X}.
 #' @param newtimes \code{k x 1} numeric vector of times at which to obtain \code{k}
 #' predicted conditional survivals.
+#' @param ... Further arguments passed to or from other methods.
 #'
 #' @return A named list with the following components:
 #' \item{S_T_preds}{An \code{m x k} matrix of estimated event time survival probabilities at the

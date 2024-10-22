@@ -169,7 +169,6 @@ boost_c_index_DR <- function(time, # follow up times
                                     control = mboost::boost_control(mstop = mstop_curr,
                                                                     trace = FALSE,
                                                                     nu = nu_curr),
-                                    tree_controls = partykit::ctree_control(maxdepth = 2),
                                     data = dtrain)
         } else if (learner_curr == "glm"){
           mod <- mboost::glmboost(survival::Surv(time, event) ~ .^2,
@@ -190,16 +189,16 @@ boost_c_index_DR <- function(time, # follow up times
         for (l in 1:K){
           sub_mstop = reverse_sorted_mstop[l]
           mboost::mstop(mod) <- sub_mstop
-          preds <- -predict(mod, newdata = dtest)[,1]
+          preds <- -stats::predict(mod, newdata = dtest)[,1]
 
-          risk_j <- -survML:::estimate_cindex(time = time_test,
-                                              event = event_test,
-                                              approx_times = approx_times,
-                                              preds = preds,
-                                              S_hat = S_hat_test,
-                                              G_hat = matrix(0.5, nrow = nrow(S_hat_test),
-                                                             ncol = ncol(S_hat_test)),
-                                              tau = tau)$plug_in
+          risk_j <- -estimate_cindex(time = time_test,
+                                     event = event_test,
+                                     approx_times = approx_times,
+                                     preds = preds,
+                                     S_hat = S_hat_test,
+                                     G_hat = matrix(0.5, nrow = nrow(S_hat_test),
+                                                    ncol = ncol(S_hat_test)),
+                                     tau = tau)$plug_in
           CV_risks[j,l] <- risk_j
         }
       }
@@ -245,7 +244,6 @@ boost_c_index_DR <- function(time, # follow up times
                                   control = mboost::boost_control(mstop = mstop_curr,
                                                                   trace = FALSE,
                                                                   nu = nu_curr),
-                                  tree_controls = partykit::ctree_control(maxdepth = 2),
                                   data = dtrain)
       } else if (learner_curr == "glm"){
         mod <- mboost::glmboost(survival::Surv(time, event) ~ .^2,
@@ -318,7 +316,6 @@ boost_c_index_DR <- function(time, # follow up times
                                 control = mboost::boost_control(mstop = mstop_curr,
                                                                 trace = FALSE,
                                                                 nu = nu_curr),
-                                tree_controls = partykit::ctree_control(maxdepth = 2),
                                 data = dtrain)
     } else if (learner_curr == "glm"){
       mod <- mboost::glmboost(survival::Surv(time, event) ~ .^2,

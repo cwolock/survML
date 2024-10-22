@@ -1,6 +1,17 @@
-#' Generate K-fold cross-fit survival predictions for downstream use
+#' Generate cross-fitted conditional survival predictions
 #'
-#' @return data frame giving results
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times. If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' @param newtimes Numeric vector of times on which to estimate the conditional survival functions
+#' @param folds \code{n x 1} numeric vector of folds identifiers for cross-fitting
+#' @param pred_generator Function to be used to estimate conditional survival function.
+#' @param ... Additional arguments to be passed to \code{pred_generator}.
+#'
+#' @return Named list of cross-fitted conditional survival predictions
 #'
 #' @export
 crossfit_surv_preds <- function(time,

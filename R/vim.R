@@ -3,10 +3,11 @@
 #' @param type Type of VIM to compute. Options include \code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}
 #' \code{"C-index"}, and \code{"survival_time_MSE"}.
 #' @param time \code{n x 1} numeric vector of observed
-#' follow-up times If there is censoring, these are the minimum of the
+#' follow-up times. If there is censoring, these are the minimum of the
 #' event and censoring times.
 #' @param event \code{n x 1} numeric vector of status indicators of
 #' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
 #' @param landmark_times Numeric vector of length J1 giving
 #' landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).
 #' @param restriction_time Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}.
@@ -55,7 +56,7 @@ vim <- function(type,
                 time,
                 event,
                 X,
-                landmark_times = quantile(time[event == 1], probs = c(0.25, 0.5, 0.75)),
+                landmark_times = stats::quantile(time[event == 1], probs = c(0.25, 0.5, 0.75)),
                 restriction_time = max(time[event == 1]),
                 approx_times = NULL,
                 large_feature_vector,
@@ -125,7 +126,7 @@ vim <- function(type,
       conditional_surv_generator_control$approx_times <- approx_times
     }
 
-    generator_args <- formalArgs(conditional_surv_generator)
+    generator_args <- methods::formalArgs(conditional_surv_generator)
     conditional_surv_generator_control[which(!(names(conditional_surv_generator_control)%in%generator_args))] <- NULL
 
     conditional_surv_preds <- do.call(crossfit_surv_preds,
@@ -169,7 +170,7 @@ vim <- function(type,
       large_oracle_generator <- generate_oracle_predictions_boost
     }
 
-    generator_args <- formalArgs(large_oracle_generator)
+    generator_args <- methods::formalArgs(large_oracle_generator)
     large_oracle_generator_control[which(!(names(large_oracle_generator_control)%in%generator_args))] <- NULL
 
     large_oracle_preds <- do.call(crossfit_oracle_preds,
@@ -215,7 +216,7 @@ vim <- function(type,
       small_oracle_generator_control$restriction_time <- restriction_time
     }
 
-    generator_args <- formalArgs(small_oracle_generator)
+    generator_args <- methods::formalArgs(small_oracle_generator)
     small_oracle_generator_control[which(!(names(small_oracle_generator_control)%in%generator_args))] <- NULL
 
     small_oracle_preds <- do.call(crossfit_oracle_preds,

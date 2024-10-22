@@ -138,9 +138,9 @@ vim_rsquared <- function(time,
       # reduced_plug_in[i] <- mean(CV_reduced_plug_ins)
     }
     n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
-    cil[i] <- one_step[i] - qnorm(1-alpha/2)*sqrt(var_est[i]/n_eff)
-    ciu[i] <- one_step[i] + qnorm(1-alpha/2)*sqrt(var_est[i]/n_eff)
-    cil_1sided[i] <- one_step[i] - qnorm(1-alpha)*sqrt(var_est[i]/n_eff)
+    cil[i] <- one_step[i] - stats::qnorm(1-alpha/2)*sqrt(var_est[i]/n_eff)
+    ciu[i] <- one_step[i] + stats::qnorm(1-alpha/2)*sqrt(var_est[i]/n_eff)
+    cil_1sided[i] <- one_step[i] - stats::qnorm(1-alpha)*sqrt(var_est[i]/n_eff)
     p[i] <- ifelse(sample_split,
                    stats::pnorm(one_step[i]/sqrt(var_est[i]/n_eff), lower.tail = FALSE),
                    NA)

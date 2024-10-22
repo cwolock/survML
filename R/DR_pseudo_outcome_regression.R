@@ -1,17 +1,35 @@
-#' Generate K-fold cross-fit survival predictions for downstream use
+#' Generate oracle prediction function estimates using doubly-robust pseudo-outcome regression with SuperLearner
 #'
-#' @return data frame giving results
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times. If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' @param newX \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param approx_times Numeric vector of length J2 giving times at which to
+#' approximate integral appearing in the pseudo-outcomes
+#' @param S_hat \code{n x J2} matrix of conditional event time survival function estimates
+#' @param G_hat \code{n x J2} matrix of conditional censoring time survival function estimates
+#' @param newtimes Numeric vector of times at which to generate oracle prediction function estimates
+#' @param outcome Outcome type, either \code{"survival_probability"} or \code{"restricted_survival_time"}
+#' @param SL.library Super Learner library
+#' @param V Number of cross-validation folds, to be passed to \code{SuperLearner}
+#'
+#' @return Matrix of predictions.
 #'
 #' @export
 DR_pseudo_outcome_regression <- function(time,
                                          event,
                                          X,
                                          newX,
+                                         approx_times,
                                          S_hat,
                                          G_hat,
                                          newtimes,
                                          outcome,
-                                         approx_times,
                                          SL.library,
                                          V){
   DR_predictions <- matrix(NA, nrow = nrow(newX), ncol = length(newtimes))
@@ -79,7 +97,7 @@ DR_pseudo_outcome_regression <- function(time,
                                          method = "method.NNLS",
                                          cvControl = list(V = V),
                                          verbose = FALSE)
-    SL_preds <- predict(SL_fit, newdata = newX)$pred
+    SL_preds <- stats::predict(SL_fit, newdata = newX)$pred
     DR_predictions[,i] <- SL_preds
   }
   return(DR_predictions)

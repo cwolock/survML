@@ -108,9 +108,9 @@ vim_survival_time_mse <- function(time,
   }
 
   n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
-  cil <- one_step - qnorm(1-alpha/2)*sqrt(var_est/n_eff)
-  ciu <- one_step + qnorm(1-alpha/2)*sqrt(var_est/n_eff)
-  cil_1sided <- one_step - qnorm(1-alpha)*sqrt(var_est/n_eff)
+  cil <- one_step - stats::qnorm(1-alpha/2)*sqrt(var_est/n_eff)
+  ciu <- one_step + stats::qnorm(1-alpha/2)*sqrt(var_est/n_eff)
+  cil_1sided <- one_step - stats::qnorm(1-alpha)*sqrt(var_est/n_eff)
   p <- ifelse(sample_split,
               stats::pnorm(one_step/sqrt(var_est/n_eff), lower.tail = FALSE),
               NA)

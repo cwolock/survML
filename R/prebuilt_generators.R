@@ -76,10 +76,10 @@ generate_oracle_predictions_SL <- function(time,
                                                 cvControl = list(V = V),
                                                 method = "method.NNLS",
                                                 verbose = FALSE)
-      reduced_preds <- matrix(predict(reduced_fit, newdata = long_new_dat)$pred,
+      reduced_preds <- matrix(stats::predict(reduced_fit, newdata = long_new_dat)$pred,
                               nrow = nrow(X_reduced_holdout),
                               ncol = 1)
-      reduced_preds_train <- matrix(predict(reduced_fit, newdata = long_new_dat_train)$pred,
+      reduced_preds_train <- matrix(stats::predict(reduced_fit, newdata = long_new_dat_train)$pred,
                                     nrow = nrow(X_reduced_train),
                                     ncol = 1)
       preds_j[,which(landmark_times == t)] <- reduced_preds
@@ -102,8 +102,8 @@ generate_oracle_predictions_SL <- function(time,
                                               cvControl = list(V = V),
                                               method = "method.NNLS",
                                               verbose = FALSE)
-    preds_j <- predict(reduced_fit, newdata = long_new_dat)$pred
-    preds_j_train <- predict(reduced_fit, newdata = long_new_dat_train)$pred
+    preds_j <- stats::predict(reduced_fit, newdata = long_new_dat)$pred
+    preds_j_train <- stats::predict(reduced_fit, newdata = long_new_dat_train)$pred
   }
 
 
@@ -206,8 +206,8 @@ generate_oracle_predictions_boost <- function(time,
 
   dtest <- data.frame(X_holdout)
   dtrain <- data.frame(X)
-  f0_hat <- -predict(boost_results$opt_model, newdata = dtest)[,1]
-  f0_hat_train <- -predict(boost_results$opt_model, newdata = dtrain)[,1]
+  f0_hat <- -stats::predict(boost_results$opt_model, newdata = dtest)[,1]
+  f0_hat_train <- -stats::predict(boost_results$opt_model, newdata = dtrain)[,1]
 
   return(list(f0_hat = f0_hat,
               f0_hat_train = f0_hat_train))

@@ -9,7 +9,7 @@ vim(
   time,
   event,
   X,
-  landmark_times = quantile(time[event == 1], probs = c(0.25, 0.5, 0.75)),
+  landmark_times = stats::quantile(time[event == 1], probs = c(0.25, 0.5, 0.75)),
   restriction_time = max(time[event == 1]),
   approx_times = NULL,
   large_feature_vector,
@@ -38,11 +38,13 @@ vim(
 \code{"C-index"}, and \code{"survival_time_MSE"}.}
 
 \item{time}{\code{n x 1} numeric vector of observed
-follow-up times If there is censoring, these are the minimum of the
+follow-up times. If there is censoring, these are the minimum of the
 event and censoring times.}
 
 \item{event}{\code{n x 1} numeric vector of status indicators of
 whether an event was observed.}
+
+\item{X}{\code{n x p} data.frame of observed covariate values}
 
 \item{landmark_times}{Numeric vector of length J1 giving
 landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).}

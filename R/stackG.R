@@ -401,6 +401,7 @@ stackG <- function(time,
 #' Can be either \code{"PI"} (product integral mapping) or \code{"exp"}
 #' (exponentiated cumulative hazard estimate). Defaults to the value
 #' saved in \code{object}.
+#' @param ... Further arguments passed to or from other methods.
 #'
 #' @return A named list with the following components:
 #' \item{S_T_preds}{An \code{m x k} matrix of estimated event time survival probabilities at the

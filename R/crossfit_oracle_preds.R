@@ -1,6 +1,18 @@
-#' Generate K-fold cross-fit survival predictions for downstream use
+#' Generate cross-fitted oracle prediction function estimates
 #'
-#' @return data frame giving results
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times. If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' @param folds \code{n x 1} numeric vector of folds identifiers for cross-fitting
+#' @param nuisance_preds Named list of conditional event and censoring survival functions
+#' that will be used to estimate the oracle prediction function.
+#' @param pred_generator Function to be used to estimate oracle prediction function.
+#' @param ... Additional arguments to be passed to \code{pred_generator}.
+#'
+#' @return Named list of cross-fitted oracle prediction estimates
 #'
 #' @export
 crossfit_oracle_preds <- function(time,

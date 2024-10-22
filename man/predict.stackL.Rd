@@ -15,6 +15,8 @@ Must have the same names and structure as \code{X}.}
 
 \item{newtimes}{\code{k x 1} numeric vector of times at which to obtain \code{k}
 predicted conditional survivals.}
+
+\item{...}{Further arguments passed to or from other methods.}
 }
 \value{
 A named list with the following components:
