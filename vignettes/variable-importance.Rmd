@@ -110,9 +110,6 @@ To reduce runtime, we use a very small Super Learner library to estimate the con
 Note that we also set `sample_split = TRUE`. In order to obtain valid inference under the null hypothesis of zero importance, sample splitting is required. If this option is set to `FALSE`, no p-value will be return, and caution should be used when interpreting the resulting confidence interval. 
 
 ```{r, fig.width=8, fig.height=8}
-# super learner library for global survival stacking
-SL.library <- c("SL.mean", "SL.glm")
-
 # landmark times for AUC
 landmark_times <- c(500, 1000, 1500, 2000)
 

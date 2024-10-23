@@ -1,4 +1,4 @@
-#' Estimate Brier score VIM
+#' Estimate R-squared (proportion of explained variance) VIM based on event occurrence by a landmark time
 #'
 #' @param time \code{n x 1} numeric vector of observed
 #' follow-up times If there is censoring, these are the minimum of the
@@ -19,7 +19,21 @@
 #' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
 #' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
 #'
-#' @return data frame giving results
+#' @return A data frame giving results, with the following columns:
+#' \item{landmark_time}{Time at which AUC is evaluated.}
+#' \item{est}{VIM point estimate.}
+#' \item{var_est}{Estimated variance of the VIM estimate.}
+#' \item{cil}{Lower bound of the VIM confidence interval.}
+#' \item{ciu}{Upper bound of the VIM confidence interval.}
+#' \item{cil_1sided}{Lower bound of a one-sided confidence interval.}
+#' \item{p}{p-value corresponding to a hypothesis test of null importance.}
+#' \item{large_predictiveness}{Estimated predictiveness of the large oracle prediction function.}
+#' \item{small_predictiveness}{Estimated predictiveness of the small oracle prediction function.}
+#' \item{vim}{VIM type.}
+#' \item{large_feature_vector}{Group of features available for the large oracle prediction function.}
+#' \item{small_feature_vector}{Group of features available for the small oracle prediction function.}
+#'
+#' @seealso [vim] for example usage
 #'
 #' @export
 

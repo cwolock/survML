@@ -48,9 +48,50 @@
 #' is meant for illustration purposes only --- it should be left as \code{TRUE}.
 #' @param verbose Whether to print progress messages.
 #'
-#' @return data frame giving results
+#' @return Named list with the following elements:
+#' \item{result}{Data frame giving results. See the documentation of the individual \code{vim_*} functions for details.}
+#' \item{folds}{A named list giving the cross-fitting fold IDs (\code{cf_folds}) and sample-splitting fold IDs (\code{ss_folds}).}
+#' \item{approx_times}{A vector of times used to approximate integrals appearing in the form of the VIM estimator.}
+#' \item{conditional_surv_preds}{A named list containing the estimated conditional event and censoring survival functions.}
+#' \item{large_oracle_preds}{A named list containing the estimated large oracle prediction function.}
+#' \item{small_oracle_preds}{A named list containing the estimated small oracle prediction function.}
+#'
+#' @seealso [vim_accuracy] [vim_AUC] [vim_brier] [vim_cindex] [vim_rsquared] [vim_survival_time_mse]
 #'
 #' @export
+#'
+#' @examples
+#' # This is a small simulation example
+#' set.seed(123)
+#' n <- 200
+#' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+#'
+#' T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+#'
+#' C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+#' C[C > 15] <- 15
+#'
+#' time <- pmin(T, C)
+#' event <- as.numeric(T <= C)
+#'
+#' # landmark times for AUC
+#' landmark_times <- c(1,3,5)
+#'
+#' output <- vim(type = "AUC",
+#'               time = time,
+#'               event = event,
+#'               X = X,
+#'               landmark_times = landmark_times,
+#'               large_feature_vector = 1:2,
+#'               small_feature_vector = 2,
+#'               conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+#'               large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+#'               small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+#'               cf_fold_num = 2,
+#'               sample_split = TRUE,
+#'               scale_est = TRUE)
+#'
+#' print(output$result)
 
 vim <- function(type,
                 time,

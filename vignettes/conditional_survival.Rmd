@@ -40,6 +40,7 @@ The `stackG` function performs global survival stacking. The most important user
 * `time_basis`: This is how the time variable $t$ is included in the pooled data set. The default is `continuous` (i.e., include time as-is). It is also possible to include a dummy variable for each time in the grid (i.e., treat time as a `factor` variable) using option `dummy`. 
 * `learner`: Currently, the only supported option is `SuperLearner`. 
 * `SL_control`: This is a named list of arguments that are passed directly to the `SuperLearner()` function. `SL.library` gives the library of algorithms to be included in the Super Learner binary regression. This argument should be vector of algorithm names, which can be either default algorithms included in the `SuperLearner` package, or user-specified algorithms. See the `SuperLearner` package documentation for more information. 
+* `time_grid_approx`: This is the grid of times used to approximate the cumulative hazard or product integral. While this argument defaults to a grid of every observed follow-up time, this can have a substantial computational cost in large samples. Using a coarser grid (e.g., of ~100 time points) will decrease runtime and usually has little impact on performance. 
 
 ### Example
 

@@ -7,39 +7,51 @@
 currstatCIR(
   time,
   event,
-  W,
+  X,
   SL_control = list(SL.library = c("SL.mean"), V = 5, method = "method.NNLS"),
   HAL_control = list(n_bins = c(5, 10), grid_type = c("equal_range", "equal_mass"), V =
     5),
   deriv_method = "m-spline",
-  missing_method = "extended",
   eval_region,
-  n_eval_pts = 101
+  n_eval_pts = 101,
+  alpha = 0.05
 )
 }
 \arguments{
-\item{time}{\code{n x 1} numeric vector of observed
-monitoring times}
+\item{time}{\code{n x 1} numeric vector of observed monitoring times. For individuals that were never
+monitored, this can be set to any arbitrary value, including \code{NA}, as long as the corresponding
+\code{event} variable is \code{NA}.}
 
 \item{event}{\code{n x 1} numeric vector of status indicators of
-whether an event was observed prior to the monitoring time.}
+whether an event was observed prior to the monitoring time. This value must be \code{NA} for
+individuals that were never monitored.}
 
-\item{W}{Dataframe of covariates}
+\item{X}{\code{n x p} dataframe of observed covariate values.}
 
-\item{SL_control}{List of Super Learner control parameters}
+\item{SL_control}{List of \code{SuperLearner} control parameters. This should be a named list; see
+\code{SuperLearner} documentation for further information.}
 
-\item{HAL_control}{List of haldensify control parameters}
+\item{HAL_control}{List of \code{haldensify} control parameters. This should be a named list; see
+\code{haldensify} documentation for further information.}
 
-\item{deriv_method}{Method for computing derivative}
+\item{deriv_method}{Method for computing derivative. Options are \code{"m-spline"} (the default,
+fit a smoothing spline to the estimated function and differentiate the smooth approximation),
+\code{"linear"} (linearly interpolate the estimated function and use the slope of that line), and
+\code{"line"} (use the slope of the line connecting the endpoints of the estimated function).}
 
-\item{missing_method}{Method for handling nonresponse (extended CIR vs. complete case, just for testing)}
+\item{eval_region}{Region over which to estimate the survival function.}
 
-\item{eval_region}{Region over which to estimate the survival function}
+\item{n_eval_pts}{Number of points in grid on which to evaluate survival function.
+The points will be evenly spaced, on the quantile scale, between the endpoints of \code{eval_region}.}
 
-\item{n_eval_pts}{Number of points in grid on which to evaluate survival function}
+\item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
 }
 \value{
-data frame giving results
+Data frame giving results, with columns:
+\item{t}{Time at which survival function is estimated}
+\item{S_hat_est}{Survival function estimate}
+\item{S_hat_cil}{Lower bound of confidence interval}
+\item{S_hat_ciu}{Upper bound of confidence interval}
 }
 \description{
 Estimate a survival function under current status sampling

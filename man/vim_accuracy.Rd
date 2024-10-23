@@ -53,7 +53,19 @@ times at which to estimate accuracy}
 \item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
 }
 \value{
-data frame giving results
+A data frame giving results, with the following columns:
+\item{landmark_time}{Time at which AUC is evaluated.}
+\item{est}{VIM point estimate.}
+\item{var_est}{Estimated variance of the VIM estimate.}
+\item{cil}{Lower bound of the VIM confidence interval.}
+\item{ciu}{Upper bound of the VIM confidence interval.}
+\item{cil_1sided}{Lower bound of a one-sided confidence interval.}
+\item{p}{p-value corresponding to a hypothesis test of null importance.}
+\item{large_predictiveness}{Estimated predictiveness of the large oracle prediction function.}
+\item{small_predictiveness}{Estimated predictiveness of the small oracle prediction function.}
+\item{vim}{VIM type.}
+\item{large_feature_vector}{Group of features available for the large oracle prediction function.}
+\item{small_feature_vector}{Group of features available for the small oracle prediction function.}
 }
 \description{
 Estimate classification accuracy VIM

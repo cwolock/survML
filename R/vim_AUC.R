@@ -21,7 +21,21 @@
 #' @param robust Logical, whether or not to use the doubly-robust debiasing approach. This option
 #' is meant for illustration purposes only --- it should be left as \code{TRUE}.
 #'
-#' @return data frame giving results
+#' @return A data frame giving results, with the following columns:
+#' \item{landmark_time}{Time at which AUC is evaluated.}
+#' \item{est}{VIM point estimate.}
+#' \item{var_est}{Estimated variance of the VIM estimate.}
+#' \item{cil}{Lower bound of the VIM confidence interval.}
+#' \item{ciu}{Upper bound of the VIM confidence interval.}
+#' \item{cil_1sided}{Lower bound of a one-sided confidence interval.}
+#' \item{p}{p-value corresponding to a hypothesis test of null importance.}
+#' \item{large_predictiveness}{Estimated predictiveness of the large oracle prediction function.}
+#' \item{small_predictiveness}{Estimated predictiveness of the small oracle prediction function.}
+#' \item{vim}{VIM type.}
+#' \item{large_feature_vector}{Group of features available for the large oracle prediction function.}
+#' \item{small_feature_vector}{Group of features available for the small oracle prediction function.}
+#'
+#' @seealso [vim] for example usage
 #'
 #' @export
 
