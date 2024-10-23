@@ -293,10 +293,7 @@ sample splitting is required. If this option is set to
 <code>FALSE</code>, no p-value will be return, and caution should be
 used when interpreting the resulting confidence interval.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># super learner library for global survival stacking</span></span>
-<span><span class="va">SL.library</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># landmark times for AUC</span></span>
+<code class="sourceCode R"><span><span class="co"># landmark times for AUC</span></span>
 <span><span class="va">landmark_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">1000</span>, <span class="fl">1500</span>, <span class="fl">2000</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>

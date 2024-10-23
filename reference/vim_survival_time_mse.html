@@ -123,7 +123,47 @@ approximate integrals.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>data frame giving results</p>
+    <p>A data frame giving results, with the following columns:</p>
+<dl><dt>restriction_time</dt>
+<dd><p>Restriction time (upper bound for event times to be compared in computing the restricted survival time).</p></dd>
+
+<dt>est</dt>
+<dd><p>VIM point estimate.</p></dd>
+
+<dt>var_est</dt>
+<dd><p>Estimated variance of the VIM estimate.</p></dd>
+
+<dt>cil</dt>
+<dd><p>Lower bound of the VIM confidence interval.</p></dd>
+
+<dt>ciu</dt>
+<dd><p>Upper bound of the VIM confidence interval.</p></dd>
+
+<dt>cil_1sided</dt>
+<dd><p>Lower bound of a one-sided confidence interval.</p></dd>
+
+<dt>p</dt>
+<dd><p>p-value corresponding to a hypothesis test of null importance.</p></dd>
+
+<dt>large_predictiveness</dt>
+<dd><p>Estimated predictiveness of the large oracle prediction function.</p></dd>
+
+<dt>small_predictiveness</dt>
+<dd><p>Estimated predictiveness of the small oracle prediction function.</p></dd>
+
+<dt>vim</dt>
+<dd><p>VIM type.</p></dd>
+
+<dt>large_feature_vector</dt>
+<dd><p>Group of features available for the large oracle prediction function.</p></dd>
+
+<dt>small_feature_vector</dt>
+<dd><p>Group of features available for the small oracle prediction function.</p></dd>
+
+</dl></div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><a href="vim.html">vim</a> for example usage</p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

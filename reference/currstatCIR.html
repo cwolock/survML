@@ -47,14 +47,14 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">currstatCIR</span><span class="op">(</span></span>
 <span>  <span class="va">time</span>,</span>
 <span>  <span class="va">event</span>,</span>
-<span>  <span class="va">W</span>,</span>
+<span>  <span class="va">X</span>,</span>
 <span>  SL_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span><span class="op">)</span>, V <span class="op">=</span> <span class="fl">5</span>, method <span class="op">=</span> <span class="st">"method.NNLS"</span><span class="op">)</span>,</span>
 <span>  HAL_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n_bins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">10</span><span class="op">)</span>, grid_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"equal_range"</span>, <span class="st">"equal_mass"</span><span class="op">)</span>, V <span class="op">=</span></span>
 <span>    <span class="fl">5</span><span class="op">)</span>,</span>
 <span>  deriv_method <span class="op">=</span> <span class="st">"m-spline"</span>,</span>
-<span>  missing_method <span class="op">=</span> <span class="st">"extended"</span>,</span>
 <span>  <span class="va">eval_region</span>,</span>
-<span>  n_eval_pts <span class="op">=</span> <span class="fl">101</span></span>
+<span>  n_eval_pts <span class="op">=</span> <span class="fl">101</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.05</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -63,47 +63,67 @@
 
 
 <dl><dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
-<dd><p><code>n x 1</code> numeric vector of observed
-monitoring times</p></dd>
+<dd><p><code>n x 1</code> numeric vector of observed monitoring times. For individuals that were never
+monitored, this can be set to any arbitrary value, including <code>NA</code>, as long as the corresponding
+<code>event</code> variable is <code>NA</code>.</p></dd>
 
 
 <dt id="arg-event">event<a class="anchor" aria-label="anchor" href="#arg-event"></a></dt>
 <dd><p><code>n x 1</code> numeric vector of status indicators of
-whether an event was observed prior to the monitoring time.</p></dd>
+whether an event was observed prior to the monitoring time. This value must be <code>NA</code> for
+individuals that were never monitored.</p></dd>
 
 
-<dt id="arg-w">W<a class="anchor" aria-label="anchor" href="#arg-w"></a></dt>
-<dd><p>Dataframe of covariates</p></dd>
+<dt id="arg-x">X<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p><code>n x p</code> dataframe of observed covariate values.</p></dd>
 
 
 <dt id="arg-sl-control">SL_control<a class="anchor" aria-label="anchor" href="#arg-sl-control"></a></dt>
-<dd><p>List of Super Learner control parameters</p></dd>
+<dd><p>List of <code>SuperLearner</code> control parameters. This should be a named list; see
+<code>SuperLearner</code> documentation for further information.</p></dd>
 
 
 <dt id="arg-hal-control">HAL_control<a class="anchor" aria-label="anchor" href="#arg-hal-control"></a></dt>
-<dd><p>List of haldensify control parameters</p></dd>
+<dd><p>List of <code>haldensify</code> control parameters. This should be a named list; see
+<code>haldensify</code> documentation for further information.</p></dd>
 
 
 <dt id="arg-deriv-method">deriv_method<a class="anchor" aria-label="anchor" href="#arg-deriv-method"></a></dt>
-<dd><p>Method for computing derivative</p></dd>
-
-
-<dt id="arg-missing-method">missing_method<a class="anchor" aria-label="anchor" href="#arg-missing-method"></a></dt>
-<dd><p>Method for handling nonresponse (extended CIR vs. complete case, just for testing)</p></dd>
+<dd><p>Method for computing derivative. Options are <code>"m-spline"</code> (the default,
+fit a smoothing spline to the estimated function and differentiate the smooth approximation),
+<code>"linear"</code> (linearly interpolate the estimated function and use the slope of that line), and
+<code>"line"</code> (use the slope of the line connecting the endpoints of the estimated function).</p></dd>
 
 
 <dt id="arg-eval-region">eval_region<a class="anchor" aria-label="anchor" href="#arg-eval-region"></a></dt>
-<dd><p>Region over which to estimate the survival function</p></dd>
+<dd><p>Region over which to estimate the survival function.</p></dd>
 
 
 <dt id="arg-n-eval-pts">n_eval_pts<a class="anchor" aria-label="anchor" href="#arg-n-eval-pts"></a></dt>
-<dd><p>Number of points in grid on which to evaluate survival function</p></dd>
+<dd><p>Number of points in grid on which to evaluate survival function.
+The points will be evenly spaced, on the quantile scale, between the endpoints of <code>eval_region</code>.</p></dd>
+
+
+<dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
+<dd><p>The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>data frame giving results</p>
-    </div>
+    <p>Data frame giving results, with columns:</p>
+<dl><dt>t</dt>
+<dd><p>Time at which survival function is estimated</p></dd>
+
+<dt>S_hat_est</dt>
+<dd><p>Survival function estimate</p></dd>
+
+<dt>S_hat_cil</dt>
+<dd><p>Lower bound of confidence interval</p></dd>
+
+<dt>S_hat_ciu</dt>
+<dd><p>Upper bound of confidence interval</p></dd>
+
+</dl></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
