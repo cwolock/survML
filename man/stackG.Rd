@@ -135,7 +135,6 @@ time grid used to create the stacked dataset (where applicable).}
 Estimate a conditional survival function using global survival stacking
 }
 \examples{
-
 # This is a small simulation example
 set.seed(123)
 n <- 500

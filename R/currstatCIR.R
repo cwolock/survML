@@ -26,16 +26,55 @@
 #' \item{S_hat_cil}{Lower bound of confidence interval}
 #' \item{S_hat_ciu}{Upper bound of confidence interval}
 #'
+#' @examples
+#' \dontrun{# This is a small simulation example
+#' set.seed(123)
+#' n <- 300
+#' x <- cbind(2*rbinom(n, size = 1, prob = 0.5)-1,
+#'            2*rbinom(n, size = 1, prob = 0.5)-1)
+#' t <- rweibull(n,
+#'               shape = 0.75,
+#'               scale = exp(0.4*x[,1] - 0.2*x[,2]))
+#' y <- rweibull(n,
+#'               shape = 0.75,
+#'               scale = exp(0.4*x[,1] - 0.2*x[,2]))
+#'
+#' # round y to nearest quantile of y, just so there aren't so many unique values
+#' quants <- quantile(y, probs = seq(0, 1, by = 0.05), type = 1)
+#' for (i in 1:length(y)){
+#'   y[i] <- quants[which.min(abs(y[i] - quants))]
+#' }
+#' delta <- as.numeric(t <= y)
+#'
+#' dat <- data.frame(y = y, delta = delta, x1 = x[,1], x2 = x[,2])
+#'
+#' dat$delta[dat$y > 1.8] <- NA
+#' dat$y[dat$y > 1.8] <- NA
+#' eval_region <- c(0.05, 1.5)
+#' res <- survML::currstatCIR(time = dat$y,
+#'                            event = dat$delta,
+#'                            X = dat[,3:4],
+#'                            SL_control = list(SL.library = c("SL.mean", "SL.glm"),
+#'                                              V = 3),
+#'                            HAL_control = list(n_bins = c(5),
+#'                                               grid_type = c("equal_mass"),
+#'                                               V = 3),
+#'                            eval_region = eval_region)
+#'
+#' xvals = res$t
+#' yvals = res$S_hat_est
+#' fn=stepfun(xvals, c(yvals[1], yvals))
+#' plot.function(fn, from=min(xvals), to=max(xvals))}
+#'
 #' @export
 currstatCIR <- function(time,
                         event,
                         X,
-                        SL_control = list(SL.library = c("SL.mean"),
-                                          V = 5,
-                                          method = "method.NNLS"),
-                        HAL_control = list(n_bins = c(5,10),
-                                           grid_type = c("equal_range", "equal_mass"),
-                                           V = 5),
+                        SL_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                          V = 3),
+                        HAL_control = list(n_bins = c(5),
+                                           grid_type = c("equal_mass"),
+                                           V = 3),
                         deriv_method = "m-spline",
                         # missing_method = "extended",
                         eval_region,
@@ -43,6 +82,8 @@ currstatCIR <- function(time,
                         alpha = 0.05){
 
   s <- as.numeric(!is.na(event))
+
+  time[s == 0] <- max(time, na.rm = TRUE)
 
   # if (missing_method == "cc"){
   #   time <- time[s == 1]
@@ -62,19 +103,18 @@ currstatCIR <- function(time,
                                           dat$w)[,-1])
   names(dat$w) <- paste("w", 1:ncol(dat$w), sep="")
 
-  any_missing <- (sum(dat$s) != length(dat$s))
-
   # estimate conditional density (only among observed)
-  cond_density_fit <- construct_f_sIx_n(dat=dat, HAL_control = HAL_control)
+  cond_density_fit <- construct_f_sIx_n(dat = dat,
+                                        HAL_control = HAL_control)
   f_sIx_n <- cond_density_fit$fnc
   Riemann_grid <- c(0, cond_density_fit$breaks)
   # estimate marginal density (marginalizing the conditional density over whole sample)
-  f_s_n <- construct_f_s_n(dat=dat, f_sIx_n=f_sIx_n)
+  f_s_n <- construct_f_s_n(dat = dat, f_sIx_n = f_sIx_n)
   # estimate density ratio
-  g_n <- construct_g_n(f_sIx_n=f_sIx_n, f_s_n=f_s_n)
+  g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
 
   # estimate outcome regression (only among observed)
-  mu_n <- construct_mu_n(dat=dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
+  mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
 
   y_vals <- sort(unique(dat$y))
 
@@ -89,14 +129,17 @@ currstatCIR <- function(time,
   kappa_n <- construct_kappa_n(dat = dat, mu_n = mu_n, g_n = g_n)
 
   # only estimate in the evaluation region, which doesn't include the upper bound
-  gcm_x_vals <- sapply(y_vals[y_vals <= eval_region[2]], F_n)
+  # gcm_x_vals <- sapply(y_vals[y_vals <= eval_region[2]], F_n)
+  gcm_x_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]], F_n)
   inds_to_keep <- !base::duplicated(gcm_x_vals)
   gcm_x_vals <- gcm_x_vals[inds_to_keep]
-  gcm_y_vals <- sapply(y_vals[y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
-  if (!any(gcm_x_vals==0)) {
-    gcm_x_vals <- c(0, gcm_x_vals)
-    gcm_y_vals <- c(0, gcm_y_vals)
-  }
+  # gcm_y_vals <- sapply(y_vals[y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
+  gcm_y_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
+  # check with avi here
+  # if (!any(gcm_x_vals==0)) {
+  #   gcm_x_vals <- c(0, gcm_x_vals)
+  #   gcm_y_vals <- c(0, gcm_y_vals)
+  # }
   gcm <- fdrtool::gcmlcm(x=gcm_x_vals, y=gcm_y_vals, type="gcm")
   theta_n <- stats::approxfun(
     x = gcm$x.knots[-length(gcm$x.knots)],
@@ -107,16 +150,21 @@ currstatCIR <- function(time,
   )
 
   eval_cdf_upper <- mean(dat$y <= eval_region[2])
+  eval_cdf_lower <- mean(dat$y <= eval_region[1])
   theta_prime <- construct_deriv(r_Mn = theta_n,
                                  deriv_method = deriv_method,
-                                 y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
+                                 # y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
+                                 y = seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts))
 
   # Compute estimates
-  ests <- sapply(seq(0,eval_cdf_upper,length.out = n_eval_pts), theta_n)
-  deriv_ests <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
+  # ests <- sapply(seq(0,eval_cdf_upper,length.out = n_eval_pts), theta_n)
+  # deriv_ests <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
+  ests <- sapply(seq(eval_cdf_lower,eval_cdf_upper,length.out = n_eval_pts), theta_n)
+  deriv_ests <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
   kappa_ests <- sapply(y_vals, kappa_n)
   # transform kappa to quantile scale
-  kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
+  kappa_ests_rescaled <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), function(x){
+  # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
     ind <- which(y_vals == F_n_inverse(x))
     kappa_ests[ind]
   })
@@ -128,12 +176,25 @@ currstatCIR <- function(time,
   cils <- ests - half_intervals
   cius <- ests + half_intervals
 
+  ests[ests < 0] <- 0
+  ests[ests > 1] <- 1
+  cils[cils < 0] <- 0
+  cils[cils > 1] <- 1
+  cius[cius < 0] <- 0
+  cius[cius > 1] <- 1
+
+  ests <- Iso::pava(ests)
+  cils <- Iso::pava(cils)
+  cius <- Iso::pava(cius)
+
   results <- data.frame(
-    t = sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse),
+    t = sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse),
+    # t = sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse),
     S_hat_est = 1-ests,
     S_hat_cil = 1-cils,
     S_hat_ciu = 1-cius
   )
+  rownames(results) <- NULL
 
   return(results)
 
@@ -155,7 +216,7 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid) {
     X = cbind(dat$w[dat$s == 1,], Yprime=dat$y[dat$s == 1]),
     newX = newW,
     family = "binomial",
-    method = SL_control$method,
+    method = "method.NNLS",
     SL.library = SL_control$SL.library,
     cvControl = list(V = SL_control$V)
   )

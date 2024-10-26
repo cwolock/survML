@@ -97,7 +97,6 @@
 #' @export
 #'
 #' @examples
-#'
 #' # This is a small simulation example
 #' set.seed(123)
 #' n <- 500

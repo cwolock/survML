@@ -8,9 +8,8 @@ currstatCIR(
   time,
   event,
   X,
-  SL_control = list(SL.library = c("SL.mean"), V = 5, method = "method.NNLS"),
-  HAL_control = list(n_bins = c(5, 10), grid_type = c("equal_range", "equal_mass"), V =
-    5),
+  SL_control = list(SL.library = c("SL.mean", "SL.glm"), V = 3),
+  HAL_control = list(n_bins = c(5), grid_type = c("equal_mass"), V = 3),
   deriv_method = "m-spline",
   eval_region,
   n_eval_pts = 101,
@@ -55,4 +54,45 @@ Data frame giving results, with columns:
 }
 \description{
 Estimate a survival function under current status sampling
+}
+\examples{
+\dontrun{# This is a small simulation example
+set.seed(123)
+n <- 300
+x <- cbind(2*rbinom(n, size = 1, prob = 0.5)-1,
+           2*rbinom(n, size = 1, prob = 0.5)-1)
+t <- rweibull(n,
+              shape = 0.75,
+              scale = exp(0.4*x[,1] - 0.2*x[,2]))
+y <- rweibull(n,
+              shape = 0.75,
+              scale = exp(0.4*x[,1] - 0.2*x[,2]))
+
+# round y to nearest quantile of y, just so there aren't so many unique values
+quants <- quantile(y, probs = seq(0, 1, by = 0.05), type = 1)
+for (i in 1:length(y)){
+  y[i] <- quants[which.min(abs(y[i] - quants))]
+}
+delta <- as.numeric(t <= y)
+
+dat <- data.frame(y = y, delta = delta, x1 = x[,1], x2 = x[,2])
+
+dat$delta[dat$y > 1.8] <- NA
+dat$y[dat$y > 1.8] <- NA
+eval_region <- c(0.05, 1.5)
+res <- survML::currstatCIR(time = dat$y,
+                           event = dat$delta,
+                           X = dat[,3:4],
+                           SL_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                             V = 3),
+                           HAL_control = list(n_bins = c(5),
+                                              grid_type = c("equal_mass"),
+                                              V = 3),
+                           eval_region = eval_region)
+
+xvals = res$t
+yvals = res$S_hat_est
+fn=stepfun(xvals, c(yvals[1], yvals))
+plot.function(fn, from=min(xvals), to=max(xvals))}
+
 }
