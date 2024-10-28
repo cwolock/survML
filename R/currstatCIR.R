@@ -136,10 +136,10 @@ currstatCIR <- function(time,
   # gcm_y_vals <- sapply(y_vals[y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
   gcm_y_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
   # check with avi here
-  # if (!any(gcm_x_vals==0)) {
-  #   gcm_x_vals <- c(0, gcm_x_vals)
-  #   gcm_y_vals <- c(0, gcm_y_vals)
-  # }
+  if (!any(gcm_x_vals==0)) {
+    gcm_x_vals <- c(0, gcm_x_vals)
+    gcm_y_vals <- c(0, gcm_y_vals)
+  }
   gcm <- fdrtool::gcmlcm(x=gcm_x_vals, y=gcm_y_vals, type="gcm")
   theta_n <- stats::approxfun(
     x = gcm$x.knots[-length(gcm$x.knots)],
@@ -194,6 +194,8 @@ currstatCIR <- function(time,
     S_hat_cil = 1-cils,
     S_hat_ciu = 1-cius
   )
+
+  results <- results[results$t >= eval_region[1] & results$t <= eval_region[2],]
   rownames(results) <- NULL
 
   return(results)

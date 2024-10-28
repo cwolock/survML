@@ -324,7 +324,7 @@ p_auc
 ```
 
 
-## Adjustment variables
+### Adjustment variables
 
 There may be covariates that are thought to influence both $T$ and $C$ but are not of scientific interest in terms of variable importance. (We may think of these covariates as analogous to confounders in a causal inference setting.) It is important to adjust for these variables in all analyses. In the `gbsg` analysis, for example, we may wish to adjust for person-level covariates age, menopausal status, and hormone treatment therapy, but to assess variable importance using only the predictiveness of tumor-level covariates. 
 
@@ -439,6 +439,6 @@ Ted Westling, Alex Luedtke, Peter B. Gilbert and Marco Carone. ["Inference for t
 
 Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. ["A framework for leveraging machine learning tools to estimate personalized survival curves."](https://doi.org/10.1080/10618600.2024.2304070) *Journal of Computational and Graphical Statistics* (2024).
 
-Mark J. van der Laan, Eric C. Polley and Alan E. Hubbard. ["Super learner"](https://doi.org/10.2202/1544-6115.1309). *Statistical Applications in Genetics and Molecular Biology* (2007). 
+Mark J. van der Laan, Eric C. Polley and Alan E. Hubbard. ["Super learner."](https://doi.org/10.2202/1544-6115.1309) *Statistical Applications in Genetics and Molecular Biology* (2007). 
 
-Daniel Rubin and Mark J. van der Laan. ["A doubly robust censoring unbiased transformation"](https://doi.org/10.2202/1557-4679.1052). *International Journal of Biostatistics* (2007). 
+Daniel Rubin and Mark J. van der Laan. ["A doubly robust censoring unbiased transformation."](https://doi.org/10.2202/1557-4679.1052) *International Journal of Biostatistics* (2007). 
