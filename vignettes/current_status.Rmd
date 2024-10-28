@@ -86,7 +86,7 @@ eval_region <- c(0.02, 1.5)
 res <- currstatCIR(time = dat$y,
                    event = dat$delta,
                    X = dat[,3:4],
-                   SL_control = list(SL.library = c("SL.mean", "SL.glm", "SL.gam", "SL.earth"),
+                   SL_control = list(SL.library = c("SL.mean", "SL.glm", "SL.gam"),
                                      V = 3),
                    HAL_control = list(n_bins = c(5, 10),
                                       grid_type = c("equal_mass", "equal_range"),
