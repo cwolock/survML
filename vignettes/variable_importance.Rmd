@@ -435,9 +435,9 @@ Other references:
 
 David R. Cox. ["Regression Models and Life-Tables."](https://doi.org/10.1111/j.2517-6161.1972.tb00899.x) *Journal of the Royal Statistical Society: Series B (Methodological)* (1972). 
 
-Ted Westling, Alex Luedtke, Peter B. Gilbert and Marco Carone. ["Inference for treatment-specific survival curves using machine learning."](https://doi.org/10.1080/01621459.2023.2205060) *Journal of the American Statistical Association* (2023).
+Ted Westling, Alex Luedtke, Peter B. Gilbert and Marco Carone. ["Inference for treatment-specific survival curves using machine learning."](https://www.tandfonline.com/doi/full/10.1080/01621459.2023.2205060) *Journal of the American Statistical Association* (2023).
 
-Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. ["A framework for leveraging machine learning tools to estimate personalized survival curves."](https://doi.org/10.1080/10618600.2024.2304070) *Journal of Computational and Graphical Statistics* (2024).
+Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. ["A framework for leveraging machine learning tools to estimate personalized survival curves."](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070) *Journal of Computational and Graphical Statistics* (2024).
 
 Mark J. van der Laan, Eric C. Polley and Alan E. Hubbard. ["Super learner."](https://doi.org/10.2202/1544-6115.1309) *Statistical Applications in Genetics and Molecular Biology* (2007). 
 
