@@ -1,6 +1,6 @@
 Package: survML
 Title: Tools for Flexible Survival Analysis Using Machine Learning
-Version: 1.1.0.9000
+Version: 1.2.0
 Authors@R: 
     c(person(given = "Charles",
            family = "Wolock",
