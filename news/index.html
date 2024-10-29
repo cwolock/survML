@@ -42,6 +42,12 @@
 <h2 class="pkg-version" data-toc-text="development version" id="survml-development-version">survML (development version)<a class="anchor" aria-label="anchor" href="#survml-development-version"></a></h2>
 </div>
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.2.0" id="survml-120">survML 1.2.0<a class="anchor" aria-label="anchor" href="#survml-120"></a></h2>
+<ul><li>Added variable importance and current status isotonic regression functions; these changes do not affect the existing <code>stackG</code> and <code>stackL</code> functions.</li>
+<li>Fixed bug where <code>stackG</code> threw an error if there was no censoring.</li>
+<li>Added cumulative hazard estimates to <code>stackG</code> output.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="survml-110">survML 1.1.0<a class="anchor" aria-label="anchor" href="#survml-110"></a></h2><p class="text-muted">CRAN release: 2024-03-17</p>
 <ul><li>Added <code>gam</code> to <code>SUGGESTS</code> in order to allow <code>SuperLearner</code> package to make corresponding change without breaking vignettes.</li>
 <li>Added <code>time_grid_fit</code> option to main <code>stackG</code> function in order to allow more flexibility in choosing time grids.</li>
