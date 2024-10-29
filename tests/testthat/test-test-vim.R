@@ -330,6 +330,162 @@ test_that("vim(). AUC, xfit, sample split", {
   expect_equal(dim(output$small_oracle_preds$f_hat_train[[1]]), c(75, length(landmark_times)))
 })
 
+output <- vim(type = "accuracy",
+              time = y,
+              event = delta,
+              X = X,
+              landmark_times = landmark_times,
+              large_feature_vector = 1:2,
+              small_feature_vector = 1,
+              conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              cf_fold_num = 2,
+              sample_split = TRUE,
+              scale_est = TRUE)
+test_that("vim(). accuracy, xfit, sample split", {
+  expect_equal(dim(output$result)[1], 3)
+  expect_equal(dim(output$result)[2], 12)
+  expect_equal(names(output$result), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                       "cil_1sided", "p", "large_predictiveness", "small_predictiveness",
+                                       "vim", "large_feature_vector", "small_feature_vector"))
+  expect_equal(sum(is.na(output$result)), 0)
+  expect_equal(names(output$folds), c("cf_folds", "ss_folds"))
+  expect_equal(length(output$folds$cf_folds), 100)
+  expect_equal(length(output$folds$ss_folds), 100)
+  expect_equal(sort(unique(output$folds$cf_folds)), c(1,2,3,4))
+  expect_equal(sort(unique(output$folds$ss_folds)), c(0,1))
+  expect_equal(output$approx_times, sort(unique(c(y[delta == 1 & y <= max(landmark_times)], landmark_times))))
+  expect_equal(names(output$conditional_surv_preds), c("S_hat", "S_hat_train", "G_hat", "G_hat_train"))
+  expect_equal(dim(output$conditional_surv_preds$S_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$S_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(names(output$large_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(dim(output$large_oracle_preds$f_hat[[1]]), c(25, length(landmark_times)))
+  expect_equal(dim(output$large_oracle_preds$f_hat_train[[1]]), c(75, length(landmark_times)))
+  expect_equal(names(output$small_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(dim(output$small_oracle_preds$f_hat[[1]]), c(25, length(landmark_times)))
+  expect_equal(dim(output$small_oracle_preds$f_hat_train[[1]]), c(75, length(landmark_times)))
+})
+
+output <- vim(type = "Brier",
+              time = y,
+              event = delta,
+              X = X,
+              landmark_times = landmark_times,
+              large_feature_vector = 1:2,
+              small_feature_vector = 1,
+              conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              cf_fold_num = 2,
+              sample_split = TRUE,
+              scale_est = TRUE)
+test_that("vim(). Brier, xfit, sample split", {
+  expect_equal(dim(output$result)[1], 3)
+  expect_equal(dim(output$result)[2], 12)
+  expect_equal(names(output$result), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                       "cil_1sided", "p", "large_predictiveness", "small_predictiveness",
+                                       "vim", "large_feature_vector", "small_feature_vector"))
+  expect_equal(sum(is.na(output$result)), 0)
+  expect_equal(names(output$folds), c("cf_folds", "ss_folds"))
+  expect_equal(length(output$folds$cf_folds), 100)
+  expect_equal(length(output$folds$ss_folds), 100)
+  expect_equal(sort(unique(output$folds$cf_folds)), c(1,2,3,4))
+  expect_equal(sort(unique(output$folds$ss_folds)), c(0,1))
+  expect_equal(output$approx_times, sort(unique(c(y[delta == 1 & y <= max(landmark_times)], landmark_times))))
+  expect_equal(names(output$conditional_surv_preds), c("S_hat", "S_hat_train", "G_hat", "G_hat_train"))
+  expect_equal(dim(output$conditional_surv_preds$S_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$S_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(names(output$large_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(dim(output$large_oracle_preds$f_hat[[1]]), c(25, length(landmark_times)))
+  expect_equal(dim(output$large_oracle_preds$f_hat_train[[1]]), c(75, length(landmark_times)))
+  expect_equal(names(output$small_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(dim(output$small_oracle_preds$f_hat[[1]]), c(25, length(landmark_times)))
+  expect_equal(dim(output$small_oracle_preds$f_hat_train[[1]]), c(75, length(landmark_times)))
+})
+
+output <- vim(type = "R-squared",
+              time = y,
+              event = delta,
+              X = X,
+              landmark_times = landmark_times,
+              large_feature_vector = 1:2,
+              small_feature_vector = 1,
+              conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              cf_fold_num = 2,
+              sample_split = TRUE,
+              scale_est = TRUE)
+test_that("vim(). R-squared, xfit, sample split", {
+  expect_equal(dim(output$result)[1], 3)
+  expect_equal(dim(output$result)[2], 12)
+  expect_equal(names(output$result), c("landmark_time", "est", "var_est", "cil", "ciu",
+                                       "cil_1sided", "p", "large_predictiveness", "small_predictiveness",
+                                       "vim", "large_feature_vector", "small_feature_vector"))
+  expect_equal(sum(is.na(output$result)), 0)
+  expect_equal(names(output$folds), c("cf_folds", "ss_folds"))
+  expect_equal(length(output$folds$cf_folds), 100)
+  expect_equal(length(output$folds$ss_folds), 100)
+  expect_equal(sort(unique(output$folds$cf_folds)), c(1,2,3,4))
+  expect_equal(sort(unique(output$folds$ss_folds)), c(0,1))
+  expect_equal(output$approx_times, sort(unique(c(y[delta == 1 & y <= max(landmark_times)], landmark_times))))
+  expect_equal(names(output$conditional_surv_preds), c("S_hat", "S_hat_train", "G_hat", "G_hat_train"))
+  expect_equal(dim(output$conditional_surv_preds$S_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$S_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(names(output$large_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(dim(output$large_oracle_preds$f_hat[[1]]), c(25, length(landmark_times)))
+  expect_equal(dim(output$large_oracle_preds$f_hat_train[[1]]), c(75, length(landmark_times)))
+  expect_equal(names(output$small_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(dim(output$small_oracle_preds$f_hat[[1]]), c(25, length(landmark_times)))
+  expect_equal(dim(output$small_oracle_preds$f_hat_train[[1]]), c(75, length(landmark_times)))
+})
+
+output <- vim(type = "survival_time_MSE",
+              time = y,
+              event = delta,
+              X = X,
+              restriction_time = landmark_times[3],
+              large_feature_vector = 1:2,
+              small_feature_vector = 1,
+              conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              cf_fold_num = 2,
+              sample_split = TRUE,
+              scale_est = TRUE)
+test_that("vim(). survival time MSE, xfit, sample split", {
+  expect_equal(dim(output$result)[1], 1)
+  expect_equal(dim(output$result)[2], 12)
+  expect_equal(names(output$result), c("restriction_time", "est", "var_est", "cil", "ciu",
+                                       "cil_1sided", "p", "large_predictiveness", "small_predictiveness",
+                                       "vim", "large_feature_vector", "small_feature_vector"))
+  expect_equal(sum(is.na(output$result)), 0)
+  expect_equal(names(output$folds), c("cf_folds", "ss_folds"))
+  expect_equal(length(output$folds$cf_folds), 100)
+  expect_equal(length(output$folds$ss_folds), 100)
+  expect_equal(sort(unique(output$folds$cf_folds)), c(1,2,3,4))
+  expect_equal(sort(unique(output$folds$ss_folds)), c(0,1))
+  expect_equal(output$approx_times, sort(unique(c(y[delta == 1 & y <= landmark_times[3]], landmark_times[3]))))
+  expect_equal(names(output$conditional_surv_preds), c("S_hat", "S_hat_train", "G_hat", "G_hat_train"))
+  expect_equal(dim(output$conditional_surv_preds$S_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$S_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(names(output$large_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(length(output$large_oracle_preds$f_hat[[1]]), 25)
+  expect_equal(length(output$large_oracle_preds$f_hat_train[[1]]), 75)
+  expect_equal(names(output$small_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(length(output$small_oracle_preds$f_hat[[1]]), 25)
+  expect_equal(length(output$small_oracle_preds$f_hat_train[[1]]), 75)
+})
+
 output <- vim(type = "C-index",
               time = y,
               event = delta,
@@ -376,3 +532,53 @@ test_that("vim(). C-index, xfit, sample split", {
   expect_equal(length(output$small_oracle_preds$f_hat[[1]]), 25)
   expect_equal(length(output$small_oracle_preds$f_hat_train[[1]]), 75)
 })
+
+output <- vim(type = "C-index",
+              time = y,
+              event = delta,
+              X = X,
+              restriction_time = landmark_times[3],
+              large_feature_vector = 1:2,
+              small_feature_vector = 1,
+              conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              large_oracle_generator_control = list(V = 2,
+                                                    tuning = "CV",
+                                                    params = list(mstop = c(20),
+                                                                  nu = c(0.1),
+                                                                  sigma = c(0.01),
+                                                                  learner = c("glm"))),
+              small_oracle_generator_control = list(V = 2,
+                                                    tuning = "CV",
+                                                    params = list(mstop = c(20),
+                                                                  nu = c(0.1),
+                                                                  sigma = c(0.01),
+                                                                  learner = c("glm"))),
+              cf_fold_num = 2,
+              sample_split = TRUE,
+              scale_est = TRUE)
+test_that("vim(). C-index with CV, xfit, sample split", {
+  expect_equal(dim(output$result)[1], 1)
+  expect_equal(dim(output$result)[2], 12)
+  expect_equal(names(output$result), c("restriction_time", "est", "var_est", "cil", "ciu",
+                                       "cil_1sided", "p", "large_predictiveness", "small_predictiveness",
+                                       "vim", "large_feature_vector", "small_feature_vector"))
+  expect_equal(sum(is.na(output$result)), 0)
+  expect_equal(names(output$folds), c("cf_folds", "ss_folds"))
+  expect_equal(length(output$folds$cf_folds), 100)
+  expect_equal(length(output$folds$ss_folds), 100)
+  expect_equal(sort(unique(output$folds$cf_folds)), c(1,2,3,4))
+  expect_equal(sort(unique(output$folds$ss_folds)), c(0,1))
+  expect_equal(output$approx_times, sort(unique(c(y[delta == 1 & y <= landmark_times[3]], landmark_times[3]))))
+  expect_equal(names(output$conditional_surv_preds), c("S_hat", "S_hat_train", "G_hat", "G_hat_train"))
+  expect_equal(dim(output$conditional_surv_preds$S_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$S_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat[[1]]), c(25, length(output$approx_times)))
+  expect_equal(dim(output$conditional_surv_preds$G_hat_train[[1]]), c(75, length(output$approx_times)))
+  expect_equal(names(output$large_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(length(output$large_oracle_preds$f_hat[[1]]), 25)
+  expect_equal(length(output$large_oracle_preds$f_hat_train[[1]]), 75)
+  expect_equal(names(output$small_oracle_preds), c("f_hat", "f_hat_train"))
+  expect_equal(length(output$small_oracle_preds$f_hat[[1]]), 25)
+  expect_equal(length(output$small_oracle_preds$f_hat_train[[1]]), 75)
+})
+

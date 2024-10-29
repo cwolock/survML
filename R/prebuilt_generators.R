@@ -168,7 +168,7 @@ generate_oracle_predictions_DR <- function(time,
 
 }
 
-#' Estimate full oracle prediction function using DR pseudo-outcome regression
+#' Estimate oracle prediction function using DR gradient boosting
 #'
 #' @noRd
 generate_oracle_predictions_boost <- function(time,
@@ -192,17 +192,17 @@ generate_oracle_predictions_boost <- function(time,
     X_holdout <- X_holdout[,-indx,drop=FALSE]
   }
 
-  boost_results <- boost_c_index_DR(time = time,
-                                    event = event,
-                                    X = X,
-                                    S_hat = nuisance_preds$S_hat_train,
-                                    G_hat = nuisance_preds$G_hat_train,
-                                    approx_times = approx_times[approx_times <= restriction_time],
-                                    tuning = tuning,
-                                    produce_fit = TRUE,
-                                    subsample_n = subsample_n,
-                                    V = V,
-                                    params = params)
+  boost_results <- boost_c_index(time = time,
+                                 event = event,
+                                 X = X,
+                                 S_hat = nuisance_preds$S_hat_train,
+                                 G_hat = nuisance_preds$G_hat_train,
+                                 approx_times = approx_times[approx_times <= restriction_time],
+                                 tuning = tuning,
+                                 produce_fit = TRUE,
+                                 subsample_n = subsample_n,
+                                 V = V,
+                                 params = params)
 
   dtest <- data.frame(X_holdout)
   dtrain <- data.frame(X)

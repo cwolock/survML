@@ -1,17 +1,17 @@
 #' Gradient boosting for C-index
 #'
 #' @noRd
-boost_c_index_DR <- function(time, # follow up times
-                             event, # event indicators
-                             X, # feature matrix
-                             S_hat, # conditional survival function predictions
-                             G_hat, # conditional censoring survival function predictions
-                             V, # cross validation fold number
-                             approx_times, # times for approximating integrals
-                             tuning, # whether to do CV or simply fit a model
-                             produce_fit, # whether to produce a fit after CV
-                             subsample_n,
-                             params){
+boost_c_index <- function(time, # follow up times
+                          event, # event indicators
+                          X, # feature matrix
+                          S_hat, # conditional survival function predictions
+                          G_hat, # conditional censoring survival function predictions
+                          V, # cross validation fold number
+                          approx_times, # times for approximating integrals
+                          tuning, # whether to do CV or simply fit a model
+                          produce_fit, # whether to produce a fit after CV
+                          subsample_n,
+                          params){
 
   if (subsample_n < length(time)){
     subsample_inds <- sample(1:length(time), size = subsample_n, replace = FALSE)
@@ -123,8 +123,6 @@ boost_c_index_DR <- function(time, # follow up times
     if (tuning == "CV"){
       CV_risks <- matrix(NA, nrow = V, ncol = K)
       for (j in 1:V){
-        print(paste0("CV fold ", j))
-
         time_train <- time[folds != j]
         event_train <- event[folds != j]
         X_train <- X[folds != j,,drop=FALSE]
