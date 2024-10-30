@@ -158,6 +158,10 @@ generate_oracle_predictions_DR <- function(time,
   if (outcome == "survival_probability"){
     f0_hat <- 1 - DR_predictions
     f0_hat_train <- 1 - DR_predictions_train
+    if (length(landmark_times) == 1){
+      f0_hat <- matrix(f0_hat, ncol = 1)
+      f0_hat_train <- matrix(f0_hat_train, ncol = 1)
+    }
   } else if (outcome == "restricted_survival_time"){
     f0_hat <- DR_predictions
     f0_hat_train <- DR_predictions_train

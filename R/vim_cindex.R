@@ -7,7 +7,7 @@
 #' whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.
 #' @param approx_times Numeric vector of length J1 giving times at which to
 #' approximate integrals.
-#' @param restriction_time Restriction time (upper bound for evenet times to be compared in computing the C-index)
+#' @param restriction_time Restriction time (upper bound for event times to be compared in computing the C-index)
 #' @param f_hat Full oracle predictions (n x J1 matrix)
 #' @param fs_hat Residual oracle predictions (n x J1 matrix)
 #' @param S_hat Estimates of conditional event time survival function (n x J2 matrix)

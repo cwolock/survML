@@ -31,7 +31,7 @@ whether an event was observed. Defaults to a vector of 1s, i.e. no censoring.}
 \item{approx_times}{Numeric vector of length J1 giving times at which to
 approximate integrals.}
 
-\item{restriction_time}{Restriction time (upper bound for evenet times to be compared in computing the C-index)}
+\item{restriction_time}{Restriction time (upper bound for event times to be compared in computing the C-index)}
 
 \item{f_hat}{Full oracle predictions (n x J1 matrix)}
 

@@ -23,10 +23,10 @@
 #' equal to either the number of samples in the \code{k}th fold (for \code{S_hat} or \code{G_hat}) or the number of samples used to compute the nuisance estimator
 #' for the \code{k}th fold.
 #' @param large_oracle_preds User-provided estimates of the oracle prediction function using \code{large_feature_vector}. Must be a named list of lists
-#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is iself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
+#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is itself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
 #' (for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).
 #' @param small_oracle_preds User-provided estimates of the oracle prediction function using \code{small_feature_vector}. Must be a named list of lists
-#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is iself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
+#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is itself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
 #' (for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).
 #' @param conditional_surv_generator A user-written function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
 #' \code{time}, \code{event}, \code{folds} (cross-fitting fold identifiers), and
@@ -75,7 +75,7 @@
 #' event <- as.numeric(T <= C)
 #'
 #' # landmark times for AUC
-#' landmark_times <- c(1,3,5)
+#' landmark_times <- c(3)
 #'
 #' output <- vim(type = "AUC",
 #'               time = time,
@@ -88,7 +88,7 @@
 #'               large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
 #'               small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
 #'               cf_fold_num = 2,
-#'               sample_split = TRUE,
+#'               sample_split = FALSE,
 #'               scale_est = TRUE)
 #'
 #' print(output$result)

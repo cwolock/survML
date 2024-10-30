@@ -14,7 +14,7 @@ Authors@R:
              comment = c(ORCID = "0000-0002-9465-7307")))
 Description: Statistical tools for analyzing time-to-event data using
              machine learning. Implements survival stacking for conditional 
-             survival estimation, isotonic regression for 
+             survival estimation, standardized survival function estimation for 
              current status data, and methods for algorithm-agnostic variable
              importance. See Wolock CJ, Gilbert PB, Simon N, 
              and Carone M (2024) <doi:10.1080/10618600.2024.2304070>. 
