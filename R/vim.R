@@ -12,7 +12,7 @@
 #' landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).
 #' @param restriction_time Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}.
 #' @param approx_times Numeric vector of length J2 giving times at which to
-#' approximate integrals.
+#' approximate integrals. Defaults to a grid of 100 timepoints, evenly spaced on the quantile scale of the distribution of observed event times.
 #' @param large_feature_vector Numeric vector giving indices of features to include in the 'large' prediction model.
 #' @param small_feature_vector Numeric vector giving indices of features to include in the 'small' prediction model. Must be a
 #' subset of \code{large_feature_vector}.
@@ -147,11 +147,15 @@ vim <- function(type,
     outcome <- NA
   }
 
-  if (!is.null(landmark_times) & type %in% landmark_vims){
-    approx_times <- sort(unique(c(time[event == 1 & time <= max(landmark_times)], landmark_times)))
+  if (is.null(approx_times) & !is.null(landmark_times) & type %in% landmark_vims){
+    approx_times <- sort(unique(c(stats::quantile(time[event == 1 & time <= max(landmark_times)],
+                                                  probs = seq(0, 1, by = 0.01)),
+                                  landmark_times)))
   }
-  if (!is.null(restriction_time) & type %in% global_vims){
-    approx_times <- sort(unique(c(time[event == 1 & time <= restriction_time], restriction_time)))
+  if (is.null(approx_times) & !is.null(restriction_time) & type %in% global_vims){
+    approx_times <- sort(unique(c(stats::quantile(time[event == 1 & time <= restriction_time],
+                                                  probs = seq(0, 1, by = 0.01)),
+                                  restriction_time)))
   }
 
   # estimate S and G if any of them are not provided by user

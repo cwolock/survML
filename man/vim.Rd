@@ -52,7 +52,7 @@ landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{
 \item{restriction_time}{Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}.}
 
 \item{approx_times}{Numeric vector of length J2 giving times at which to
-approximate integrals.}
+approximate integrals. Defaults to a grid of 100 timepoints, evenly spaced on the quantile scale of the distribution of observed event times.}
 
 \item{large_feature_vector}{Numeric vector giving indices of features to include in the 'large' prediction model.}
 

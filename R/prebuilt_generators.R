@@ -10,6 +10,7 @@ generate_nuisance_predictions_stackG <- function(time,
                                                  V = 5,
                                                  bin_size = 0.05,
                                                  approx_times){
+
   surv_out <- survML::stackG(time = time,
                              event = event,
                              X = X,
