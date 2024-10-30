@@ -122,7 +122,7 @@ Estimate AUC VIM
 \examples{
 # This is a small simulation example
 set.seed(123)
-n <- 200
+n <- 100
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 
 T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
