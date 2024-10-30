@@ -208,9 +208,9 @@ survival curve for this dataset is shown below.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">km_fit</span>, xlab <span class="op">=</span> <span class="st">"Time (days)"</span>, ylab <span class="op">=</span> <span class="st">"Recurrence-free survival probability"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/km-1.png" width="768"></p>
 <p>We will consider time-varying AUC importance using landmark times of
-500, 1000, 1500 and 2000 days. The first step is to prepare the data. We
-use dummy coding for factors. This means that to assess the importance
-of tumor grade, for example, which has three levels, we create two dummy
+1000 and 2000 days. The first step is to prepare the data. We use dummy
+coding for factors. This means that to assess the importance of tumor
+grade, for example, which has three levels, we create two dummy
 variables called <code>tumgrad2</code> and <code>tumgrad3</code> and
 consider them as a single feature group. We also consider the feature
 groups defined by tumor-level features and patient-level features.</p>
@@ -285,9 +285,10 @@ focus on (1).</p>
 <p>To reduce runtime, we use a very small Super Learner library to
 estimate the conditional survival nuisance functions, as well as the two
 oracle prediction functions. We also use two-fold cross-fitting (i.e,
-set <code>cf_fold_num = 2</code>. In actual analyses, it is generally a
-good idea to use a larger library of learners and more cross-fitting
-folds.</p>
+set <code>cf_fold_num = 2</code>) and two-fold cross-validation for
+nuisance estimation (i.e., set <code>V = 2</code> for each nuisance
+estimator). In actual analyses, it is generally a good idea to use a
+larger library of learners and more cross-fitting folds.</p>
 <p>Note that we also set <code>sample_split = TRUE</code>. In order to
 obtain valid inference under the null hypothesis of zero importance,
 sample splitting is required. If this option is set to
@@ -295,7 +296,7 @@ sample splitting is required. If this option is set to
 used when interpreting the resulting confidence interval.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># landmark times for AUC</span></span>
-<span><span class="va">landmark_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">1000</span>, <span class="fl">1500</span>, <span class="fl">2000</span><span class="op">)</span></span>
+<span><span class="va">landmark_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">2000</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
 <span>              time <span class="op">=</span> <span class="va">time</span>,</span>
@@ -304,30 +305,28 @@ used when interpreting the resulting confidence interval.</p>
 <span>              landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
 <span>              large_feature_vector <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>,</span>
 <span>              small_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">age_index</span><span class="op">)</span><span class="op">]</span>,</span>
-<span>              conditional_surv_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>              large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>              small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>              conditional_surv_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                        V <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                                                        bin_size <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
+<span>              large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>              small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>              cf_fold_num <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>              sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>              scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">age_index</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt;   landmark_time       est   var_est cil        ciu cil_1sided         p</span></span>
-<span><span class="co">#&gt; 1           500 0.0000000 0.9565534   0 0.09638100          0 0.5536449</span></span>
-<span><span class="co">#&gt; 2          1000 0.0000000 0.7025947   0 0.08561835          0 0.5271963</span></span>
-<span><span class="co">#&gt; 3          1500 0.0466046 0.7055914   0 0.13549967          0 0.1520829</span></span>
-<span><span class="co">#&gt; 4          2000 0.0000000 1.1568853   0 0.09330740          0 0.6380780</span></span>
+<span><span class="co">#&gt;   landmark_time est   var_est cil        ciu cil_1sided         p</span></span>
+<span><span class="co">#&gt; 1          1000   0 0.6948096   0 0.08557222          0 0.5233966</span></span>
+<span><span class="co">#&gt; 2          2000   0 1.1194426   0 0.08817423          0 0.6614892</span></span>
 <span><span class="co">#&gt;   large_predictiveness small_predictiveness vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.7570853            0.7642079 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 2            0.7212545            0.7243422 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 3            0.7499171            0.7033125 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 4            0.6959709            0.7164908 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 1            0.7202259            0.7228669 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 2            0.6885780            0.7123739 AUC    1,2,3,4,5,6,7,8,9</span></span>
 <span><span class="co">#&gt;   small_feature_vector indx indx_name</span></span>
 <span><span class="co">#&gt; 1      2,3,4,5,6,7,8,9    1       age</span></span>
-<span><span class="co">#&gt; 2      2,3,4,5,6,7,8,9    1       age</span></span>
-<span><span class="co">#&gt; 3      2,3,4,5,6,7,8,9    1       age</span></span>
-<span><span class="co">#&gt; 4      2,3,4,5,6,7,8,9    1       age</span></span></code></pre></div>
+<span><span class="co">#&gt; 2      2,3,4,5,6,7,8,9    1       age</span></span></code></pre></div>
 <p>If we want to examine other features, we could simply repeat the
 above call to <code><a href="../reference/vim.html">vim()</a></code>, substituting in the correct
 <code>large_feature_vector</code> and <code>small_feature_vector</code>.
@@ -398,7 +397,8 @@ look at the results for all feature groups.</p>
 <span>                large_oracle_preds <span class="op">=</span> <span class="va">saved_large_oracle_preds</span>,</span>
 <span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
 <span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  </span>
@@ -411,8 +411,8 @@ look at the results for all feature groups.</p>
 <span>  <span class="co"># plot results</span></span>
 <span>  <span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="va">results</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>landmark_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">landmark_time</span>,</span>
-<span>                                  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fl">1000</span>, <span class="fl">1500</span>, <span class="fl">2000</span><span class="op">)</span>,</span>
-<span>                                  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"500 days"</span>, <span class="st">"1000 days"</span>, <span class="st">"1500 days"</span>, <span class="st">"2000 days"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>                                  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">2000</span><span class="op">)</span>,</span>
+<span>                                  labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1000 days"</span>, <span class="st">"2000 days"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">landmark_time</span>, <span class="va">est</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Order <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="op">{</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">.</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">est</span>, y <span class="op">=</span> <span class="va">Order</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -459,7 +459,8 @@ all person-level features relative to the full feature vector.</p>
 <span>                small_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">indx</span><span class="op">]</span>,</span>
 <span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
 <span>                large_oracle_preds <span class="op">=</span> <span class="va">saved_large_oracle_preds</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
 <span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
 <span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -526,8 +527,10 @@ the current set of predictors.)</p>
 <span>                large_feature_vector <span class="op">=</span> <span class="va">indx</span>,</span>
 <span>                small_feature_vector <span class="op">=</span>  <span class="va">person_index_numeric</span>,</span>
 <span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
-<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
 <span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
 <span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -544,7 +547,8 @@ the current set of predictors.)</p>
 <span>                small_feature_vector <span class="op">=</span>  <span class="va">person_index_numeric</span>,</span>
 <span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
 <span>                small_oracle_preds <span class="op">=</span> <span class="va">saved_small_oracle_preds</span>,</span>
-<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
 <span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
 <span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -622,8 +626,10 @@ estimates.</p>
 <span>                large_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">person_index_numeric</span><span class="op">]</span>,</span>
 <span>                small_feature_vector <span class="op">=</span>  <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">indx</span><span class="op">]</span>,</span>
 <span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
-<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
 <span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
 <span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -640,7 +646,8 @@ estimates.</p>
 <span>                small_feature_vector <span class="op">=</span>  <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">indx</span><span class="op">]</span>,</span>
 <span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
 <span>                large_oracle_preds <span class="op">=</span> <span class="va">saved_large_oracle_preds</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
 <span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
 <span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
