@@ -137,7 +137,7 @@ Estimate a conditional survival function using global survival stacking
 \examples{
 # This is a small simulation example
 set.seed(123)
-n <- 500
+n <- 250
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 
 S0 <- function(t, x){
