@@ -44,7 +44,7 @@ km_fit <- survfit(Surv(rfstime, status) ~ 1, data = gbsg)
 plot(km_fit, xlab = "Time (days)", ylab = "Recurrence-free survival probability")
 ```
 
-We will consider time-varying AUC importance using landmark times of 500, 1000, 1500 and 2000 days. The first step is to prepare the data. We use dummy coding for factors. This means that to assess the importance of tumor grade, for example, which has three levels, we create two dummy variables called `tumgrad2` and `tumgrad3` and consider them as a single feature group. We also consider the feature groups defined by tumor-level features and patient-level features. 
+We will consider time-varying AUC importance using landmark times of 1000 and 2000 days. The first step is to prepare the data. We use dummy coding for factors. This means that to assess the importance of tumor grade, for example, which has three levels, we create two dummy variables called `tumgrad2` and `tumgrad3` and consider them as a single feature group. We also consider the feature groups defined by tumor-level features and patient-level features. 
 
 
 ```{r data_setup}
@@ -105,13 +105,13 @@ There are three options for estimating the nuisance functions (conditional survi
 
 These are ordered from least to most flexible; in this vignette, we focus on (1).
 
-To reduce runtime, we use a very small Super Learner library to estimate the conditional survival nuisance functions, as well as the two oracle prediction functions. We also use two-fold cross-fitting (i.e, set `cf_fold_num = 2`. In actual analyses, it is generally a good idea to use a larger library of learners and more cross-fitting folds. 
+To reduce runtime, we use a very small Super Learner library to estimate the conditional survival nuisance functions, as well as the two oracle prediction functions. We also use two-fold cross-fitting (i.e, set `cf_fold_num = 2`) and two-fold cross-validation for nuisance estimation (i.e., set `V = 2` for each nuisance estimator). In actual analyses, it is generally a good idea to use a larger library of learners and more cross-fitting folds. 
 
 Note that we also set `sample_split = TRUE`. In order to obtain valid inference under the null hypothesis of zero importance, sample splitting is required. If this option is set to `FALSE`, no p-value will be return, and caution should be used when interpreting the resulting confidence interval. 
 
 ```{r, fig.width=8, fig.height=8}
 # landmark times for AUC
-landmark_times <- c(500, 1000, 1500, 2000)
+landmark_times <- c(1000, 2000)
 
 output <- vim(type = "AUC",
               time = time,
@@ -120,9 +120,13 @@ output <- vim(type = "AUC",
               landmark_times = landmark_times,
               large_feature_vector = 1:ncol(X),
               small_feature_vector = (1:ncol(X))[-as.numeric(age_index)],
-              conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
-              large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
-              small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+              conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                        V = 2,
+                                                        bin_size = 0.1),
+              large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                    V = 2),
+              small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                    V = 2),
               cf_fold_num = 2,
               sample_split = TRUE,
               scale_est = TRUE)
@@ -168,7 +172,8 @@ for (i in 2:length(feature_group_names)){
                 large_oracle_preds = saved_large_oracle_preds,
                 cf_folds = saved_folds$cf_folds,
                 ss_folds = saved_folds$ss_folds,
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
                 sample_split = TRUE,
                 scale_est = TRUE)
   
@@ -181,8 +186,8 @@ plot_results <- function(results, plot_title){
   # plot results
   p_auc <- results %>%
     mutate(landmark_time = factor(landmark_time,
-                                  levels = c(500, 1000, 1500, 2000),
-                                  labels = c("500 days", "1000 days", "1500 days", "2000 days"))) %>%
+                                  levels = c(1000, 2000),
+                                  labels = c("1000 days", "2000 days"))) %>%
     arrange(landmark_time, est) %>%
     mutate(Order = row_number()) %>%
     {ggplot(., aes(x = est, y = Order)) +
@@ -229,7 +234,8 @@ for (i in 1:length(feature_group_names2)){
                 small_feature_vector = (1:ncol(X))[-indx],
                 conditional_surv_preds = saved_conditional_surv_preds,
                 large_oracle_preds = saved_large_oracle_preds,
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
                 cf_folds = saved_folds$cf_folds,
                 ss_folds = saved_folds$ss_folds,
                 sample_split = TRUE,
@@ -284,8 +290,10 @@ for (i in 1:length(feature_group_names)){
                 large_feature_vector = indx,
                 small_feature_vector =  person_index_numeric,
                 conditional_surv_preds = saved_conditional_surv_preds,
-                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
+                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
                 cf_folds = saved_folds$cf_folds,
                 ss_folds = saved_folds$ss_folds,
                 sample_split = TRUE,
@@ -302,7 +310,8 @@ for (i in 1:length(feature_group_names)){
                 small_feature_vector =  person_index_numeric,
                 conditional_surv_preds = saved_conditional_surv_preds,
                 small_oracle_preds = saved_small_oracle_preds,
-                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
                 cf_folds = saved_folds$cf_folds,
                 ss_folds = saved_folds$ss_folds,
                 sample_split = TRUE,
@@ -358,8 +367,10 @@ for (i in 1:length(feature_group_names)){
                 large_feature_vector = (1:ncol(X))[-person_index_numeric],
                 small_feature_vector =  (1:ncol(X))[-indx],
                 conditional_surv_preds = saved_conditional_surv_preds,
-                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
+                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
                 cf_folds = saved_folds$cf_folds,
                 ss_folds = saved_folds$ss_folds,
                 sample_split = TRUE,
@@ -376,7 +387,8 @@ for (i in 1:length(feature_group_names)){
                 small_feature_vector =  (1:ncol(X))[-indx],
                 conditional_surv_preds = saved_conditional_surv_preds,
                 large_oracle_preds = saved_large_oracle_preds,
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm")),
+                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                      V = 2),
                 cf_folds = saved_folds$cf_folds,
                 ss_folds = saved_folds$ss_folds,
                 sample_split = TRUE,
