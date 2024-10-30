@@ -1,4 +1,12 @@
-This is a submission of a new version of the package (1.2.0).
+This is a resubmission of version 1.2.0. The following changes were made:
+
+**NOTE: Possibly misspelled words in DESCRIPTION: isotonic (17:35)**
+
+ * Removed this word from the DESCRIPTION to avoid triggering the spell-check. 
+ 
+**NOTE: Examples with CPU (user + system) or elapsed time > 10s**
+
+ * Changed examples to reduce runtime.
 
 ## Test environments
 
