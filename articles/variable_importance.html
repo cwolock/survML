@@ -282,11 +282,12 @@ prediction functions.</li>
 </ol>
 <p>These are ordered from least to most flexible; in this vignette, we
 focus on (1).</p>
-<p>To reduce runtime, we use a very small Super Learner library to
-estimate the conditional survival nuisance functions, as well as the two
-oracle prediction functions. We also use two-fold cross-fitting (i.e,
-set <code>cf_fold_num = 2</code>) and two-fold cross-validation for
-nuisance estimation (i.e., set <code>V = 2</code> for each nuisance
+<p>To reduce runtime, we use a very small Super Learner library and
+large <code>bin_size</code> to estimate the conditional survival
+nuisance functions (see <code><a href="../reference/stackG.html">stackG()</a></code> documentation), as well as
+the two oracle prediction functions. We also use two-fold cross-fitting
+(i.e, set <code>cf_fold_num = 2</code>) and two-fold cross-validation
+for nuisance estimation (i.e., set <code>V = 2</code> for each nuisance
 estimator). In actual analyses, it is generally a good idea to use a
 larger library of learners and more cross-fitting folds.</p>
 <p>Note that we also set <code>sample_split = TRUE</code>. In order to
@@ -307,23 +308,27 @@ used when interpreting the resulting confidence interval.</p>
 <span>              small_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">age_index</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>              conditional_surv_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
 <span>                                                        V <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                                                        bin_size <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
+<span>                                                        bin_size <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>              large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
 <span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>              small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
 <span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>              cf_fold_num <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>              sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>              sample_split <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>              scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">age_index</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt;   landmark_time est   var_est cil        ciu cil_1sided         p</span></span>
-<span><span class="co">#&gt; 1          1000   0 0.6945702   0 0.08523649          0 0.5262368</span></span>
-<span><span class="co">#&gt; 2          2000   0 1.0728425   0 0.09969271          0 0.5704072</span></span>
+<span><span class="co">#&gt;   landmark_time        est   var_est cil         ciu cil_1sided  p</span></span>
+<span><span class="co">#&gt; 1          1000 0.00000000 0.0110356   0 0.006280835          0 NA</span></span>
+<span><span class="co">#&gt; 2          2000 0.01608993 0.1983774   0 0.049419692          0 NA</span></span>
 <span><span class="co">#&gt;   large_predictiveness small_predictiveness vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.7201543            0.7231159 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 2            0.7050060            0.7149281 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 1            0.7164785            0.7180588 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 2            0.7261368            0.7100469 AUC    1,2,3,4,5,6,7,8,9</span></span>
 <span><span class="co">#&gt;   small_feature_vector indx indx_name</span></span>
 <span><span class="co">#&gt; 1      2,3,4,5,6,7,8,9    1       age</span></span>
 <span><span class="co">#&gt; 2      2,3,4,5,6,7,8,9    1       age</span></span></code></pre></div>
@@ -435,7 +440,11 @@ look at the results for all feature groups.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 14 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 14 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <p>We can also look at the importance of all tumor-level features and
 all person-level features relative to the full feature vector.</p>
@@ -476,7 +485,11 @@ all person-level features relative to the full feature vector.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector (groups)"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-4-1.png" width="768"></p>
 </div>
 <div class="section level3">
@@ -565,7 +578,11 @@ the current set of predictors.)</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to person-level features"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-5-1.png" width="768"></p>
 </div>
 <div class="section level3">
@@ -664,7 +681,11 @@ estimates.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"Adjusted AUC variable importance relative to all tumor-level features"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-6-1.png" width="768"></p>
 </div>
 </div>
