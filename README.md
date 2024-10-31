@@ -15,13 +15,6 @@ coverage](https://codecov.io/gh/cwolock/survML/branch/main/graph/badge.svg)](htt
 
 # `survML`: Tools for Flexible Survival Analysis Using Machine Learning
 
-**Note: The current development version of `survML` now has
-functionality for estimating variable importance and for estimating a
-covariate-adjusted survival curve under current status sampling, in
-addition to the original survival stacking functionality that was
-included in versions 1.1.0 and earlier. A new version on CRAN is
-forthcoming.**
-
 The `survML` package contains a variety of functions for analyzing
 survival data using machine learning. These include:
 
@@ -30,11 +23,11 @@ survival data using machine learning. These include:
 
 2.  *Algorithm-agnostic variable importance*: Use debiased machine
     learning to estimate and make inference on variable importance for
-    prediction of time-to-event outcomes.
+    prediction of time-to-event outcomes. (1.2.0+)
 
 3.  *Current-status isotonic regression*: Use isotonic regression to
     estimate the covariate-adjusted survival function of a time-to-event
-    outcome under current status sampling.
+    outcome under current status sampling. (1.2.0+)
 
 See the package vignettes and function reference for more details.
 
