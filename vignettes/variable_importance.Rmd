@@ -107,7 +107,7 @@ These are ordered from least to most flexible; in this vignette, we focus on (1)
 
 To reduce runtime, we use a very small Super Learner library and large `bin_size` to estimate the conditional survival nuisance functions (see `stackG()` documentation), as well as the two oracle prediction functions. We also use two-fold cross-fitting (i.e, set `cf_fold_num = 2`) and two-fold cross-validation for nuisance estimation (i.e., set `V = 2` for each nuisance estimator). In actual analyses, it is generally a good idea to use a larger library of learners and more cross-fitting folds. 
 
-Note that we also set `sample_split = TRUE`. In order to obtain valid inference under the null hypothesis of zero importance, sample splitting is required. If this option is set to `FALSE`, no p-value will be return, and caution should be used when interpreting the resulting confidence interval. 
+Note that we also set `sample_split = TRUE`. In order to obtain valid inference under the null hypothesis of zero importance, sample splitting is required. If this option is set to `FALSE`, no p-value will be returned, and caution should be used when interpreting the resulting confidence interval. 
 
 ```{r, fig.width=8, fig.height=8}
 # landmark times for AUC
@@ -128,7 +128,7 @@ output <- vim(type = "AUC",
               small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
                                                     V = 2),
               cf_fold_num = 2,
-              sample_split = FALSE,
+              sample_split = TRUE,
               scale_est = TRUE)
 output$result$indx <- rep(age_index, nrow(output$result))
 output$result$indx_name <- rep("age", nrow(output$result))
