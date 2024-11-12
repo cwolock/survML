@@ -293,7 +293,7 @@ larger library of learners and more cross-fitting folds.</p>
 <p>Note that we also set <code>sample_split = TRUE</code>. In order to
 obtain valid inference under the null hypothesis of zero importance,
 sample splitting is required. If this option is set to
-<code>FALSE</code>, no p-value will be return, and caution should be
+<code>FALSE</code>, no p-value will be returned, and caution should be
 used when interpreting the resulting confidence interval.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># landmark times for AUC</span></span>
@@ -314,8 +314,9 @@ used when interpreting the resulting confidence interval.</p>
 <span>              small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
 <span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>              cf_fold_num <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>              sample_split <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>              sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>              scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
@@ -323,12 +324,12 @@ used when interpreting the resulting confidence interval.</p>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">age_index</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt;   landmark_time        est   var_est cil         ciu cil_1sided  p</span></span>
-<span><span class="co">#&gt; 1          1000 0.00000000 0.0110356   0 0.006280835          0 NA</span></span>
-<span><span class="co">#&gt; 2          2000 0.01608993 0.1983774   0 0.049419692          0 NA</span></span>
+<span><span class="co">#&gt;   landmark_time est   var_est cil        ciu cil_1sided         p</span></span>
+<span><span class="co">#&gt; 1          1000   0 0.5090484   0 0.06738379          0 0.5834903</span></span>
+<span><span class="co">#&gt; 2          2000   0 5.1440221   0 0.13327316          0 0.8083112</span></span>
 <span><span class="co">#&gt;   large_predictiveness small_predictiveness vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.7164785            0.7180588 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 2            0.7261368            0.7100469 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 1            0.7050374            0.7131595 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 2            0.6417943            0.7485439 AUC    1,2,3,4,5,6,7,8,9</span></span>
 <span><span class="co">#&gt;   small_feature_vector indx indx_name</span></span>
 <span><span class="co">#&gt; 1      2,3,4,5,6,7,8,9    1       age</span></span>
 <span><span class="co">#&gt; 2      2,3,4,5,6,7,8,9    1       age</span></span></code></pre></div>
@@ -440,11 +441,7 @@ look at the results for all feature groups.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span>
-<span><span class="co">#&gt; Warning: Removed 14 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
-<span><span class="co">#&gt; Warning: Removed 14 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <p>We can also look at the importance of all tumor-level features and
 all person-level features relative to the full feature vector.</p>
@@ -485,11 +482,7 @@ all person-level features relative to the full feature vector.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector (groups)"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span>
-<span><span class="co">#&gt; Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
-<span><span class="co">#&gt; Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-4-1.png" width="768"></p>
 </div>
 <div class="section level3">
@@ -578,11 +571,7 @@ the current set of predictors.)</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to person-level features"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span>
-<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
-<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-5-1.png" width="768"></p>
 </div>
 <div class="section level3">
@@ -681,11 +670,7 @@ estimates.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"Adjusted AUC variable importance relative to all tumor-level features"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span>
-<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
-<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
-<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-6-1.png" width="768"></p>
 </div>
 </div>
