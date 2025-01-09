@@ -80,8 +80,8 @@ following papers:
 - **Survival variable importance:** Charles J. Wolock, Peter B. Gilbert,
   Noah Simon and Marco Carone. [“Assessing variable importance in
   survival analysis using machine
-  learning.”](https://arxiv.org/abs/2311.12726) In press, *Biometrika*
-  (2024).
+  learning.”](https://academic.oup.com/biomet/advance-article-abstract/doi/10.1093/biomet/asae061/7874959)
+  *Biometrika* (2024).
 
 - **Covariate-adjusted survival curves from current status data:**
   Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
@@ -120,11 +120,15 @@ please cite the following:
 After using the variable importance functions, please cite the
 following:
 
-    @article{wolock2023assessing,
-             title={Assessing variable importance in survival analysis using machine learning},
-             author={Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
-             journal={arXiv preprint arXiv:2311.12726},
-             year={2023}
+    @article{wolock2024assessing,
+        author = {Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
+        title = {Assessing variable importance in survival analysis using machine learning},
+        journal = {Biometrika},
+        pages = {asae061},
+        year = {2024},
+        month = {11},
+        doi = {10.1093/biomet/asae061},
+        published={Oxford University Press}
     }
 
 After using the functionality for current status data, please cite the
