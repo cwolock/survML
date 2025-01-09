@@ -8,8 +8,8 @@
 <title>Tools for Flexible Survival Analysis Using Machine Learning • survML</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Tools for Flexible Survival Analysis Using Machine Learning">
 <meta name="description" content="Statistical tools for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation, standardized survival function estimation for current status data, and methods for algorithm-agnostic variable importance. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) &lt;doi:10.1080/10618600.2024.2304070&gt;.">
 <meta property="og:description" content="Statistical tools for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation, standardized survival function estimation for current status data, and methods for algorithm-agnostic variable importance. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) &lt;doi:10.1080/10618600.2024.2304070&gt;.">
@@ -101,7 +101,7 @@
 <p>For details of the methods implemented in this package, please see the following papers:</p>
 <ul>
 <li><p><strong>Global survival stacking:</strong> Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. <a href="https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070" class="external-link">“A framework for leveraging machine learning tools to estimate personalized survival curves.”</a> <em>Journal of Computational and Graphical Statistics</em> (2024).</p></li>
-<li><p><strong>Survival variable importance:</strong> Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. <a href="https://arxiv.org/abs/2311.12726" class="external-link">“Assessing variable importance in survival analysis using machine learning.”</a> In press, <em>Biometrika</em> (2024).</p></li>
+<li><p><strong>Survival variable importance:</strong> Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. <a href="https://academic.oup.com/biomet/advance-article-abstract/doi/10.1093/biomet/asae061/7874959" class="external-link">“Assessing variable importance in survival analysis using machine learning.”</a> <em>Biometrika</em> (2024).</p></li>
 <li><p><strong>Covariate-adjusted survival curves from current status data:</strong> Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren, Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky, Ana A. Weil, Helen Y. Chu and Marco Carone. “Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome.” <a href="https://arxiv.org/abs/2407.04214" class="external-link">arXiv:2407.04214.</a></p></li>
 </ul>
 <p>Local survival stacking is described in:</p>
@@ -126,12 +126,16 @@
 <span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>        doi<span class="ot">=</span>{<span class="fl">10.1080</span><span class="sc">/</span><span class="dv">10618600</span>.<span class="fl">2024.2304070</span>}</span>
 <span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>}</span></code></pre></div>
 <p>After using the variable importance functions, please cite the following:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="sc">@</span>article{wolock2023assessing,</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>         title<span class="ot">=</span>{Assessing variable importance <span class="cf">in</span> survival analysis using machine learning},</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>         author<span class="ot">=</span>{Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>         journal<span class="ot">=</span>{arXiv preprint arXiv<span class="sc">:</span><span class="fl">2311.12726</span>},</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>         year<span class="ot">=</span>{<span class="dv">2023</span>}</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="sc">@</span>article{wolock2024assessing,</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>    author <span class="ot">=</span> {Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    title <span class="ot">=</span> {Assessing variable importance <span class="cf">in</span> survival analysis using machine learning},</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    journal <span class="ot">=</span> {Biometrika},</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    pages <span class="ot">=</span> {asae061},</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    year <span class="ot">=</span> {<span class="dv">2024</span>},</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>    month <span class="ot">=</span> {<span class="dv">11</span>},</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    doi <span class="ot">=</span> {<span class="fl">10.1093</span><span class="sc">/</span>biomet<span class="sc">/</span>asae061},</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>    published<span class="ot">=</span>{Oxford University Press}</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>}</span></code></pre></div>
 <p>After using the functionality for current status data, please cite the following:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="sc">@</span>article{wolock2024investigating,</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  title<span class="ot">=</span>{Investigating symptom duration using current status data<span class="sc">:</span> a case study of post<span class="sc">-</span>acute COVID<span class="dv">-19</span> syndrome},</span>
