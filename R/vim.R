@@ -147,15 +147,23 @@ vim <- function(type,
     outcome <- NA
   }
 
-  if (is.null(approx_times) & !is.null(landmark_times) & type %in% landmark_vims){
-    approx_times <- sort(unique(c(stats::quantile(time[event == 1 & time <= max(landmark_times)],
-                                                  probs = seq(0, 1, by = 0.01)),
-                                  landmark_times)))
+  if (!is.null(landmark_times) & type %in% landmark_vims){
+    if (is.null(approx_times)){
+      approx_times <- sort(unique(c(stats::quantile(time[event == 1 & time <= max(landmark_times)],
+                                                    probs = seq(0, 1, by = 0.01)),
+                                    landmark_times)))
+    } else{
+      approx_times <- sort(unique(c(approx_times, landmark_times)))
+    }
   }
-  if (is.null(approx_times) & !is.null(restriction_time) & type %in% global_vims){
-    approx_times <- sort(unique(c(stats::quantile(time[event == 1 & time <= restriction_time],
-                                                  probs = seq(0, 1, by = 0.01)),
-                                  restriction_time)))
+  if (!is.null(restriction_time) & type %in% global_vims){
+    if (is.null(approx_times)){
+      approx_times <- sort(unique(c(stats::quantile(time[event == 1 & time <= restriction_time],
+                                                    probs = seq(0, 1, by = 0.01)),
+                                    restriction_time)))
+    } else{
+      approx_times <- sort(unique(c(approx_times, restriction_time)))
+    }
   }
 
   # estimate S and G if any of them are not provided by user

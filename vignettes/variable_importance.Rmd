@@ -95,7 +95,7 @@ feature_groups <- c(age_index, meno_index, size_index, nodes_index,
 
 First, we consider the importance of each of the feature groups relative to the full feature vector. Here, the features of interest are subtracted from the full feature vector, with importance measured by the resulting loss in predictiveness. 
 
-First, we estimate the importance of age relative to the full feature vector using the `vim()` function. In this case, we will compare the AUC achieved when all features are included to the AUC when all features except for age are included; therefore, the `large_feature_vector` consists of all features, and the `small_feature_vector` consists of all features except for age. 
+We begin by estimating the importance of age relative to the full feature vector using the `vim()` function. In this case, we will compare the AUC achieved when all features are included to the AUC when all features except for age are included; therefore, the `large_feature_vector` consists of all features, and the `small_feature_vector` consists of all features except for age. 
 
 There are three options for estimating the nuisance functions (conditional survival functions and two oracle prediction functions). Briefly, they include
 
@@ -103,9 +103,9 @@ There are three options for estimating the nuisance functions (conditional survi
 (2) Provide a function to estimate each nuisance. 
 (3) Provide pre-computed estimates for each nuisance. 
 
-These are ordered from least to most flexible; in this vignette, we focus on (1).
+These are ordered from least to most flexible; in this vignette, we focus on (1). When using the built-in nuisance estimation algorithms, control parameters can be set using the `conditional_surv_generator_control`, `large_oracle_generator_control`, and `small_oracle_generator_control` arguments. To reduce runtime in this example, we use a very small Super Learner library and large `bin_size` to estimate the conditional survival nuisance functions (see `stackG()` function documentation), as well as the two oracle prediction functions (see the `SuperLearner` package documentation). 
 
-To reduce runtime, we use a very small Super Learner library and large `bin_size` to estimate the conditional survival nuisance functions (see `stackG()` documentation), as well as the two oracle prediction functions. We also use two-fold cross-fitting (i.e, set `cf_fold_num = 2`) and two-fold cross-validation for nuisance estimation (i.e., set `V = 2` for each nuisance estimator). In actual analyses, it is generally a good idea to use a larger library of learners and more cross-fitting folds. 
+We also use two-fold cross-fitting (i.e, set `cf_fold_num = 2`) and two-fold cross-validation for nuisance estimation (i.e., set `V = 2` for each nuisance estimator). Finally, we use a relatively coarse grid of 40 timepoints, evenly spaced on the quantile scale of observed event times, for the `approx_times` argument, which determines the grid over which integrals are approximated in the estimation procedure. In actual analyses, it is generally a good idea to use a larger library of learners, more cross-fitting and cross-validation folds, a finer grid of `approx_times`, and a smaller `bin_size`. 
 
 Note that we also set `sample_split = TRUE`. In order to obtain valid inference under the null hypothesis of zero importance, sample splitting is required. If this option is set to `FALSE`, no p-value will be returned, and caution should be used when interpreting the resulting confidence interval. 
 
@@ -127,6 +127,8 @@ output <- vim(type = "AUC",
                                                     V = 2),
               small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
                                                     V = 2),
+              approx_times = sort(unique(stats::quantile(time[event == 1 & time <= max(landmark_times)],
+                                                         probs = seq(0, 1, by = 0.025)))),
               cf_fold_num = 2,
               sample_split = TRUE,
               scale_est = TRUE)
