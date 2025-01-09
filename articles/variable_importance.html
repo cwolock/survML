@@ -262,10 +262,10 @@ groups defined by tumor-level features and patient-level features.</p>
 relative to the full feature vector. Here, the features of interest are
 subtracted from the full feature vector, with importance measured by the
 resulting loss in predictiveness.</p>
-<p>First, we estimate the importance of age relative to the full feature
-vector using the <code><a href="../reference/vim.html">vim()</a></code> function. In this case, we will
-compare the AUC achieved when all features are included to the AUC when
-all features except for age are included; therefore, the
+<p>We begin by estimating the importance of age relative to the full
+feature vector using the <code><a href="../reference/vim.html">vim()</a></code> function. In this case, we
+will compare the AUC achieved when all features are included to the AUC
+when all features except for age are included; therefore, the
 <code>large_feature_vector</code> consists of all features, and the
 <code>small_feature_vector</code> consists of all features except for
 age.</p>
@@ -281,15 +281,26 @@ prediction functions.</li>
 <li>Provide pre-computed estimates for each nuisance.</li>
 </ol>
 <p>These are ordered from least to most flexible; in this vignette, we
-focus on (1).</p>
-<p>To reduce runtime, we use a very small Super Learner library and
-large <code>bin_size</code> to estimate the conditional survival
-nuisance functions (see <code><a href="../reference/stackG.html">stackG()</a></code> documentation), as well as
-the two oracle prediction functions. We also use two-fold cross-fitting
-(i.e, set <code>cf_fold_num = 2</code>) and two-fold cross-validation
-for nuisance estimation (i.e., set <code>V = 2</code> for each nuisance
-estimator). In actual analyses, it is generally a good idea to use a
-larger library of learners and more cross-fitting folds.</p>
+focus on (1). When using the built-in nuisance estimation algorithms,
+control parameters can be set using the
+<code>conditional_surv_generator_control</code>,
+<code>large_oracle_generator_control</code>, and
+<code>small_oracle_generator_control</code> arguments. To reduce runtime
+in this example, we use a very small Super Learner library and large
+<code>bin_size</code> to estimate the conditional survival nuisance
+functions (see <code><a href="../reference/stackG.html">stackG()</a></code> function documentation), as well as
+the two oracle prediction functions (see the <code>SuperLearner</code>
+package documentation).</p>
+<p>We also use two-fold cross-fitting (i.e, set
+<code>cf_fold_num = 2</code>) and two-fold cross-validation for nuisance
+estimation (i.e., set <code>V = 2</code> for each nuisance estimator).
+Finally, we use a relatively coarse grid of 40 timepoints, evenly spaced
+on the quantile scale of observed event times, for the
+<code>approx_times</code> argument, which determines the grid over which
+integrals are approximated in the estimation procedure. In actual
+analyses, it is generally a good idea to use a larger library of
+learners, more cross-fitting and cross-validation folds, a finer grid of
+<code>approx_times</code>, and a smaller <code>bin_size</code>.</p>
 <p>Note that we also set <code>sample_split = TRUE</code>. In order to
 obtain valid inference under the null hypothesis of zero importance,
 sample splitting is required. If this option is set to
@@ -313,6 +324,8 @@ used when interpreting the resulting confidence interval.</p>
 <span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>              small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
 <span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>              approx_times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">time</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                                                         probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>              cf_fold_num <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>              sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>              scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -325,11 +338,11 @@ used when interpreting the resulting confidence interval.</p>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
 <span><span class="co">#&gt;   landmark_time est   var_est cil        ciu cil_1sided         p</span></span>
-<span><span class="co">#&gt; 1          1000   0 0.5090484   0 0.06738379          0 0.5834903</span></span>
-<span><span class="co">#&gt; 2          2000   0 5.1440221   0 0.13327316          0 0.8083112</span></span>
+<span><span class="co">#&gt; 1          1000   0 0.5064895   0 0.06755926          0 0.5799834</span></span>
+<span><span class="co">#&gt; 2          2000   0 3.3089520   0 0.08363344          0 0.8661705</span></span>
 <span><span class="co">#&gt;   large_predictiveness small_predictiveness vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.7050374            0.7131595 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 2            0.6417943            0.7485439 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 1            0.7049526            0.7127091 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 2            0.6523270            0.7612004 AUC    1,2,3,4,5,6,7,8,9</span></span>
 <span><span class="co">#&gt;   small_feature_vector indx indx_name</span></span>
 <span><span class="co">#&gt; 1      2,3,4,5,6,7,8,9    1       age</span></span>
 <span><span class="co">#&gt; 2      2,3,4,5,6,7,8,9    1       age</span></span></code></pre></div>
