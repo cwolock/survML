@@ -6,3 +6,6 @@
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
 ^revdep$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

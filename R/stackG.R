@@ -67,6 +67,12 @@
 #' \item{S_C_preds}{An \code{m x k} matrix of estimated censoring time survival probabilities at the
 #' \code{m} covariate vector values and \code{k} times provided by the user in
 #' \code{newX} and \code{newtimes}, respectively.}
+#' \item{Lambda_T_preds}{An \code{m x k} matrix of estimated event time cumulative hazard function values at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{Lambda_C_preds}{An \code{m x k} matrix of estimated censoring time cumulative hazard function values at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
 #' \item{time_grid_approx}{The approximation grid for the product integral or cumulative hazard integral,
 #' (user-specified).}
 #' \item{direction}{Whether the data come from a prospective or retrospective study (user-specified).}
@@ -86,13 +92,14 @@
 #' Each of these objects includes estimated coefficients from the \code{SuperLearner} fit, as well as the
 #' time grid used to create the stacked dataset (where applicable).}
 #'
+#' @seealso [predict.stackG] for \code{stackG} prediction method.
+#'
 #' @export
 #'
 #' @examples
-#'
 #' # This is a small simulation example
 #' set.seed(123)
-#' n <- 500
+#' n <- 250
 #' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 #'
 #' S0 <- function(t, x){
@@ -140,7 +147,7 @@
 #' plot(fit$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
 #' abline(0,1,col='red')
 #'
-#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2022).
+#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
 #'   "A framework for leveraging machine learning tools to estimate personalized survival curves."
 stackG <- function(time,
                    event = rep(1, length(time)),
@@ -187,9 +194,6 @@ stackG <- function(time,
     event <- rep(1, length(time))
     newtimes <- tau - newtimes
     time_grid_approx <- sort(tau - time_grid_approx)
-    P_Delta_opt_preds <- rep(1, nrow(newX))
-    F_Y_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
-    G_W_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
 
   # if there is a censoring probability to estimate, i.e. if there is censoring
@@ -212,6 +216,10 @@ stackG <- function(time,
     F_Y_0_opt_preds <- stats::predict(F_Y_0_opt,
                                       newX = newX,
                                       newtimes = time_grid_approx)
+  } else{ # otherwise just set relevant predictions to 0 or 1 as needed
+    P_Delta_opt_preds <- rep(1, nrow(newX))
+    F_Y_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
+    G_W_0_opt_preds <- matrix(0, nrow = nrow(newX), ncol = length(time_grid_approx))
   }
 
   F_Y_1_opt <- f_y_stack(time = time,
@@ -272,40 +280,38 @@ stackG <- function(time,
     G_W_0_curr <- G_W_0_opt_preds[i,]
     G_W_1_curr <- G_W_1_opt_preds[i,]
     if (surv_form == "PI"){
-      S_T_ests <-compute_prodint(cdf_uncens = F_Y_1_curr,
-                                 cdf_cens = F_Y_0_curr,
-                                 entry_uncens = G_W_1_curr,
-                                 entry_cens = G_W_0_curr,
-                                 p_uncens = pi_curr,
-                                 newtimes = newtimes,
-                                 time_grid = time_grid_approx)
-      S_C_ests <-compute_prodint(cdf_uncens = F_Y_0_curr,
-                                 cdf_cens = F_Y_1_curr,
-                                 entry_uncens = G_W_0_curr,
-                                 entry_cens = G_W_1_curr,
-                                 p_uncens = 1 - pi_curr,
-                                 newtimes = newtimes,
-                                 time_grid = time_grid_approx)
+      S_T_ests <- compute_prodint(cdf_uncens = F_Y_1_curr,
+                                  cdf_cens = F_Y_0_curr,
+                                  entry_uncens = G_W_1_curr,
+                                  entry_cens = G_W_0_curr,
+                                  p_uncens = pi_curr,
+                                  newtimes = newtimes,
+                                  time_grid = time_grid_approx)
+      S_C_ests <- compute_prodint(cdf_uncens = F_Y_0_curr,
+                                  cdf_cens = F_Y_1_curr,
+                                  entry_uncens = G_W_0_curr,
+                                  entry_cens = G_W_1_curr,
+                                  p_uncens = 1 - pi_curr,
+                                  newtimes = newtimes,
+                                  time_grid = time_grid_approx)
     } else if (surv_form == "exp"){
-      S_T_ests <-compute_exponential(cdf_uncens = F_Y_1_curr,
-                                     cdf_cens = F_Y_0_curr,
-                                     entry_uncens = G_W_1_curr,
-                                     entry_cens = G_W_0_curr,
-                                     p_uncens = pi_curr,
-                                     newtimes = newtimes,
-                                     time_grid = time_grid_approx)
-      S_C_ests <-compute_exponential(cdf_uncens = F_Y_0_curr,
-                                     cdf_cens = F_Y_1_curr,
-                                     entry_uncens = G_W_0_curr,
-                                     entry_cens = G_W_1_curr,
-                                     p_uncens = 1 - pi_curr,
-                                     newtimes = newtimes,
-                                     time_grid = time_grid_approx)
+      S_T_ests <- compute_exponential(cdf_uncens = F_Y_1_curr,
+                                      cdf_cens = F_Y_0_curr,
+                                      entry_uncens = G_W_1_curr,
+                                      entry_cens = G_W_0_curr,
+                                      p_uncens = pi_curr,
+                                      newtimes = newtimes,
+                                      time_grid = time_grid_approx)
+      S_C_ests <- compute_exponential(cdf_uncens = F_Y_0_curr,
+                                      cdf_cens = F_Y_1_curr,
+                                      entry_uncens = G_W_0_curr,
+                                      entry_cens = G_W_1_curr,
+                                      p_uncens = 1 - pi_curr,
+                                      newtimes = newtimes,
+                                      time_grid = time_grid_approx)
     }
     return(list(S_T_ests = S_T_ests, S_C_ests = S_C_ests))
   }
-
-
 
   preds <- t(matrix(unlist(apply(X = as.matrix(seq(1, nrow(newX))),
                                  MARGIN = 1,
@@ -319,8 +325,50 @@ stackG <- function(time,
     S_C_preds <- NULL
   }
 
+  estimate_Lambda_T <- function(i){
+    # get S_Y estimates up to t
+    F_Y_1_curr <- F_Y_1_opt_preds[i,]
+    pi_curr <- P_Delta_opt_preds[i]
+    F_Y_0_curr <- F_Y_0_opt_preds[i,]
+    G_W_0_curr <- G_W_0_opt_preds[i,]
+    G_W_1_curr <- G_W_1_opt_preds[i,]
+
+    S_T_ests <- compute_exponential(cdf_uncens = F_Y_1_curr,
+                                    cdf_cens = F_Y_0_curr,
+                                    entry_uncens = G_W_1_curr,
+                                    entry_cens = G_W_0_curr,
+                                    p_uncens = pi_curr,
+                                    newtimes = newtimes,
+                                    time_grid = time_grid_approx)
+    S_C_ests <- compute_exponential(cdf_uncens = F_Y_0_curr,
+                                    cdf_cens = F_Y_1_curr,
+                                    entry_uncens = G_W_0_curr,
+                                    entry_cens = G_W_1_curr,
+                                    p_uncens = 1 - pi_curr,
+                                    newtimes = newtimes,
+                                    time_grid = time_grid_approx)
+
+    if (direction == "retrospective"){
+      Lambda_T_ests <- -log(1 - S_T_ests)
+      Lambda_C_ests <- -log(1 - S_C_ests)
+    } else{
+      Lambda_T_ests <- -log(S_T_ests)
+      Lambda_C_ests <- -log(S_C_ests)
+    }
+    return(list(Lambda_T_ests = Lambda_T_ests, Lambda_C_ests = Lambda_C_ests))
+  }
+
+  preds <- t(matrix(unlist(apply(X = as.matrix(seq(1, nrow(newX))),
+                                 MARGIN = 1,
+                                 FUN = estimate_Lambda_T)), nrow = 2*length(newtimes)))
+
+  Lambda_T_preds <- preds[,1:length(newtimes)]
+  Lambda_C_preds <- preds[,(length(newtimes) + 1):(2*length(newtimes))]
+
   res <- list(S_T_preds = S_T_preds,
               S_C_preds = S_C_preds,
+              Lambda_T_preds = Lambda_T_preds,
+              Lambda_C_preds = Lambda_C_preds,
               time_grid_approx = time_grid_approx,
               direction = direction,
               tau = tau,
@@ -337,9 +385,99 @@ stackG <- function(time,
   return(res)
 }
 
-
-#' @noRd
+#' Obtain predicted conditional survival and cumulative hazard functions from a global survival stacking object
+#'
+#' @param object Object of class \code{stackG}
+#' @param newX \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param newtimes \code{k x 1} numeric vector of times at which to obtain \code{k}
+#' predicted conditional survivals.
+#' @param time_grid_approx Numeric vector of times at which to
+#' approximate product integral or cumulative hazard interval. Defaults to the value
+#' saved in \code{object}.
+#' @param surv_form Mapping from hazard estimate to survival estimate.
+#' Can be either \code{"PI"} (product integral mapping) or \code{"exp"}
+#' (exponentiated cumulative hazard estimate). Defaults to the value
+#' saved in \code{object}.
+#' @param ... Further arguments passed to or from other methods.
+#'
+#' @return A named list with the following components:
+#' \item{S_T_preds}{An \code{m x k} matrix of estimated event time survival probabilities at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{S_C_preds}{An \code{m x k} matrix of estimated censoring time survival probabilities at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{Lambda_T_preds}{An \code{m x k} matrix of estimated event time cumulative hazard function values at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{Lambda_C_preds}{An \code{m x k} matrix of estimated censoring time cumulative hazard function values at the
+#' \code{m} covariate vector values and \code{k} times provided by the user in
+#' \code{newX} and \code{newtimes}, respectively.}
+#' \item{time_grid_approx}{The approximation grid for the product integral or cumulative hazard integral,
+#' (user-specified).}
+#' \item{surv_form}{Exponential or product-integral form (user-specified).}
+#'
+#' @seealso [stackG]
+#'
 #' @export
+#'
+#' @examples
+#'
+#' # This is a small simulation example
+#' set.seed(123)
+#' n <- 250
+#' X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+#'
+#' S0 <- function(t, x){
+#'   pexp(t, rate = exp(-2 + x[,1] - x[,2] + .5 * x[,1] * x[,2]), lower.tail = FALSE)
+#' }
+#' T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+#'
+#' G0 <- function(t, x) {
+#'   as.numeric(t < 15) *.9*pexp(t,
+#'                               rate = exp(-2 -.5*x[,1]-.25*x[,2]+.5*x[,1]*x[,2]),
+#'                               lower.tail=FALSE)
+#' }
+#' C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+#' C[C > 15] <- 15
+#'
+#' entry <- runif(n, 0, 15)
+#'
+#' time <- pmin(T, C)
+#' event <- as.numeric(T <= C)
+#'
+#' sampled <- which(time >= entry)
+#' X <- X[sampled,]
+#' time <- time[sampled]
+#' event <- event[sampled]
+#' entry <- entry[sampled]
+#'
+#' # Note that this a very small Super Learner library, for computational purposes.
+#' SL.library <- c("SL.mean", "SL.glm")
+#'
+#' fit <- stackG(time = time,
+#'               event = event,
+#'               entry = entry,
+#'               X = X,
+#'               newX = X,
+#'               newtimes = seq(0, 15, .1),
+#'               direction = "prospective",
+#'               bin_size = 0.1,
+#'               time_basis = "continuous",
+#'               time_grid_approx = sort(unique(time)),
+#'               surv_form = "exp",
+#'               learner = "SuperLearner",
+#'               SL_control = list(SL.library = SL.library,
+#'                                 V = 5))
+#'
+#' preds <- predict(object = fit,
+#'                  newX = X,
+#'                  newtimes = seq(0, 15, 0.1))
+#'
+#' plot(preds$S_T_preds[1,], S0(t =  seq(0, 15, .1), X[1,]))
+#' abline(0,1,col='red')
 predict.stackG <- function(object,
                            newX,
                            newtimes,
@@ -436,8 +574,50 @@ predict.stackG <- function(object,
     S_C_preds <- NULL
   }
 
+  estimate_Lambda_T <- function(i){
+    # get S_Y estimates up to t
+    F_Y_1_curr <- F_Y_1_opt_preds[i,]
+    pi_curr <- P_Delta_opt_preds[i]
+    F_Y_0_curr <- F_Y_0_opt_preds[i,]
+    G_W_0_curr <- G_W_0_opt_preds[i,]
+    G_W_1_curr <- G_W_1_opt_preds[i,]
+
+    S_T_ests <- compute_exponential(cdf_uncens = F_Y_1_curr,
+                                    cdf_cens = F_Y_0_curr,
+                                    entry_uncens = G_W_1_curr,
+                                    entry_cens = G_W_0_curr,
+                                    p_uncens = pi_curr,
+                                    newtimes = newtimes,
+                                    time_grid = time_grid_approx)
+    S_C_ests <- compute_exponential(cdf_uncens = F_Y_0_curr,
+                                    cdf_cens = F_Y_1_curr,
+                                    entry_uncens = G_W_0_curr,
+                                    entry_cens = G_W_1_curr,
+                                    p_uncens = 1 - pi_curr,
+                                    newtimes = newtimes,
+                                    time_grid = time_grid_approx)
+
+    if (object$direction == "retrospective"){
+      Lambda_T_ests <- -log(1 - S_T_ests)
+      Lambda_C_ests <- -log(1 - S_C_ests)
+    } else{
+      Lambda_T_ests <- -log(S_T_ests)
+      Lambda_C_ests <- -log(S_C_ests)
+    }
+    return(list(Lambda_T_ests = Lambda_T_ests, Lambda_C_ests = Lambda_C_ests))
+  }
+
+  preds <- t(matrix(unlist(apply(X = as.matrix(seq(1, nrow(newX))),
+                                 MARGIN = 1,
+                                 FUN = estimate_Lambda_T)), nrow = 2*length(newtimes)))
+
+  Lambda_T_preds <- preds[,1:length(newtimes)]
+  Lambda_C_preds <- preds[,(length(newtimes) + 1):(2*length(newtimes))]
+
   res <- list(S_T_preds = S_T_preds,
               S_C_preds = S_C_preds,
+              Lambda_T_preds = Lambda_T_preds,
+              Lambda_C_preds = Lambda_C_preds,
               surv_form = surv_form,
               time_grid_approx = time_grid_approx)
   return(res)

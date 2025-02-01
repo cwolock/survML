@@ -6,12 +6,13 @@
 \alias{survML-package}
 \title{survML: Tools for Flexible Survival Analysis Using Machine Learning}
 \description{
-Statistical methods for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation and isotonic regression methods for current status data. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) \doi{10.1080/10618600.2024.2304070}.
+Statistical tools for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation, standardized survival function estimation for current status data, and methods for algorithm-agnostic variable importance. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) \doi{10.1080/10618600.2024.2304070}.
 }
 \seealso{
 Useful links:
 \itemize{
   \item \url{https://github.com/cwolock/survML}
+  \item \url{https://cwolock.github.io/survML/}
   \item Report bugs at \url{https://github.com/cwolock/survML/issues}
 }
 

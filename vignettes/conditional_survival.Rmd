@@ -1,8 +1,8 @@
 ---
-title: "Basic Usage of survML"
+title: "Estimating a conditional survival function using off-the-shelf machine learning tools"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Basic Usage of survML}
+  %\VignetteIndexEntry{Estimating a conditional survival function using off-the-shelf machine learning tools}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ library(ggplot2)
 library(gam)
 ```
 
-# `survML`: Conditional survival function estimation using machine learning
+## Introduction
 
 The `survML` package implements two methods for estimating a conditional survival function using off-the-shelf machine learning. The first, called *global survival stacking* and performed using the `stackG()` function, involves decomposing the conditional cumulative hazard function into regression functions depending only on the observed data. The second, called *local survival stacking* or discrete-time hazard estimation, involves discretizing time and estimating the probability of an event of interest within each discrete time period. This procedure is implemented in the `stackL()` function. 
 
@@ -40,6 +40,7 @@ The `stackG` function performs global survival stacking. The most important user
 * `time_basis`: This is how the time variable $t$ is included in the pooled data set. The default is `continuous` (i.e., include time as-is). It is also possible to include a dummy variable for each time in the grid (i.e., treat time as a `factor` variable) using option `dummy`. 
 * `learner`: Currently, the only supported option is `SuperLearner`. 
 * `SL_control`: This is a named list of arguments that are passed directly to the `SuperLearner()` function. `SL.library` gives the library of algorithms to be included in the Super Learner binary regression. This argument should be vector of algorithm names, which can be either default algorithms included in the `SuperLearner` package, or user-specified algorithms. See the `SuperLearner` package documentation for more information. 
+* `time_grid_approx`: This is the grid of times used to approximate the cumulative hazard or product integral. While this argument defaults to a grid of every observed follow-up time, this can have a substantial computational cost in large samples. Using a coarser grid (e.g., of ~100 time points) will decrease runtime and usually has little impact on performance. 
 
 ### Example
 
@@ -151,3 +152,15 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
 
 p
 ```
+
+## References
+
+For details of global survival stacking, please see the following paper:
+
+Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. ["A framework for leveraging machine learning tools to estimate personalized survival curves."](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070) *Journal of Computational and Graphical Statistics* (2024).
+
+Local survival stacking is described in: 
+
+Eric C. Polley and Mark J. van der Laan. "Super Learning for Right-Censored Data." In *Targeted Learning* (2011). 
+
+Erin Craig, Chenyang Zhong, and Robert Tibshirani. "Survival stacking: casting survival analysis as a classification problem." [arXiv:2107.13480](https://arxiv.org/abs/2107.13480) (2021).

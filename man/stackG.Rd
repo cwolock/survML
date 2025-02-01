@@ -106,6 +106,12 @@ A named list of class \code{stackG}, with the following components:
 \item{S_C_preds}{An \code{m x k} matrix of estimated censoring time survival probabilities at the
 \code{m} covariate vector values and \code{k} times provided by the user in
 \code{newX} and \code{newtimes}, respectively.}
+\item{Lambda_T_preds}{An \code{m x k} matrix of estimated event time cumulative hazard function values at the
+\code{m} covariate vector values and \code{k} times provided by the user in
+\code{newX} and \code{newtimes}, respectively.}
+\item{Lambda_C_preds}{An \code{m x k} matrix of estimated censoring time cumulative hazard function values at the
+\code{m} covariate vector values and \code{k} times provided by the user in
+\code{newX} and \code{newtimes}, respectively.}
 \item{time_grid_approx}{The approximation grid for the product integral or cumulative hazard integral,
 (user-specified).}
 \item{direction}{Whether the data come from a prospective or retrospective study (user-specified).}
@@ -129,10 +135,9 @@ time grid used to create the stacked dataset (where applicable).}
 Estimate a conditional survival function using global survival stacking
 }
 \examples{
-
 # This is a small simulation example
 set.seed(123)
-n <- 500
+n <- 250
 X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
 
 S0 <- function(t, x){
@@ -182,6 +187,9 @@ abline(0,1,col='red')
 
 }
 \references{
-Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2022).
+Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
 "A framework for leveraging machine learning tools to estimate personalized survival curves."
+}
+\seealso{
+\link{predict.stackG} for \code{stackG} prediction method.
 }
