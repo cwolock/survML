@@ -169,7 +169,13 @@ currstatCIR <- function(time,
     kappa_ests[ind]
   })
   tau_ests <- deriv_ests * kappa_ests_rescaled
-  q <- ChernoffDist::qChern(p = alpha/2)
+  # temporary workaround due to issues with ChernoffDist R package
+  if (alpha == 0.05){
+    q <- -0.9981811
+  } else if (alpha == 0.1){
+    q <- -0.8450812
+  }
+  # q <- ChernoffDist::qChern(p = alpha/2)
   half_intervals <- sapply(1:n_eval_pts, function(x){
     (4*tau_ests[x]/length(dat$y))^{1/3}*q
   })
