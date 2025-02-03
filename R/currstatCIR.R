@@ -70,6 +70,8 @@
 currstatCIR <- function(time,
                         event,
                         X,
+                        mu_nuisance = "SL",
+                        g_nuisance = "haldensify",
                         SL_control = list(SL.library = c("SL.mean", "SL.glm"),
                                           V = 3),
                         HAL_control = list(n_bins = c(5),
@@ -105,7 +107,8 @@ currstatCIR <- function(time,
 
   # estimate conditional density (only among observed)
   cond_density_fit <- construct_f_sIx_n(dat = dat,
-                                        HAL_control = HAL_control)
+                                        HAL_control = HAL_control,
+                                        g_nuisance = g_nuisance)
   f_sIx_n <- cond_density_fit$fnc
   Riemann_grid <- c(0, cond_density_fit$breaks)
   # estimate marginal density (marginalizing the conditional density over whole sample)
@@ -114,7 +117,7 @@ currstatCIR <- function(time,
   g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
 
   # estimate outcome regression (only among observed)
-  mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
+  mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid, mu_nuisance = mu_nuisance)
 
   y_vals <- sort(unique(dat$y))
 
@@ -210,7 +213,7 @@ currstatCIR <- function(time,
 
 #' Estimate outcome regression
 #' @noRd
-construct_mu_n <- function(dat, SL_control, Riemann_grid) {
+construct_mu_n <- function(dat, SL_control, Riemann_grid, mu_nuisance) {
   # Construct newX (all distinct combinations of X and S)
   w_distinct <- dplyr::distinct(dat$w)
   w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
@@ -219,16 +222,26 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid) {
   newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
   newW$w_index <- NULL
 
-  model_sl <- SuperLearner::SuperLearner(
-    Y = dat$delta[dat$s == 1],
-    X = cbind(dat$w[dat$s == 1,], Yprime=dat$y[dat$s == 1]),
-    newX = newW,
-    family = "binomial",
-    method = "method.NNLS",
-    SL.library = SL_control$SL.library,
-    cvControl = list(V = SL_control$V)
-  )
-  pred <- as.numeric(model_sl$SL.predict)
+  if (mu_nuisance == "SL"){
+    model_sl <- SuperLearner::SuperLearner(
+      Y = dat$delta[dat$s == 1],
+      X = cbind(dat$w[dat$s == 1,], Yprime=dat$y[dat$s == 1]),
+      newX = newW,
+      family = "binomial",
+      method = "method.NNLS",
+      SL.library = SL_control$SL.library,
+      cvControl = list(V = SL_control$V)
+    )
+    pred <- as.numeric(model_sl$SL.predict)
+  } else if (mu_nuisance == "glm"){
+    df <- data.frame(Y = dat$delta[dat$s == 1],
+                     Yprime = dat$y[dat$s == 1],
+                     dat$w[dat$s == 1,])
+    parametric_fit <- glm(Y ~ ., data = df,
+                          family = binomial(link = "logit"))
+    pred <- predict(parametric_fit, newdata = newW, type = "response")
+  }
+
   newW$index <- c(1:nrow(newW))
 
   fnc <- function(y,w) {
@@ -249,40 +262,57 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid) {
 
 #' Estimate conditional density
 #' @noRd
-construct_f_sIx_n <- function(dat, HAL_control){
+construct_f_sIx_n <- function(dat, HAL_control, g_nuisance){
 
-  # fit hal
-  haldensify_fit <- haldensify::haldensify(A = dat$y[dat$s == 1],
-                                           W = dat$w[dat$s == 1,],
-                                           n_bins = HAL_control$n_bins,
-                                           grid_type = HAL_control$grid_type,
-                                           cv_folds = HAL_control$V)
+  if (g_nuisance == "haldensify"){
+    # fit hal
+    haldensify_fit <- haldensify::haldensify(A = dat$y[dat$s == 1],
+                                             W = dat$w[dat$s == 1,],
+                                             n_bins = HAL_control$n_bins,
+                                             grid_type = HAL_control$grid_type,
+                                             cv_folds = HAL_control$V)
 
-  w_distinct <- dplyr::distinct(dat$w)
-  w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
-  # only get predictions at the breakpoints, since estimator is piecewise constant
-  y_distinct <- haldensify_fit$breaks
-  newW <- expand.grid(w_index=w_distinct$w_index, y=y_distinct)
-  newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
-  newW$w_index <- NULL
+    w_distinct <- dplyr::distinct(dat$w)
+    w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
+    # only get predictions at the breakpoints, since estimator is piecewise constant
+    y_distinct <- haldensify_fit$breaks
+    newW <- expand.grid(w_index=w_distinct$w_index, y=y_distinct)
+    newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
+    newW$w_index <- NULL
 
-  pred <- stats::predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
+    pred <- stats::predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
 
-  newW$index <- c(1:nrow(newW))
+    newW$index <- c(1:nrow(newW))
 
-  breaks <- haldensify_fit$breaks
+    breaks <- haldensify_fit$breaks
 
-  fnc <- function(y,w) {
-    left_y <- max(breaks[breaks <= max(y, min(breaks))])
-    cond <- paste0("round(y,5)==",round(left_y,5))
-    for (i in c(1:length(w))) {
-      cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+    fnc <- function(y,w) {
+      left_y <- max(breaks[breaks <= max(y, min(breaks))])
+      cond <- paste0("round(y,5)==",round(left_y,5))
+      for (i in c(1:length(w))) {
+        cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+      }
+      index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
+      return(pred[index])
     }
-    index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-    return(pred[index])
+  } else if (g_nuisance == "parametric"){
+    df <- data.frame(y = dat$y[dat$s == 1],
+                     dat$w[dat$s == 1,])
+    df$delta <- 1
+    parametric_fit <- survival::survreg(survival::Surv(y, delta) ~ ., data = df,
+                                   dist = "exponential")
+    beta <- parametric_fit$coefficients
+
+    fnc <- function(y,w){
+      extended_w <- c(1,w)
+      mu <- t(as.matrix(beta))%*%as.matrix(extended_w)
+      rate <- 1/exp(mu)
+      return(dexp(y, rate = rate))
+    }
+    breaks <- sort(unique(dat$y[dat$s == 1]))
   }
 
-  return(list(fnc = fnc, breaks = haldensify_fit$breaks))
+  return(list(fnc = fnc, breaks = breaks))
 }
 
 #' Estimate marginal density
@@ -342,29 +372,29 @@ construct_Gamma_n <- function(dat, mu_n, g_n, f_sIx_n, Riemann_grid) {
   piece_2 <- sapply(dat$y, function(y) {
     unique_piece_2[unique_y == y]
   })
-  w_distinct <- dplyr::distinct(dat$w)
+  # w_distinct <- dplyr::distinct(dat$w)
   # if there actually is missingness to deal with
-  if (sum(dat$s) != length(dat$s)){
-    piece_4 <- sapply(Riemann_grid, function(y) {
-      mean(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
-    })
-
-    # calculate the Riemann integral w.r.t. the conditional density
-    # for each unique value of w
-    unique_Riemann_integrals <- apply(w_distinct, MARGIN = 1, function(w){
-      density_vals <- sapply(Riemann_grid, function(y){
-        f_sIx_n(y = y, w = as.numeric(w))
-      })
-      Riemann_integrals <- sapply(Riemann_grid, function(y){
-        sum(diff(Riemann_grid[Riemann_grid <= y]) * piece_4[Riemann_grid <= y][-1] * density_vals[Riemann_grid <= y][-1])
-      })
-      Riemann_integrals
-    })
-
-    unique_Riemann_integrals <- t(unique_Riemann_integrals)
-  } else{
-    unique_Riemann_integrals <- matrix(1, nrow = nrow(w_distinct), ncol = length(Riemann_grid))
-  }
+  # if (sum(dat$s) != length(dat$s)){
+  #   piece_4 <- sapply(Riemann_grid, function(y) {
+  #     mean(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
+  #   })
+  #
+  #   # calculate the Riemann integral w.r.t. the conditional density
+  #   # for each unique value of w
+  #   unique_Riemann_integrals <- apply(w_distinct, MARGIN = 1, function(w){
+  #     density_vals <- sapply(Riemann_grid, function(y){
+  #       f_sIx_n(y = y, w = as.numeric(w))
+  #     })
+  #     Riemann_integrals <- sapply(Riemann_grid, function(y){
+  #       sum(diff(Riemann_grid[Riemann_grid <= y]) * piece_4[Riemann_grid <= y][-1] * density_vals[Riemann_grid <= y][-1])
+  #     })
+  #     Riemann_integrals
+  #   })
+  #
+  #   unique_Riemann_integrals <- t(unique_Riemann_integrals)
+  # } else{
+  #   unique_Riemann_integrals <- matrix(1, nrow = nrow(w_distinct), ncol = length(Riemann_grid))
+  # }
 
   fnc <- function(y) {
     piece_3 <- as.integer(dat$y<=y) * dat$s
