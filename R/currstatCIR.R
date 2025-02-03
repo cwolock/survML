@@ -207,6 +207,8 @@ currstatCIR <- function(time,
   results <- results[results$t >= eval_region[1] & results$t <= eval_region[2],]
   rownames(results) <- NULL
 
+  results <- list(results = results, mu_n = mu_n, f_sIx_n = f_sIx_n)
+
   return(results)
 
 }
@@ -251,7 +253,13 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid, mu_nuisance) {
     }
     index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
     if (length(index)!=1) {
-      stop(paste0("y=",y,", w=c(",paste(w, collapse=","),")"))
+      warning(paste0("y=",y,", w=c(",paste(w, collapse=","),")"))
+      newy <- y_distinct[which.min(abs(y - y_distinct))]
+      cond <- paste0("round(Yprime,5)==",round(newy,5))
+      for (i in c(1:length(w))) {
+        cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+      }
+      index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
     }
     return(pred[index])
   }
