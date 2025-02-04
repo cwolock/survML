@@ -167,7 +167,7 @@ currstatCIR <- function(time,
   kappa_ests <- sapply(y_vals, kappa_n)
   # transform kappa to quantile scale
   kappa_ests_rescaled <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), function(x){
-  # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
+    # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
     ind <- which(y_vals == F_n_inverse(x))
     kappa_ests[ind]
   })
@@ -242,6 +242,45 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid, mu_nuisance) {
     parametric_fit <- glm(Y ~ ., data = df,
                           family = binomial(link = "logit"))
     pred <- predict(parametric_fit, newdata = newW, type = "response")
+  } else if (mu_nuisance == "gam"){
+    df <- data.frame(Y = dat$delta[dat$s == 1],
+                     Yprime = dat$y[dat$s == 1],
+                     dat$w[dat$s == 1,,drop=FALSE])
+    x_nms <- names(df)[-1]
+    gam.model <- as.formula(paste("Y~",
+                                  paste(paste("s(", x_nms[1], ", bs = 'tp')",
+                                              sep=""), collapse = "+"), "+",
+                                  paste(x_nms[2:4], collapse = "+")))
+    fit <- mgcv::gam(gam.model, family = binomial(link = "logit"), data = df,
+                     method = "REML",
+                     optimizer = c("outer", "bfgs"))
+    pred <- as.numeric(predict(fit, newdata = newW, type = "response"))
+  } else if (mu_nuisance == "ranger"){
+    df <- data.frame(Y = as.factor(dat$delta[dat$s == 1]),
+                     Yprime = dat$y[dat$s == 1],
+                     dat$w[dat$s == 1,,drop=FALSE])
+    mod <- ranger::ranger(y = df$Y,
+                          x = as.matrix(df[,-1,drop=FALSE]),
+                          num.trees = 500,
+                          mtry = 2,
+                          write.forest = TRUE,
+                          probability = TRUE,
+                          replace = TRUE,
+                          min.node.size = 1,
+                          oob.error = FALSE)
+    pred <- predict(mod, data = newW)$predictions[,"1"]
+  } else if (mu_nuisance == "xgboost"){
+    df <- data.frame(Y = dat$delta[dat$s == 1],
+                     dat$w[dat$s == 1,,drop=FALSE],
+                     Yprime = dat$y[dat$s == 1])
+    xgmat <- xgboost::xgb.DMatrix(data = as.matrix(df[,-1,drop=FALSE]), label = df$Y)
+    mod <- xgboost::xgboost(data = xgmat,
+                            objective="binary:logistic",
+                            nrounds = 1000,
+                            max_depth = 3,
+                            min_child_weight = 1, eta = 0.01,
+                            verbose = FALSE, nthread = 1, eval_metric = "logloss")
+    pred <- predict(mod, newdata = as.matrix(newW))
   }
 
   newW$index <- c(1:nrow(newW))
@@ -308,7 +347,7 @@ construct_f_sIx_n <- function(dat, HAL_control, g_nuisance){
                      dat$w[dat$s == 1,1,drop=FALSE])
     df$delta <- 1
     parametric_fit <- survival::survreg(survival::Surv(y, delta) ~ ., data = df,
-                                   dist = "lognormal")
+                                        dist = "lognormal")
     beta <- parametric_fit$coefficients
     sd <- parametric_fit$scale
 
