@@ -238,7 +238,7 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid, mu_nuisance) {
   } else if (mu_nuisance == "glm"){
     df <- data.frame(Y = dat$delta[dat$s == 1],
                      Yprime = dat$y[dat$s == 1],
-                     dat$w[dat$s == 1,])
+                     dat$w[dat$s == 1,1,drop=FALSE])
     parametric_fit <- glm(Y ~ ., data = df,
                           family = binomial(link = "logit"))
     pred <- predict(parametric_fit, newdata = newW, type = "response")
@@ -305,7 +305,7 @@ construct_f_sIx_n <- function(dat, HAL_control, g_nuisance){
     }
   } else if (g_nuisance == "parametric"){
     df <- data.frame(y = dat$y[dat$s == 1],
-                     dat$w[dat$s == 1,])
+                     dat$w[dat$s == 1,1,drop=FALSE])
     df$delta <- 1
     parametric_fit <- survival::survreg(survival::Surv(y, delta) ~ ., data = df,
                                    dist = "lognormal")
@@ -313,7 +313,7 @@ construct_f_sIx_n <- function(dat, HAL_control, g_nuisance){
     sd <- parametric_fit$scale
 
     fnc <- function(y,w){
-      extended_w <- c(1,w)
+      extended_w <- c(1,w[1])
       mu <- t(as.matrix(beta))%*%as.matrix(extended_w)
       sigma <- sd
       # rate <- 1/exp(mu)
