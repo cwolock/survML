@@ -308,14 +308,17 @@ construct_f_sIx_n <- function(dat, HAL_control, g_nuisance){
                      dat$w[dat$s == 1,])
     df$delta <- 1
     parametric_fit <- survival::survreg(survival::Surv(y, delta) ~ ., data = df,
-                                   dist = "exponential")
+                                   dist = "lognormal")
     beta <- parametric_fit$coefficients
+    sd <- parametric_fit$scale
 
     fnc <- function(y,w){
       extended_w <- c(1,w)
       mu <- t(as.matrix(beta))%*%as.matrix(extended_w)
-      rate <- 1/exp(mu)
-      return(dexp(y, rate = rate))
+      sigma <- sd
+      # rate <- 1/exp(mu)
+      # return(dexp(y, rate = rate))
+      return(dlnorm(x = y, meanlog = mu, sdlog = sigma))
     }
     breaks <- sort(unique(dat$y[dat$s == 1]))
   }
