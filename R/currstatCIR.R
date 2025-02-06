@@ -322,16 +322,20 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
 
     w_distinct <- dplyr::distinct(dat$w)
 
-    binary_fit <- SuperLearner::SuperLearner(
-      Y = dat$s,
-      X = dat$w,
-      newX = w_distinct,
-      family = "binomial",
-      method = "method.NNLS",
-      SL.library = SL_control$SL.library,
-      cvControl = list(V = SL_control$V)
-    )
-    binary_pred <- as.numeric(binary_fit$SL.predict)
+    if (all(s == 1)){
+      binary_pred <- rep(1, nrow(w_distinct))
+    } else{
+      binary_fit <- SuperLearner::SuperLearner(
+        Y = dat$s,
+        X = dat$w,
+        newX = w_distinct,
+        family = "binomial",
+        method = "method.NNLS",
+        SL.library = SL_control$SL.library,
+        cvControl = list(V = SL_control$V)
+      )
+      binary_pred <- as.numeric(binary_fit$SL.predict)
+    }
 
     w_distinct <- dplyr::distinct(dat$w)
     w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
@@ -371,7 +375,7 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
     }
   } else if (g_nuisance == "parametric"){
     df <- data.frame(y = dat$y[dat$s == 1],
-                     dat$w[dat$s == 1,1,drop=FALSE])
+                     dat$w[dat$s == 1,,drop=FALSE])
     df$delta <- 1
     parametric_fit <- survival::survreg(survival::Surv(y, delta) ~ ., data = df,
                                         dist = "lognormal")
@@ -385,6 +389,11 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
       # rate <- 1/exp(mu)
       # return(dexp(y, rate = rate))
       return(dlnorm(x = y, meanlog = mu, sdlog = sigma))
+    }
+    breaks <- sort(unique(dat$y[dat$s == 1]))
+  } else if (g_nuisance == "uniform"){
+    fnc <- function(y,w){
+      return(1)
     }
     breaks <- sort(unique(dat$y[dat$s == 1]))
   }
