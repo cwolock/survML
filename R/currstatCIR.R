@@ -322,16 +322,16 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
 
     w_distinct <- dplyr::distinct(dat$w)
 
-    # binary_fit <- SuperLearner::SuperLearner(
-    #   Y = dat$s,
-    #   X = dat$w,
-    #   newX = w_distinct,
-    #   family = "binomial",
-    #   method = "method.NNLS",
-    #   SL.library = SL_control$SL.library,
-    #   cvControl = list(V = SL_control$V)
-    # )
-    # binary_pred <- as.numeric(binary_fit$SL.predict)
+    binary_fit <- SuperLearner::SuperLearner(
+      Y = dat$s,
+      X = dat$w,
+      newX = w_distinct,
+      family = "binomial",
+      method = "method.NNLS",
+      SL.library = SL_control$SL.library,
+      cvControl = list(V = SL_control$V)
+    )
+    binary_pred <- as.numeric(binary_fit$SL.predict)
 
     w_distinct <- dplyr::distinct(dat$w)
     w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
@@ -356,18 +356,18 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
       index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
       dens_pred <- pred[index]
 
-      # for (i in c(1:length(w))) {
-      #   if (i == 1){
-      #     cond <- paste0("round(w1,5) == ", round(w[i],5))
-      #   } else{
-      #     cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
-      #   }
-      # }
-      # index <- (dplyr::filter(w_distinct, eval(parse(text=cond))))$w_index
-      # binary_pred <- binary_pred[index]
+      for (i in c(1:length(w))) {
+        if (i == 1){
+          cond <- paste0("round(w1,5) == ", round(w[i],5))
+        } else{
+          cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+        }
+      }
+      index <- (dplyr::filter(w_distinct, eval(parse(text=cond))))$w_index
+      binary_pred <- binary_pred[index]
 
-      # return(dens_pred * binary_pred)
-      return(dens_pred)
+      return(dens_pred * binary_pred)
+      # return(dens_pred)
     }
   } else if (g_nuisance == "parametric"){
     df <- data.frame(y = dat$y[dat$s == 1],
