@@ -323,7 +323,7 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
 
     w_distinct <- dplyr::distinct(dat$w)
 
-    if (all(s == 1)){
+    if (all(dat$s == 1)){
       binary_pred <- rep(1, nrow(w_distinct))
     } else{
       binary_fit <- SuperLearner::SuperLearner(
