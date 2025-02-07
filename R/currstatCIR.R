@@ -276,9 +276,10 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid, mu_nuisance) {
                      Yprime = dat$y[dat$s == 1])
     xgmat <- xgboost::xgb.DMatrix(data = as.matrix(df[,-1,drop=FALSE]), label = df$Y)
     mod <- xgboost::xgboost(data = xgmat,
+                           # nfold = 5,
                             objective="binary:logistic",
                             nrounds = 1000,
-                            max_depth = 3,
+                            max_depth = 4,
                             min_child_weight = 1, eta = 0.01,
                             verbose = FALSE, nthread = 1, eval_metric = "logloss")
     pred <- predict(mod, newdata = as.matrix(newW))
@@ -383,7 +384,7 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
     sd <- parametric_fit$scale
 
     fnc <- function(y,w){
-      extended_w <- c(1,w[1])
+      extended_w <- c(1,w)
       mu <- t(as.matrix(beta))%*%as.matrix(extended_w)
       sigma <- sd
       # rate <- 1/exp(mu)
