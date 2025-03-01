@@ -1,4 +1,4 @@
-#' Estimate a survival function under current status sampling
+#' Estimate a survival function under current status sampling with copula
 #'
 #' @param time \code{n x 1} numeric vector of observed monitoring times. For individuals that were never
 #' monitored, this can be set to any arbitrary value, including \code{NA}, as long as the corresponding
@@ -51,7 +51,7 @@
 #' dat$delta[dat$y > 1.8] <- NA
 #' dat$y[dat$y > 1.8] <- NA
 #' eval_region <- c(0.05, 1.5)
-#' res <- survML::currstatCIR(time = dat$y,
+#' res <- survML::currstatCIR_copula(time = dat$y,
 #'                            event = dat$delta,
 #'                            X = dat[,3:4],
 #'                            SL_control = list(SL.library = c("SL.mean", "SL.glm"),
@@ -67,7 +67,7 @@
 #' plot.function(fn, from=min(xvals), to=max(xvals))}
 #'
 #' @export
-currstatCIR <- function(time,
+currstatCIR_copula <- function(time,
                         event,
                         X,
                         SL_control = list(SL.library = c("SL.mean", "SL.glm"),
@@ -79,7 +79,8 @@ currstatCIR <- function(time,
                         # missing_method = "extended",
                         eval_region,
                         n_eval_pts = 101,
-                        alpha = 0.05){
+                        alpha = 0.05,
+                        theta = 0.5){
 
   s <- as.numeric(!is.na(event))
 
@@ -106,13 +107,15 @@ currstatCIR <- function(time,
   # estimate conditional density (only among observed)
   cond_density_fit <- construct_f_sIx_n(dat = dat,
                                         HAL_control = HAL_control)
-
   f_sIx_n <- cond_density_fit$fnc
   Riemann_grid <- c(0, cond_density_fit$breaks)
   # estimate marginal density (marginalizing the conditional density over whole sample)
   f_s_n <- construct_f_s_n(dat = dat, f_sIx_n = f_sIx_n)
   # estimate density ratio
   g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
+  # estimate conditional CDF of response times
+  F_sIx_n <- construct_F_sIx_n(dat = dat, f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
+
   # estimate outcome regression (only among observed)
   mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
 
@@ -123,8 +126,11 @@ currstatCIR <- function(time,
   F_n_inverse <- function(t){
     stats::quantile(dat$y, probs = t, type = 1)
   }
-  Gamma_n <- construct_Gamma_n(dat=dat, mu_n=mu_n, g_n=g_n,
-                               f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
+
+  Gamma_n <- construct_Gamma_n_copula(dat=dat, mu_n=mu_n, g_n=g_n,
+                               f_sIx_n = f_sIx_n, F_sIx_n = F_sIx_n,
+                               Riemann_grid = Riemann_grid,
+                               theta = theta)
   # kappa_n <- construct_kappa_n(dat = dat, mu_n = mu_n, g_n = g_n)
 
   # only estimate in the evaluation region, which doesn't include the upper bound
@@ -151,9 +157,9 @@ currstatCIR <- function(time,
   eval_cdf_upper <- mean(dat$y <= eval_region[2])
   eval_cdf_lower <- mean(dat$y <= eval_region[1])
   # theta_prime <- construct_deriv(r_Mn = theta_n,
-                                 # deriv_method = deriv_method,
-                                 # y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
-                                 # y = seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts))
+  #                                deriv_method = deriv_method,
+  #                                # y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
+  #                                y = seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts))
 
   # Compute estimates
   # ests <- sapply(seq(0,eval_cdf_upper,length.out = n_eval_pts), theta_n)
@@ -163,14 +169,14 @@ currstatCIR <- function(time,
   # kappa_ests <- sapply(y_vals, kappa_n)
   # transform kappa to quantile scale
   # kappa_ests_rescaled <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), function(x){
-    # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
-    # ind <- which(y_vals == F_n_inverse(x))
-    # kappa_ests[ind]
+  # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
+  # ind <- which(y_vals == F_n_inverse(x))
+  # kappa_ests[ind]
   # })
   # tau_ests <- deriv_ests * kappa_ests_rescaled
   # q <- ChernoffDist::qChern(p = alpha/2)
   # half_intervals <- sapply(1:n_eval_pts, function(x){
-  #   (4*tau_ests[x]/length(dat$y))^{1/3}*q
+  # (4*tau_ests[x]/length(dat$y))^{1/3}*q
   # })
   # cils <- ests - half_intervals
   # cius <- ests + half_intervals
@@ -201,108 +207,16 @@ currstatCIR <- function(time,
 
 }
 
-#' Estimate outcome regression
-#' @noRd
-construct_mu_n <- function(dat, SL_control, Riemann_grid) {
-  # Construct newX (all distinct combinations of X and S)
-  w_distinct <- dplyr::distinct(dat$w)
-  w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
-  y_distinct <- sort(unique(round(c(dat$y, Riemann_grid), digits = 5)))
-  newW <- expand.grid(w_index=w_distinct$w_index, Yprime=y_distinct)
-  newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
-  newW$w_index <- NULL
-
-  model_sl <- SuperLearner::SuperLearner(
-    Y = dat$delta[dat$s == 1],
-    X = cbind(dat$w[dat$s == 1,], Yprime=dat$y[dat$s == 1]),
-    newX = newW,
-    family = "binomial",
-    method = "method.NNLS",
-    SL.library = SL_control$SL.library,
-    cvControl = list(V = SL_control$V)
-  )
-  pred <- as.numeric(model_sl$SL.predict)
-  newW$index <- c(1:nrow(newW))
-
-  fnc <- function(y,w) {
-    cond <- paste0("round(Yprime,5)==",round(y,5))
-    for (i in c(1:length(w))) {
-      cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
-    }
-    index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-    if (length(index)!=1) {
-      stop(paste0("y=",y,", w=c(",paste(w, collapse=","),")"))
-    }
-    return(pred[index])
-  }
-
-  return(fnc)
-
-}
-
-#' Estimate conditional density
-#' @noRd
-construct_f_sIx_n <- function(dat, HAL_control){
-
-  # fit hal
-  haldensify_fit <- haldensify::haldensify(A = dat$y[dat$s == 1],
-                                           W = dat$w[dat$s == 1,],
-                                           n_bins = HAL_control$n_bins,
-                                           grid_type = HAL_control$grid_type,
-                                           cv_folds = HAL_control$V)
-
-  w_distinct <- dplyr::distinct(dat$w)
-  w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
-  # only get predictions at the breakpoints, since estimator is piecewise constant
-  y_distinct <- haldensify_fit$breaks
-  newW <- expand.grid(w_index=w_distinct$w_index, y=y_distinct)
-  newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
-  newW$w_index <- NULL
-
-  pred <- stats::predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
-
-  newW$index <- c(1:nrow(newW))
-
-  breaks <- haldensify_fit$breaks
-
-  fnc <- function(y,w) {
-    left_y <- max(breaks[breaks <= max(y, min(breaks))])
-    cond <- paste0("round(y,5)==",round(left_y,5))
-    for (i in c(1:length(w))) {
-      cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
-    }
-    index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-    return(pred[index])
-  }
-
-  return(list(fnc = fnc, breaks = haldensify_fit$breaks))
-}
-
-#' Estimate marginal density
-#' @noRd
-construct_f_s_n <- function(dat, f_sIx_n){
-  uniq_y <- sort(unique(dat$y))
-  f_sIx_ns <- sapply(uniq_y, function(y){
-    mean(apply(dat$w, 1, function(w){
-      f_sIx_n(y,as.numeric(w))
-    }))})
-
-  fnc <- function(y){
-    f_sIx_ns[uniq_y == y]
-  }
-}
-
-#' Estimate density ratio
-#' @noRd
-construct_g_n <- function(f_sIx_n, f_s_n){
-  function(y,w){
-    f_sIx_n(y,w) / f_s_n(y)
-  }
-}
 
 #' Estimate primitive
 #' @noRd
-construct_Gamma_n <- function(dat, mu_n, g_n, f_sIx_n, Riemann_grid) {
+construct_Gamma_n_copula <- function(dat, mu_n, g_n, f_sIx_n, F_sIx_n,
+                              Riemann_grid, theta) {
+
+  m <- function(u,v){
+    (1 + v^(-theta)*(u^(-theta/(theta+1))-1))^(-1/theta)
+  }
+
   n_orig <- length(dat$y)
   dim_w <- length(dat$w)
   mu_ns <- apply(as_df(dat), 1, function(r) {
@@ -317,98 +231,112 @@ construct_Gamma_n <- function(dat, mu_n, g_n, f_sIx_n, Riemann_grid) {
     g_n(y=y, w=w)
   })
 
+  F_ns <- apply(as_df(dat), 1, function(r) {
+    y <- r[["y"]]
+    w <- as.numeric(r)[1:dim_w]
+    F_sIx_n(y = y, w = w)
+  })
+
+  # ms <- apply(cbind(mu_ns, F_ns),
+  #             MARGIN = 1,
+  #             FUN = function(r){
+  #               m(r[1], r[2])
+  #             })
+
+  m_thetas <- apply(cbind(mu_ns, F_ns),
+                    MARGIN = 1,
+                    FUN = function(r){
+                      m(r[1], r[2])^(theta + 1)
+                    })
+
+  # will later be multiplied by indicator
+  piece_1 <- (dat$delta - mu_ns) / g_ns / (1 + theta) * m_thetas * (F_ns)^(-theta) * mu_ns^(-(1 + 2*theta)/(1 + theta))
+  piece_1[is.na(piece_1)] <- 0
+  # piece_2 <-
+
   # piece 1 maps to (\Delta - \mu_n(Y_i, W_i))/g_n(Y_i, W_i)
-  piece_1 <- (dat$delta-mu_ns) / g_ns
-  piece_1[is.na(piece_1)] <- 0 # there are NAs for missing values, but these get
+  # piece_1 <- (dat$delta-mu_ns) / g_ns
+  # piece_1[is.na(piece_1)] <- 0 # there are NAs for missing values, but these get
   # multiplied by 0 later anyway
 
   # often there aren't so many unique monitoring times, and we can save a lot of
   # time by only computing piece_2 on the unique values
   unique_y <- sort(unique(dat$y))
 
-  unique_piece_2 <- sapply(unique_y, function(y) {
-    sum(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
+  unique_lambda <- sapply(unique_y, function(y) {
+    mus <- apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    Fs <- apply(dat$w, 1, function(w) { F_sIx_n(y = y, w = as.numeric(w))})
+    ms <- apply(cbind(mus, Fs),
+                MARGIN = 1,
+                FUN = function(r){
+                  m(r[1], r[2])
+                })
+    mean(ms)
   })
 
-  # match to pre-computed values
-  # piece 2 maps to \theta_n(Y_i)
   piece_2 <- sapply(dat$y, function(y) {
-    unique_piece_2[unique_y == y]
+    unique_lambda[unique_y == y]
   })
+
+  unique_piece_3 <- sapply(unique_y, function(y) {
+
+    mus <- apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    Fs <- apply(dat$w, 1, function(w) { F_sIx_n(y = y, w = as.numeric(w))})
+    indicators <- (dat$y <= y)
+    mart <- indicators - Fs
+    ms <- apply(cbind(mus, Fs),
+                MARGIN = 1,
+                FUN = function(r){
+                  m(r[1], r[2])^(theta + 1)
+                })
+    mean(ms * Fs^(-theta - 1)*(mus^(-theta/(theta + 1)) - 1) * mart)
+  })
+
+  piece_3 <- sapply(dat$y, function(y) {
+    unique_piece_3[unique_y == y]})
+
+
+  # unique_piece_2 <- sapply(unique_y, function(y) {
+  #   mean(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
+  # })
+  #
+  # # match to pre-computed values
+  # # piece 2 maps to \theta_n(Y_i)
+  # piece_2 <- sapply(dat$y, function(y) {
+  #   unique_piece_2[unique_y == y]
+  # })
+  # w_distinct <- dplyr::distinct(dat$w)
+  # if there actually is missingness to deal with
+  # if (sum(dat$s) != length(dat$s)){
+  #   piece_4 <- sapply(Riemann_grid, function(y) {
+  #     mean(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
+  #   })
+  #
+  #   # calculate the Riemann integral w.r.t. the conditional density
+  #   # for each unique value of w
+  #   unique_Riemann_integrals <- apply(w_distinct, MARGIN = 1, function(w){
+  #     density_vals <- sapply(Riemann_grid, function(y){
+  #       f_sIx_n(y = y, w = as.numeric(w))
+  #     })
+  #     Riemann_integrals <- sapply(Riemann_grid, function(y){
+  #       sum(diff(Riemann_grid[Riemann_grid <= y]) * piece_4[Riemann_grid <= y][-1] * density_vals[Riemann_grid <= y][-1])
+  #     })
+  #     Riemann_integrals
+  #   })
+  #
+  #   unique_Riemann_integrals <- t(unique_Riemann_integrals)
+  # } else{
+  #   unique_Riemann_integrals <- matrix(1, nrow = nrow(w_distinct), ncol = length(Riemann_grid))
+  # }
 
   fnc <- function(y) {
-    piece_3 <- as.integer(dat$y<=y) * dat$s
-    obs_pieces <- (sum(piece_3*piece_1) + mean(piece_3*piece_2))/n_orig
+    piece_4 <- as.integer(dat$y<=y) * dat$s
+    obs_pieces <- mean(piece_4 * piece_1) + mean(piece_4 * piece_2) + mean(piece_4*piece_3)
+    # obs_pieces <- (sum(piece_3*piece_1) + mean(piece_3*piece_2))/n_orig
     return(obs_pieces)
   }
 
   return(fnc)
 }
 
-#' Estimate part of scale factor
-#' @noRd
-construct_kappa_n <- function(dat, mu_n, g_n){
-  fnc <- function(y){
-    mean(apply(dat$w, 1, function(w) {
-      numer1 <- mu_n(y = y, w = as.numeric(w))
-      numer <- numer1 * (1 - numer1)
-      denom1 <- g_n(y = y, w = as.numeric(w))
-      numer / denom1
-    }))
-  }
-  return(fnc)
-}
 
-#' Estimate derivative
-#' @noRd
-construct_deriv <- function(deriv_method="m-spline", r_Mn, y) {
-  # r_Mn should be the theta_n function
-  # grid should be something like seq(0, 1, by = 0.01)
-  if (deriv_method=="line") {
-    fnc <- function(y) { r_Mn(1)-r_Mn(0) }
-  } else {
-    if (r_Mn(0)==r_Mn(1)) {
-      fnc <- function(y) { 0 }
-      warning("Estimated function is flat; variance estimation not possible.")
-    }
-    # Estimate entire function on grid
-    r_Mns <- sapply(y, r_Mn)
-
-    # Compute set of midpoints of jump points (plus endpoints)
-    points_x <- y[1]
-    points_y <- r_Mns[1]
-    for (i in 2:length(y)) {
-      if (r_Mns[i]-r_Mns[round(i-1)]!=0) {
-        points_x <- c(points_x, (y[i]+y[round(i-1)])/2)
-        points_y <- c(points_y, mean(c(r_Mns[i],r_Mns[round(i-1)])))
-      }
-    }
-    points_x <- c(points_x, y[length(y)])
-    points_y <- c(points_y, r_Mns[length(y)])
-
-    if (deriv_method=="linear") {
-      fnc_pre <- stats::approxfun(x=points_x, y=points_y, method="linear", rule=2)
-    }
-
-    if (deriv_method=="m-spline") {
-      fnc_pre <- stats::splinefun(x=points_x, y=points_y, method="monoH.FC")
-    }
-
-    # Construct numerical derivative
-    fnc <- function(y) {
-      width <- 0.1 # Note: may need to play around with this value
-      x1 <- y - width/2
-      x2 <- y + width/2
-      if (x1<0) { x2<-width; x1<-0; }
-      if (x2>1) { x1<-1-width; x2<-1; }
-      return(max((fnc_pre(x2)-fnc_pre(x1))/width,0))
-    }
-  }
-  return(fnc)
-}
-
-#' Convert list data to df
-#' @noRd
-as_df <- function(dat) {
-  cbind(dat$w, y=dat$y)
-}
