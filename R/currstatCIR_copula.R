@@ -117,7 +117,8 @@ currstatCIR_copula <- function(time,
   F_sIx_n <- construct_F_sIx_n(dat = dat, f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
 
   # estimate outcome regression (only among observed)
-  mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
+  mu_n <- construct_mu_n_theta(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid, theta = theta)
+  # mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
 
   y_vals <- sort(unique(dat$y))
 
@@ -365,6 +366,33 @@ construct_F_sIx_n <- function(dat, f_sIx_n, Riemann_grid){
   fnc <- function(y, w){
     pweibull(y, shape = 0.75, scale = exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3]))
   }
+}
+
+#' Estimate outcome regression
+#' @noRd
+construct_mu_n_theta <- function(dat, SL_control, Riemann_grid, theta) {
+
+  fnc <- function(y, w){
+    weib_scale <- exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3])
+    F_Y_of_y <- pweibull(y,
+                         shape = 0.75,
+                         scale = weib_scale)
+    F_T_of_y <- pweibull(y,
+                         shape = 0.75,
+                         scale = weib_scale)
+    cutoff <- -(1/theta)
+    inside <- (1/theta)*(F_T_of_y^(-theta) + F_Y_of_y^(-theta) - 2)
+    if (inside >= cutoff){
+      ret <- 0
+    } else{
+      ret <-  ((F_Y_of_y)^(-theta - 1))/((F_T_of_y^(-theta) + F_Y_of_y^(-theta) - 1)^((theta + 1)/theta))
+    }
+    ret
+  }
+
+
+  return(fnc)
+
 }
 
 
