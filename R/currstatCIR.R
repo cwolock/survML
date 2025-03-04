@@ -245,41 +245,41 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid) {
 construct_f_sIx_n <- function(dat, HAL_control){
 
   # fit hal
-  # haldensify_fit <- haldensify::haldensify(A = dat$y[dat$s == 1],
-  #                                          W = dat$w[dat$s == 1,],
-  #                                          n_bins = HAL_control$n_bins,
-  #                                          grid_type = HAL_control$grid_type,
-  #                                          cv_folds = HAL_control$V)
-  #
-  # w_distinct <- dplyr::distinct(dat$w)
-  # w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
-  # # only get predictions at the breakpoints, since estimator is piecewise constant
-  # y_distinct <- haldensify_fit$breaks
-  # newW <- expand.grid(w_index=w_distinct$w_index, y=y_distinct)
-  # newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
-  # newW$w_index <- NULL
-  #
-  # pred <- stats::predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
-  #
-  # newW$index <- c(1:nrow(newW))
-  #
-  # breaks <- haldensify_fit$breaks
-  #
-  # fnc <- function(y,w) {
-  #   left_y <- max(breaks[breaks <= max(y, min(breaks))])
-  #   cond <- paste0("round(y,5)==",round(left_y,5))
-  #   for (i in c(1:length(w))) {
-  #     cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
-  #   }
-  #   index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-  #   return(pred[index])
-  # }
+  haldensify_fit <- haldensify::haldensify(A = dat$y[dat$s == 1],
+                                           W = dat$w[dat$s == 1,],
+                                           n_bins = HAL_control$n_bins,
+                                           grid_type = HAL_control$grid_type,
+                                           cv_folds = HAL_control$V)
 
-  fnc <- function(y,w){
-    dweibull(x = y, shape = 0.75, scale = exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3]))
+  w_distinct <- dplyr::distinct(dat$w)
+  w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
+  # only get predictions at the breakpoints, since estimator is piecewise constant
+  y_distinct <- haldensify_fit$breaks
+  newW <- expand.grid(w_index=w_distinct$w_index, y=y_distinct)
+  newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
+  newW$w_index <- NULL
+
+  pred <- stats::predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
+
+  newW$index <- c(1:nrow(newW))
+
+  breaks <- haldensify_fit$breaks
+
+  fnc <- function(y,w) {
+    left_y <- max(breaks[breaks <= max(y, min(breaks))])
+    cond <- paste0("round(y,5)==",round(left_y,5))
+    for (i in c(1:length(w))) {
+      cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+    }
+    index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
+    return(pred[index])
   }
 
-  return(list(fnc = fnc, breaks = quantile(dat$y, probs = seq(0, 1, by = 0.05))))#haldensify_fit$breaks))
+  # fnc <- function(y,w){
+  #   dweibull(x = y, shape = 0.75, scale = exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3]))
+  # }
+
+  return(list(fnc = fnc, breaks = haldensify_fit$breaks))
 }
 
 #' Estimate marginal density

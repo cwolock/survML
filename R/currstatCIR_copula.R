@@ -117,7 +117,7 @@ currstatCIR_copula <- function(time,
   F_sIx_n <- construct_F_sIx_n(dat = dat, f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
 
   # estimate outcome regression (only among observed)
-  mu_n <- construct_mu_n_theta(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid, theta = theta)
+  mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
   # mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
 
   y_vals <- sort(unique(dat$y))
