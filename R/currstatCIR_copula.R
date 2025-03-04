@@ -382,7 +382,7 @@ construct_mu_n_theta <- function(dat, SL_control, Riemann_grid, theta) {
                          scale = weib_scale)
     cutoff <- -(1/theta)
     inside <- (1/theta)*(F_T_of_y^(-theta) + F_Y_of_y^(-theta) - 2)
-    if (inside >= cutoff){
+    if (theta < 0 & inside >= cutoff){
       ret <- 0
     } else{
       ret <-  ((F_Y_of_y)^(-theta - 1))/((F_T_of_y^(-theta) + F_Y_of_y^(-theta) - 1)^((theta + 1)/theta))
