@@ -343,29 +343,29 @@ construct_Gamma_n_copula <- function(dat, mu_n, g_n, f_sIx_n, F_sIx_n,
 #' Estimate the conditional cdf
 #' @noRd
 construct_F_sIx_n <- function(dat, f_sIx_n, Riemann_grid){
-  # uniq_y <- Riemann_grid[-2] # take out the first time in the haldensify grid (leave 0 in there)
-  #
-  #
-  # fnc <- function(y, w){
-  #   F_sIx_ns <- sapply(uniq_y, function(y){
-  #     f_sIx_n(y, as.numeric(w))
-  #   })
-  #   nbins <- sum(uniq_y <= y)
-  #   if (nbins == 0){
-  #     print(y)
-  #     print(uniq_y)
-  #   }
-  #   last_bin <- which.max(uniq_y[uniq_y <= y])
-  #   last_cutpoint <- max(uniq_y[uniq_y <= y])
-  #   last_dens <- F_sIx_ns[last_bin]
-  #
-  #
-  #   sum(F_sIx_ns[1:nbins] * diff(Riemann_grid)[1:nbins]) + last_dens * (y - last_cutpoint)
-  # }
+  uniq_y <- Riemann_grid[-2] # take out the first time in the haldensify grid (leave 0 in there)
+
 
   fnc <- function(y, w){
-    pweibull(y, shape = 0.75, scale = exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3]))
+    F_sIx_ns <- sapply(uniq_y, function(y){
+      f_sIx_n(y, as.numeric(w))
+    })
+    nbins <- sum(uniq_y <= y)
+    if (nbins == 0){
+      print(y)
+      print(uniq_y)
+    }
+    last_bin <- which.max(uniq_y[uniq_y <= y])
+    last_cutpoint <- max(uniq_y[uniq_y <= y])
+    last_dens <- F_sIx_ns[last_bin]
+
+
+    sum(F_sIx_ns[1:nbins] * diff(Riemann_grid)[1:nbins]) + last_dens * (y - last_cutpoint)
   }
+
+  # fnc <- function(y, w){
+  #   pweibull(y, shape = 0.75, scale = exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3]))
+  # }
 }
 
 #' Estimate outcome regression
