@@ -49,6 +49,11 @@ currstatCIR_copula_saved_nuisances <- function(time,
                                           dat$w)[,-1])
   names(dat$w) <- paste("w", 1:ncol(dat$w), sep="")
 
+  F_n <- stats::ecdf(dat$y)
+  F_n_inverse <- function(t){
+    stats::quantile(dat$y, probs = t, type = 1)
+  }
+
   y_vals <- sort(unique(dat$y))
 
   Gamma_n <- construct_Gamma_n_copula(dat=dat, mu_n=mu_n, g_n=g_n,

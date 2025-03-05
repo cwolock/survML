@@ -254,6 +254,8 @@ construct_Gamma_n_copula <- function(dat, mu_n, g_n, F_sIx_n,
   piece_1[is.na(piece_1)] <- 0
   # piece_2 <-
 
+  print("made it past piece 1")
+
   # piece 1 maps to (\Delta - \mu_n(Y_i, W_i))/g_n(Y_i, W_i)
   # piece_1 <- (dat$delta-mu_ns) / g_ns
   # piece_1[is.na(piece_1)] <- 0 # there are NAs for missing values, but these get
@@ -262,10 +264,31 @@ construct_Gamma_n_copula <- function(dat, mu_n, g_n, F_sIx_n,
   # often there aren't so many unique monitoring times, and we can save a lot of
   # time by only computing piece_2 on the unique values
   unique_y <- sort(unique(dat$y))
+  uniq_w <- dplyr::distinct(dat$w)
+  print(length(unique_y))
+  print(nrow(uniq_w))
+
+  unique_mus <- lapply(unique_y, function(y){
+    unique_mus <- apply(uniq_w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    unique_mus
+  })
+
+  unique_Fs <- lapply(unique_y, function(y){
+    unique_Fs <- apply(uniq_w, 1, function(w) { F_sIx_n(y=y, w=as.numeric(w)) })
+    unique_Fs
+  })
 
   unique_lambda <- sapply(unique_y, function(y) {
-    mus <- apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
-    Fs <- apply(dat$w, 1, function(w) { F_sIx_n(y = y, w = as.numeric(w))})
+    print(y)
+    # uniq_w <- dplyr::distinct(dat$w)
+    # unique_mus <- apply(uniq_w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    # unique_Fs <- apply(uniq_w, 1, function(w) { F_sIx_n(y = y, w = as.numeric(w))})
+    this_mus <- unique_mus[[which(y == unique_y)]]
+    this_Fs <- unique_Fs[[which(y == unique_y)]]
+    # mus <- apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    # Fs <- apply(dat$w, 1, function(w) { F_sIx_n(y = y, w = as.numeric(w))})
+    mus <- apply(dat$w, 1, function(w) {this_mus[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    Fs <- apply(dat$w, 1, function(w) {this_Fs[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
     ms <- apply(cbind(mus, Fs),
                 MARGIN = 1,
                 FUN = function(r){
@@ -279,9 +302,12 @@ construct_Gamma_n_copula <- function(dat, mu_n, g_n, F_sIx_n,
   })
 
   unique_piece_3 <- sapply(unique_y, function(y) {
-
-    mus <- apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
-    Fs <- apply(dat$w, 1, function(w) { F_sIx_n(y = y, w = as.numeric(w))})
+    this_mus <- unique_mus[[which(y == unique_y)]]
+    this_Fs <- unique_Fs[[which(y == unique_y)]]
+    mus <- apply(dat$w, 1, function(w) {this_mus[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    Fs <- apply(dat$w, 1, function(w) {this_Fs[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    # mus <- apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    # Fs <- apply(dat$w, 1, function(w) { F_sIx_n(y = y, w = as.numeric(w))})
     indicators <- (dat$y <= y)
     mart <- indicators - Fs
     ms <- apply(cbind(mus, Fs),
