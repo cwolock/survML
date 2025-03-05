@@ -128,8 +128,7 @@ currstatCIR_copula <- function(time,
     stats::quantile(dat$y, probs = t, type = 1)
   }
 
-  Gamma_n <- construct_Gamma_n_copula(dat=dat, mu_n=mu_n, g_n=g_n,
-                               f_sIx_n = f_sIx_n, F_sIx_n = F_sIx_n,
+  Gamma_n <- construct_Gamma_n_copula(dat=dat, mu_n=mu_n, g_n=g_n, F_sIx_n = F_sIx_n,
                                Riemann_grid = Riemann_grid,
                                theta = theta)
   # kappa_n <- construct_kappa_n(dat = dat, mu_n = mu_n, g_n = g_n)
@@ -211,7 +210,7 @@ currstatCIR_copula <- function(time,
 
 #' Estimate primitive
 #' @noRd
-construct_Gamma_n_copula <- function(dat, mu_n, g_n, f_sIx_n, F_sIx_n,
+construct_Gamma_n_copula <- function(dat, mu_n, g_n, F_sIx_n,
                               Riemann_grid, theta) {
 
   m <- function(u,v){
