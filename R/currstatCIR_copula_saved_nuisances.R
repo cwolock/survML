@@ -4,12 +4,22 @@ currstatCIR_copula_saved_nuisances <- function(time,
                                                event,
                                                X,
                                                mu_n,
-                                               g_n,
+                                               # g_n,
                                                Riemann_grid,
+                                               f_sIx_n,
+                                               f_s_n,
                                                F_sIx_n,
                                                eval_region,
                                                n_eval_pts = 101,
                                                theta = 0.5){
+
+  construct_g_n_saved <- function(f_sIx_n, f_s_n){
+    fnc <- function(y,w){
+      f_sIx_n(y,w) / f_s_n(y)
+    }
+    return(fnc)
+  }
+  g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
 
   s <- as.numeric(!is.na(event))
 
