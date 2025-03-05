@@ -8,7 +8,6 @@ currstatCIR_copula_saved_nuisances <- function(time,
                                                Riemann_grid,
                                                f_sIx_n,
                                                f_s_n,
-                                               F_sIx_n,
                                                eval_region,
                                                n_eval_pts = 101,
                                                theta = 0.5){
@@ -19,7 +18,21 @@ currstatCIR_copula_saved_nuisances <- function(time,
     }
     return(fnc)
   }
-  g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
+  construct_F_sIx_n_saved <- function(f_sIx_n, Riemann_grid){
+    uniq_y <- Riemann_grid[-2] # take out the first time in the haldensify grid (leave 0 in there)
+    fnc <- function(y, w){
+      F_sIx_ns <- sapply(uniq_y, function(y){
+        f_sIx_n(y, as.numeric(w))
+      })
+      nbins <- sum(uniq_y <= y)
+      last_bin <- which.max(uniq_y[uniq_y <= y])
+      last_cutpoint <- max(uniq_y[uniq_y <= y])
+      last_dens <- F_sIx_ns[last_bin]
+      sum(F_sIx_ns[1:nbins] * diff(Riemann_grid)[1:nbins]) + last_dens * (y - last_cutpoint)
+    }
+  }
+  g_n <- construct_g_n_saved(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
+  F_sIx_n <- construct_F_sIx_n_saved(f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
 
   s <- as.numeric(!is.na(event))
 
