@@ -105,8 +105,7 @@ currstatCIR <- function(time,
 
   # estimate conditional density (only among observed)
   cond_density_fit <- construct_f_sIx_n(dat = dat,
-                                        HAL_control = HAL_control,
-                                        SL_control = SL_control)
+                                        HAL_control = HAL_control)
 
   f_sIx_n <- cond_density_fit$fnc
   Riemann_grid <- c(0, cond_density_fit$breaks)
@@ -243,30 +242,14 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid) {
 
 #' Estimate conditional density
 #' @noRd
-construct_f_sIx_n <- function(dat, HAL_control, SL_control){
+construct_f_sIx_n <- function(dat, HAL_control){
 
+  # fit hal
   haldensify_fit <- haldensify::haldensify(A = dat$y[dat$s == 1],
                                            W = dat$w[dat$s == 1,],
                                            n_bins = HAL_control$n_bins,
                                            grid_type = HAL_control$grid_type,
                                            cv_folds = HAL_control$V)
-
-  w_distinct <- dplyr::distinct(dat$w)
-
-  if (all(dat$s == 1)){
-    binary_pred <- rep(1, nrow(w_distinct))
-  } else{
-    binary_fit <- SuperLearner::SuperLearner(
-      Y = dat$s,
-      X = dat$w,
-      newX = w_distinct,
-      family = "binomial",
-      method = "method.NNLS",
-      SL.library = SL_control$SL.library,
-      cvControl = list(V = SL_control$V)
-    )
-    binary_pred <- as.numeric(binary_fit$SL.predict)
-  }
 
   w_distinct <- dplyr::distinct(dat$w)
   w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
@@ -289,53 +272,8 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control){
       cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
     }
     index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-    dens_pred <- pred[index]
-
-    for (i in c(1:length(w))) {
-      if (i == 1){
-        cond <- paste0("round(w1,5) == ", round(w[i],5))
-      } else{
-        cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
-      }
-    }
-    index <- (dplyr::filter(w_distinct, eval(parse(text=cond))))$w_index
-    binary_pred <- binary_pred[index]
-
-    return(dens_pred * binary_pred)
+    return(pred[index])
   }
-
-  # print(sort(dat$y))
-  #
-  # # fit hal
-  # haldensify_fit <- haldensify::haldensify(A = dat$y,
-  #                                          W = dat$w,
-  #                                          n_bins = HAL_control$n_bins,
-  #                                          grid_type = HAL_control$grid_type,
-  #                                          cv_folds = HAL_control$V)
-  #
-  # w_distinct <- dplyr::distinct(dat$w)
-  # w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
-  # # only get predictions at the breakpoints, since estimator is piecewise constant
-  # y_distinct <- haldensify_fit$breaks
-  # newW <- expand.grid(w_index=w_distinct$w_index, y=y_distinct)
-  # newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
-  # newW$w_index <- NULL
-  #
-  # pred <- stats::predict(haldensify_fit, new_A = newW$y, new_W = newW[,-ncol(newW)])
-  #
-  # newW$index <- c(1:nrow(newW))
-  #
-  # breaks <- haldensify_fit$breaks
-  #
-  # fnc <- function(y,w) {
-  #   left_y <- max(breaks[breaks <= max(y, min(breaks))])
-  #   cond <- paste0("round(y,5)==",round(left_y,5))
-  #   for (i in c(1:length(w))) {
-  #     cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
-  #   }
-  #   index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-  #   return(pred[index])
-  # }
 
   # fnc <- function(y,w){
   #   dweibull(x = y, shape = 0.75, scale = exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3]))

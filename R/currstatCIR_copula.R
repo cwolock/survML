@@ -106,8 +106,7 @@ currstatCIR_copula <- function(time,
 
   # estimate conditional density (only among observed)
   cond_density_fit <- construct_f_sIx_n(dat = dat,
-                                        HAL_control = HAL_control,
-                                        SL_control = SL_control)
+                                        HAL_control = HAL_control)
   f_sIx_n <- cond_density_fit$fnc
   Riemann_grid <- c(0, cond_density_fit$breaks)
   # estimate marginal density (marginalizing the conditional density over whole sample)
