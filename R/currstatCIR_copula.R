@@ -115,8 +115,9 @@ currstatCIR_copula <- function(time,
   # estimate density ratio
   g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
   # estimate conditional CDF of response times
-  F_sIx_n <- construct_F_sIx_n_new(dat = dat, f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
+  F_sIx_n <- construct_F_sIx_n_stack(dat = dat, SL_control = SL_control)
   # F_sIx_n_new <- construct_F_sIx_n_new(dat = dat, f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
+  # F_sIx_n_known <- construct_F_sIx_n_known(dat = dat)
 
   # estimate outcome regression (only among observed)
   mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
@@ -451,4 +452,33 @@ construct_mu_n_theta <- function(dat, SL_control, Riemann_grid, theta) {
 
 }
 
+#' Estimate the conditional cdf
+#' @noRd
+construct_F_sIx_n_stack <- function(dat, SL_control){
+
+  newX <- distinct(dat$w)
+  newtimes <- sort(unique(dat$y))
+  fit <- stackG(time = dat$y,
+                X = dat$w,
+                newX = newX,
+                newtimes = newtimes,
+                SL_control = SL_control,
+                bin_size = 0.05,
+                time_basis = "continuous",
+                time_grid_approx = quantile(dat$y, probs = seq(0, 1, by = 0.01)))
+  preds <- 1-fit$S_T_preds
+
+  fnc <- function(y, w){
+    return(preds[which(colSums(t(newX) == w) == ncol(newX)),which(newtimes == y)])
+  }
+}
+
+
+#' Estimate the conditional cdf
+#' @noRd
+construct_F_sIx_n_known <- function(dat){
+  fnc <- function(y, w){
+    pweibull(y, shape = 0.75, scale = exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3]))
+  }
+}
 
