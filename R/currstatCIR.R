@@ -217,93 +217,103 @@ currstatCIR <- function(time,
 #' Estimate outcome regression
 #' @noRd
 construct_mu_n <- function(dat, SL_control, Riemann_grid, mu_nuisance) {
-  # Construct newX (all distinct combinations of X and S)
-  w_distinct <- dplyr::distinct(dat$w)
-  w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
-  y_distinct <- sort(unique(round(c(dat$y, Riemann_grid), digits = 5)))
-  newW <- expand.grid(w_index=w_distinct$w_index, Yprime=y_distinct)
-  newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
-  newW$w_index <- NULL
 
-  if (mu_nuisance == "SL"){
-    model_sl <- SuperLearner::SuperLearner(
-      Y = dat$delta[dat$s == 1],
-      X = cbind(dat$w[dat$s == 1,], Yprime=dat$y[dat$s == 1]),
-      newX = newW,
-      family = "binomial",
-      method = "method.NNLS",
-      SL.library = SL_control$SL.library,
-      cvControl = list(V = SL_control$V)
-    )
-    pred <- as.numeric(model_sl$SL.predict)
-  } else if (mu_nuisance == "glm"){
-    df <- data.frame(Y = dat$delta[dat$s == 1],
-                     Yprime = dat$y[dat$s == 1],
-                     dat$w[dat$s == 1,,drop=FALSE])
-    parametric_fit <- glm(Y ~ ., data = df,
-                          family = binomial(link = "logit"))
-    pred <- predict(parametric_fit, newdata = newW, type = "response")
-  } else if (mu_nuisance == "gam"){
-    df <- data.frame(Y = dat$delta[dat$s == 1],
-                     Yprime = dat$y[dat$s == 1],
-                     dat$w[dat$s == 1,,drop=FALSE])
-    x_nms <- names(df)[-1]
-    gam.model <- as.formula(paste("Y~",
-                                  paste(paste("s(", x_nms[1], ", bs = 'tp')",
-                                              sep=""), collapse = "+"), "+",
-                                  paste(x_nms[2:4], collapse = "+")))
-    fit <- mgcv::gam(gam.model, family = binomial(link = "logit"), data = df,
-                     method = "REML",
-                     optimizer = c("outer", "bfgs"))
-    pred <- as.numeric(predict(fit, newdata = newW, type = "response"))
-  } else if (mu_nuisance == "ranger"){
-    df <- data.frame(Y = as.factor(dat$delta[dat$s == 1]),
-                     Yprime = dat$y[dat$s == 1],
-                     dat$w[dat$s == 1,,drop=FALSE])
-    mod <- ranger::ranger(y = df$Y,
-                          x = as.matrix(df[,-1,drop=FALSE]),
-                          num.trees = 500,
-                          mtry = 2,
-                          write.forest = TRUE,
-                          probability = TRUE,
-                          replace = TRUE,
-                          min.node.size = 1,
-                          oob.error = FALSE)
-    pred <- predict(mod, data = newW)$predictions[,"1"]
-  } else if (mu_nuisance == "xgboost"){
-    df <- data.frame(Y = dat$delta[dat$s == 1],
-                     dat$w[dat$s == 1,,drop=FALSE],
-                     Yprime = dat$y[dat$s == 1])
-    xgmat <- xgboost::xgb.DMatrix(data = as.matrix(df[,-1,drop=FALSE]), label = df$Y)
-    mod <- xgboost::xgboost(data = xgmat,
-                           # nfold = 5,
-                            objective="binary:logistic",
-                            nrounds = 1000,
-                            max_depth = 4,
-                            min_child_weight = 1, eta = 0.01,
-                            verbose = FALSE, nthread = 1, eval_metric = "logloss")
-    pred <- predict(mod, newdata = as.matrix(newW))
-  }
+  if (mu_nuisance != "known"){
+    # Construct newX (all distinct combinations of X and S)
+    w_distinct <- dplyr::distinct(dat$w)
+    w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
+    y_distinct <- sort(unique(round(c(dat$y, Riemann_grid), digits = 5)))
+    newW <- expand.grid(w_index=w_distinct$w_index, Yprime=y_distinct)
+    newW <- dplyr::inner_join(w_distinct, newW, by="w_index")
+    newW$w_index <- NULL
 
-  newW$index <- c(1:nrow(newW))
-
-  fnc <- function(y,w) {
-    cond <- paste0("round(Yprime,5)==",round(y,5))
-    for (i in c(1:length(w))) {
-      cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+    if (mu_nuisance == "SL"){
+      model_sl <- SuperLearner::SuperLearner(
+        Y = dat$delta[dat$s == 1],
+        X = cbind(dat$w[dat$s == 1,], Yprime=dat$y[dat$s == 1]),
+        newX = newW,
+        family = "binomial",
+        method = "method.NNLS",
+        SL.library = SL_control$SL.library,
+        cvControl = list(V = SL_control$V)
+      )
+      pred <- as.numeric(model_sl$SL.predict)
+    } else if (mu_nuisance == "glm"){
+      df <- data.frame(Y = dat$delta[dat$s == 1],
+                       Yprime = dat$y[dat$s == 1],
+                       dat$w[dat$s == 1,,drop=FALSE])
+      parametric_fit <- glm(Y ~ ., data = df,
+                            family = binomial(link = "logit"))
+      pred <- predict(parametric_fit, newdata = newW, type = "response")
+    } else if (mu_nuisance == "gam"){
+      df <- data.frame(Y = dat$delta[dat$s == 1],
+                       Yprime = dat$y[dat$s == 1],
+                       dat$w[dat$s == 1,,drop=FALSE])
+      x_nms <- names(df)[-1]
+      gam.model <- as.formula(paste("Y~",
+                                    paste(paste("s(", x_nms[1], ", bs = 'tp')",
+                                                sep=""), collapse = "+"), "+",
+                                    paste(x_nms[2:4], collapse = "+")))
+      fit <- mgcv::gam(gam.model, family = binomial(link = "logit"), data = df,
+                       method = "REML",
+                       optimizer = c("outer", "bfgs"))
+      pred <- as.numeric(predict(fit, newdata = newW, type = "response"))
+    } else if (mu_nuisance == "ranger"){
+      df <- data.frame(Y = as.factor(dat$delta[dat$s == 1]),
+                       Yprime = dat$y[dat$s == 1],
+                       dat$w[dat$s == 1,,drop=FALSE])
+      mod <- ranger::ranger(y = df$Y,
+                            x = as.matrix(df[,-1,drop=FALSE]),
+                            num.trees = 500,
+                            mtry = 2,
+                            write.forest = TRUE,
+                            probability = TRUE,
+                            replace = TRUE,
+                            min.node.size = 1,
+                            oob.error = FALSE)
+      pred <- predict(mod, data = newW)$predictions[,"1"]
+    } else if (mu_nuisance == "xgboost"){
+      df <- data.frame(Y = dat$delta[dat$s == 1],
+                       dat$w[dat$s == 1,,drop=FALSE],
+                       Yprime = dat$y[dat$s == 1])
+      xgmat <- xgboost::xgb.DMatrix(data = as.matrix(df[,-1,drop=FALSE]), label = df$Y)
+      mod <- xgboost::xgboost(data = xgmat,
+                              # nfold = 5,
+                              objective="binary:logistic",
+                              nrounds = 1000,
+                              max_depth = 4,
+                              min_child_weight = 1, eta = 0.01,
+                              verbose = FALSE, nthread = 1, eval_metric = "logloss")
+      pred <- predict(mod, newdata = as.matrix(newW))
     }
-    index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-    if (length(index)!=1) {
-      warning(paste0("y=",y,", w=c(",paste(w, collapse=","),")"))
-      newy <- y_distinct[which.min(abs(y - y_distinct))]
-      cond <- paste0("round(Yprime,5)==",round(newy,5))
+
+    newW$index <- c(1:nrow(newW))
+
+    fnc <- function(y,w) {
+      cond <- paste0("round(Yprime,5)==",round(y,5))
       for (i in c(1:length(w))) {
         cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
       }
       index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
+      if (length(index)!=1) {
+        warning(paste0("y=",y,", w=c(",paste(w, collapse=","),")"))
+        newy <- y_distinct[which.min(abs(y - y_distinct))]
+        cond <- paste0("round(Yprime,5)==",round(newy,5))
+        for (i in c(1:length(w))) {
+          cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+        }
+        index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
+      }
+      return(pred[index])
     }
-    return(pred[index])
+  } else{
+    fnc <- function(y,w){
+      weib_shape <- 0.75
+      weib_scale <- exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3] + 0.4*w[1]*w[2] + 0.4*w[1]*w[3] - 0.4*w[2]*w[3])
+      return(pweibull(q = y, shape = weib_shape, scale = weib_scale))
+    }
   }
+
 
   return(fnc)
 
@@ -395,6 +405,13 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control, g_nuisance){
   } else if (g_nuisance == "uniform"){
     fnc <- function(y,w){
       return(1)
+    }
+    breaks <- sort(unique(dat$y[dat$s == 1]))
+  } else if (g_nuisance == "known"){
+    fnc <- function(y,w){
+      weib_shape <- 0.75
+      weib_scale <- exp(0.4*w[1] - 0.2*w[2] + 0.1*w[3] + 0.4/5*w[1]*w[2] + 0.4/5*w[1]*w[3] - 0.4/5*w[2]*w[3])
+      return(dweibull(x = y, shape = weib_shape, scale = weib_scale))
     }
     breaks <- sort(unique(dat$y[dat$s == 1]))
   }
