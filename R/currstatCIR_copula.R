@@ -80,6 +80,7 @@ currstatCIR_copula <- function(time,
                         eval_region,
                         n_eval_pts = 101,
                         alpha = 0.05,
+                        copula = "frank",
                         theta = 0.5){
 
   s <- as.numeric(!is.na(event))
@@ -130,9 +131,16 @@ currstatCIR_copula <- function(time,
     stats::quantile(dat$y, probs = t, type = 1)
   }
 
-  Gamma_n <- construct_Gamma_n_copula(dat=dat, mu_n=mu_n, g_n=g_n, F_sIx_n = F_sIx_n,
-                               Riemann_grid = Riemann_grid,
-                               theta = theta)
+  if (copula == "clayton"){
+    Gamma_n <- construct_Gamma_n_copula_clayton(dat=dat, mu_n=mu_n, g_n=g_n, F_sIx_n = F_sIx_n,
+                                                Riemann_grid = Riemann_grid,
+                                                theta = theta)
+  } else if (copula == "frank"){
+    Gamma_n <- construct_Gamma_n_copula_frank(dat=dat, mu_n=mu_n, g_n=g_n, F_sIx_n = F_sIx_n,
+                                                Riemann_grid = Riemann_grid,
+                                                theta = theta)
+  }
+
   # kappa_n <- construct_kappa_n(dat = dat, mu_n = mu_n, g_n = g_n)
 
   # only estimate in the evaluation region, which doesn't include the upper bound
@@ -212,7 +220,7 @@ currstatCIR_copula <- function(time,
 
 #' Estimate primitive
 #' @noRd
-construct_Gamma_n_copula <- function(dat, mu_n, g_n, F_sIx_n,
+construct_Gamma_n_copula_clayton <- function(dat, mu_n, g_n, F_sIx_n,
                               Riemann_grid, theta) {
 
   m <- function(u,v){
@@ -362,6 +370,113 @@ construct_Gamma_n_copula <- function(dat, mu_n, g_n, F_sIx_n,
   return(fnc)
 }
 
+#' Estimate primitive
+#' @noRd
+construct_Gamma_n_copula_frank <- function(dat, mu_n, g_n, F_sIx_n,
+                                     Riemann_grid, theta) {
+
+  m <- function(u,v){
+    -(1/theta)*log(1 - (u*(1 - exp(-theta)))/(exp(-theta * v) + u*(1 - exp(-theta*v))))
+  }
+
+  partial_u <- function(u,v){
+    -(1/theta) * (exp(-theta * v)*(exp(-theta) - 1))/((exp(-theta*v) + u*(exp(-theta)-exp(-theta*v)))*(exp(-theta*v) + u*(1 - exp(-theta*v))))
+  }
+
+  partial_v <- function(u,v){
+    (u*exp(-theta*v)*(1-u)*(1-exp(-theta)))/((exp(-theta*v) + u*(exp(-theta)-exp(-theta*v)))*(exp(-theta*v) + u*(1 - exp(-theta*v))))
+  }
+
+  n_orig <- length(dat$y)
+  dim_w <- length(dat$w)
+  mu_ns <- apply(as_df(dat), 1, function(r) {
+    y <- r[["y"]]
+    w <- as.numeric(r)[1:dim_w]
+    mu_n(y=y, w=w)
+  })
+
+  g_ns <- apply(as_df(dat), 1, function(r) {
+    y <- r[["y"]]
+    w <- as.numeric(r)[1:dim_w]
+    g_n(y=y, w=w)
+  })
+
+  F_ns <- apply(as_df(dat), 1, function(r) {
+    y <- r[["y"]]
+    w <- as.numeric(r)[1:dim_w]
+    F_sIx_n(y = y, w = w)
+  })
+
+  partial_us <- apply(cbind(mu_ns, F_ns),
+                      MARGIN = 1,
+                      FUN = function(r){
+                        partial_u(r[1], r[2])
+                      })
+
+  # will later be multiplied by indicator
+  piece_1 <- (dat$delta - mu_ns) / g_ns * partial_us
+  piece_1[is.na(piece_1)] <- 0
+
+  # often there aren't so many unique monitoring times, and we can save a lot of
+  # time by only computing piece_2 on the unique values
+  unique_y <- sort(unique(dat$y))
+  uniq_w <- dplyr::distinct(dat$w)
+
+  unique_mus <- lapply(unique_y, function(y){
+    unique_mus <- apply(uniq_w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    unique_mus
+  })
+
+  unique_Fs <- lapply(unique_y, function(y){
+    unique_Fs <- apply(uniq_w, 1, function(w) { F_sIx_n(y=y, w=as.numeric(w)) })
+    unique_Fs
+  })
+
+  unique_lambda <- sapply(unique_y, function(y) {
+    this_mus <- unique_mus[[which(y == unique_y)]]
+    this_Fs <- unique_Fs[[which(y == unique_y)]]
+    mus <- apply(dat$w, 1, function(w) {this_mus[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    Fs <- apply(dat$w, 1, function(w) {this_Fs[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    ms <- apply(cbind(mus, Fs),
+                MARGIN = 1,
+                FUN = function(r){
+                  m(r[1], r[2])
+                })
+    mean(ms)
+  })
+
+  piece_2 <- sapply(dat$y, function(y) {
+    unique_lambda[unique_y == y]
+  })
+
+  unique_piece_3 <- sapply(unique_y, function(y) {
+    this_mus <- unique_mus[[which(y == unique_y)]]
+    this_Fs <- unique_Fs[[which(y == unique_y)]]
+    mus <- apply(dat$w, 1, function(w) {this_mus[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    Fs <- apply(dat$w, 1, function(w) {this_Fs[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    indicators <- (dat$y <= y)
+    mart <- indicators - Fs
+    partial_vs <- apply(cbind(mus, Fs),
+                MARGIN = 1,
+                FUN = function(r){
+                  partial_v(r[1], r[2])
+                })
+    mean(partial_vs * mart)
+  })
+
+  piece_3 <- sapply(dat$y, function(y) {
+    unique_piece_3[unique_y == y]})
+
+  fnc <- function(y) {
+    piece_4 <- as.integer(dat$y<=y) * dat$s
+    obs_pieces <- mean(piece_4 * piece_1) + mean(piece_4 * piece_2) + mean(piece_4*piece_3)
+    return(obs_pieces)
+  }
+
+  return(fnc)
+}
+
+
 #' Estimate the conditional cdf
 #' @noRd
 construct_F_sIx_n <- function(dat, f_sIx_n, Riemann_grid){
@@ -455,7 +570,7 @@ construct_mu_n_theta <- function(dat, SL_control, Riemann_grid, theta) {
 #' @noRd
 construct_F_sIx_n_stack <- function(dat, SL_control){
 
-  newX <- distinct(dat$w)
+  newX <- dplyr::distinct(dat$w)
   newtimes <- sort(unique(dat$y))
   fit <- stackG(time = dat$y,
                 X = dat$w,
