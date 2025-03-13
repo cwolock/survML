@@ -11,7 +11,8 @@ currstatCIR_copula_saved_nuisances <- function(time,
                                                F_sIx_n,
                                                eval_region,
                                                n_eval_pts = 101,
-                                               theta = 0.5){
+                                               theta = 0.5,
+                                               copula){
 
   construct_g_n_saved <- function(f_sIx_n, f_s_n){
     fnc <- function(y,w){
@@ -57,10 +58,15 @@ currstatCIR_copula_saved_nuisances <- function(time,
 
   y_vals <- sort(unique(dat$y))
 
-  Gamma_n <- construct_Gamma_n_copula(dat=dat, mu_n=mu_n, g_n=g_n,
-                                      F_sIx_n = F_sIx_n,
-                                      Riemann_grid = Riemann_grid,
-                                      theta = theta)
+  if (copula == "clayton"){
+    Gamma_n <- construct_Gamma_n_copula_clayton(dat=dat, mu_n=mu_n, g_n=g_n, F_sIx_n = F_sIx_n,
+                                                Riemann_grid = Riemann_grid,
+                                                theta = theta)
+  } else if (copula == "frank"){
+    Gamma_n <- construct_Gamma_n_copula_frank(dat=dat, mu_n=mu_n, g_n=g_n, F_sIx_n = F_sIx_n,
+                                              Riemann_grid = Riemann_grid,
+                                              theta = theta)
+  }
   # kappa_n <- construct_kappa_n(dat = dat, mu_n = mu_n, g_n = g_n)
 
   # only estimate in the evaluation region, which doesn't include the upper bound
