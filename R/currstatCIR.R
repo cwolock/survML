@@ -105,7 +105,8 @@ currstatCIR <- function(time,
 
   # estimate conditional density (only among observed)
   cond_density_fit <- construct_f_sIx_n(dat = dat,
-                                        HAL_control = HAL_control)
+                                        HAL_control = HAL_control,
+                                        SL_control = SL_control)
   f_sIx_n <- cond_density_fit$fnc
   Riemann_grid <- c(0, cond_density_fit$breaks)
   # estimate marginal density (marginalizing the conditional density over whole sample)
@@ -253,6 +254,22 @@ construct_f_sIx_n <- function(dat, HAL_control){
                                            cv_folds = HAL_control$V)
 
   w_distinct <- dplyr::distinct(dat$w)
+
+  if (all(dat$s == 1)){
+    binary_pred <- rep(1, nrow(w_distinct))
+  } else{
+    binary_fit <- SuperLearner::SuperLearner(
+      Y = dat$s,
+      X = dat$w,
+      newX = w_distinct,
+      family = "binomial",
+      method = "method.NNLS",
+      SL.library = SL_control$SL.library,
+      cvControl = list(V = SL_control$V)
+    )
+    binary_pred <- as.numeric(binary_fit$SL.predict)
+  }
+
   w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
   # only get predictions at the breakpoints, since estimator is piecewise constant
   y_distinct <- haldensify_fit$breaks
@@ -273,7 +290,17 @@ construct_f_sIx_n <- function(dat, HAL_control){
       cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
     }
     index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
-    return(pred[index])
+    dens_pred <- pred[index]
+    for (i in c(1:length(w))) {
+      if (i == 1){
+        cond <- paste0("round(w1,5) == ", round(w[i],5))
+      } else{
+        cond <- paste0(cond," & round(w",i,",5)==",round(w[i],5))
+      }
+    }
+    index <- (dplyr::filter(w_distinct, eval(parse(text=cond))))$w_index
+    binary_pred <- binary_pred[index]
+    return(dens_pred * binary_pred)
   }
 
   return(list(fnc = fnc, breaks = haldensify_fit$breaks))
