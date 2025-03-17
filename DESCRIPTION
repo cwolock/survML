@@ -35,7 +35,8 @@ Imports:
     mboost (>= 2.9.0),
     survival (>= 3.5.0),
     stats (>= 4.3.2),
-    methods (>= 4.3.2)
+    methods (>= 4.3.2),
+    copula (>= 1.1.0)
 Suggests: 
     knitr,
     rmarkdown,

@@ -13,7 +13,9 @@ currstatCIR(
   deriv_method = "m-spline",
   eval_region,
   n_eval_pts = 101,
-  alpha = 0.05
+  alpha = 0.05,
+  sensitivity_analysis = FALSE,
+  copula_control = list(taus = c(-0.1, -0.05, 0.05, 0.1))
 )
 }
 \arguments{
@@ -44,9 +46,16 @@ fit a smoothing spline to the estimated function and differentiate the smooth ap
 The points will be evenly spaced, on the quantile scale, between the endpoints of \code{eval_region}.}
 
 \item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
+
+\item{copula_control}{A named list of control parameters for the copula-based sensitivity analysis.
+This should be a named list.}
+
+\item{sensitivity_analysis.}{Logical, whether to perform a copula-based sensitivity analysis. Defaults to \code{FALSE}}
 }
 \value{
-Data frame giving results, with columns:
+List of data frames giving results. If not performing a sensitivity analysis, a single data frame is returned; if
+performing a sensitivity analysis, a separate data frame will be returned for each value of the copula association parameter.
+The results data frames have columns:
 \item{t}{Time at which survival function is estimated}
 \item{S_hat_est}{Survival function estimate}
 \item{S_hat_cil}{Lower bound of confidence interval}

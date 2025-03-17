@@ -19,8 +19,13 @@
 #' @param n_eval_pts Number of points in grid on which to evaluate survival function.
 #' The points will be evenly spaced, on the quantile scale, between the endpoints of \code{eval_region}.
 #' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
+#' @param sensitivity_analysis. Logical, whether to perform a copula-based sensitivity analysis. Defaults to \code{FALSE}
+#' @param copula_control A named list of control parameters for the copula-based sensitivity analysis.
+#' This should be a named list.
 #'
-#' @return Data frame giving results, with columns:
+#' @return List of data frames giving results. If not performing a sensitivity analysis, a single data frame is returned; if
+#' performing a sensitivity analysis, a separate data frame will be returned for each value of the copula association parameter.
+#' The results data frames have columns:
 #' \item{t}{Time at which survival function is estimated}
 #' \item{S_hat_est}{Survival function estimate}
 #' \item{S_hat_cil}{Lower bound of confidence interval}
@@ -76,21 +81,15 @@ currstatCIR <- function(time,
                                            grid_type = c("equal_mass"),
                                            V = 3),
                         deriv_method = "m-spline",
-                        # missing_method = "extended",
                         eval_region,
                         n_eval_pts = 101,
-                        alpha = 0.05){
+                        alpha = 0.05,
+                        sensitivity_analysis = FALSE,
+                        copula_control = list(taus = c(-0.1, -0.05, 0.05, 0.1))){
 
   s <- as.numeric(!is.na(event))
 
   time[s == 0] <- max(time, na.rm = TRUE)
-
-  # if (missing_method == "cc"){
-  #   time <- time[s == 1]
-  #   event <- event[s == 1]
-  #   W <- W[s == 1,]
-  #   s <- s[s == 1]
-  # }
 
   dat <- list(delta = event,
               y = time,
@@ -165,7 +164,7 @@ currstatCIR <- function(time,
   kappa_ests <- sapply(y_vals, kappa_n)
   # transform kappa to quantile scale
   kappa_ests_rescaled <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), function(x){
-  # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
+    # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
     ind <- which(y_vals == F_n_inverse(x))
     kappa_ests[ind]
   })
@@ -199,7 +198,60 @@ currstatCIR <- function(time,
   results <- results[results$t >= eval_region[1] & results$t <= eval_region[2],]
   rownames(results) <- NULL
 
-  return(results)
+  if (sensitivity_analysis){
+    sensitivity_results <- vector(mode = "list", length = length(copula_control$taus))
+    names(sensitivity_results) <- as.character(copula_control$taus)
+    F_sIx_n <- construct_F_sIx_n(dat = dat, SL_control = SL_control)
+    for (k in 1:length(copula_control$taus)){
+      tau <- copula_control$taus[k]
+      tau_to_theta <- function(tau){
+        thetas <- c(seq(-10, -0.01, by = 0.01), seq(0.01, 10, by = 0.01))
+        taus <- rep(NA, length(thetas))
+        for (i in 1:length(thetas)){
+          mycop <- copula::frankCopula(param = thetas[i])
+          taus[i] <- copula::tau(mycop)
+        }
+        return(thetas[which.min(abs(taus - tau))])
+      }
+      theta <- tau_to_theta(tau)
+      Gamma_n <- construct_Gamma_n_copula(dat=dat, mu_n=mu_n, g_n=g_n, F_sIx_n = F_sIx_n,
+                                          Riemann_grid = Riemann_grid,
+                                          theta = theta)
+      gcm_x_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]], F_n)
+      inds_to_keep <- !base::duplicated(gcm_x_vals)
+      gcm_x_vals <- gcm_x_vals[inds_to_keep]
+      gcm_y_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
+      if (!any(gcm_x_vals==0)) {
+        gcm_x_vals <- c(0, gcm_x_vals)
+        gcm_y_vals <- c(0, gcm_y_vals)
+      }
+      gcm <- fdrtool::gcmlcm(x=gcm_x_vals, y=gcm_y_vals, type="gcm")
+      theta_n <- stats::approxfun(
+        x = gcm$x.knots[-length(gcm$x.knots)],
+        y = gcm$slope.knots,
+        method = "constant",
+        rule = 2,
+        f = 0
+      )
+      ests <- sapply(seq(eval_cdf_lower,eval_cdf_upper,length.out = n_eval_pts), theta_n)
+      ests[ests < 0] <- 0
+      ests[ests > 1] <- 1
+      ests <- Iso::pava(ests)
+      sensitivity_results[[k]] <- data.frame(
+        t = sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse),
+        S_hat_est = 1-ests,
+        tau = tau
+      )
+    }
+  }
+
+  if (sensitivity_analysis){
+    all_results <- list(primary_results = results, sensitivity_results = sensitivity_results)
+
+  } else{
+    all_results <- list(primary_results = results)
+  }
+  return(all_results)
 
 }
 
@@ -244,7 +296,7 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid) {
 
 #' Estimate conditional density
 #' @noRd
-construct_f_sIx_n <- function(dat, HAL_control){
+construct_f_sIx_n <- function(dat, HAL_control, SL_control){
 
   # fit hal
   haldensify_fit <- haldensify::haldensify(A = dat$y[dat$s == 1],
@@ -353,48 +405,168 @@ construct_Gamma_n <- function(dat, mu_n, g_n, f_sIx_n, Riemann_grid) {
   # often there aren't so many unique monitoring times, and we can save a lot of
   # time by only computing piece_2 on the unique values
   unique_y <- sort(unique(dat$y))
+  uniq_w <- dplyr::distinct(dat$w)
 
-  unique_piece_2 <- sapply(unique_y, function(y) {
-    sum(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
+  unique_mus <- lapply(unique_y, function(y){
+    unique_mus <- apply(uniq_w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    unique_mus
   })
+
+  unique_piece_2 <- sapply(unique_y, function(y){
+    this_mus <- unique_mus[[which(y == unique_y)]]
+    mus <- apply(dat$w, 1, function(w) {this_mus[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    mean(mus)
+  })
+
+  #
+  #   unique_piece_2 <- sapply(unique_y, function(y) {
+  #     sum(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
+  #   })
 
   # match to pre-computed values
   # piece 2 maps to \theta_n(Y_i)
   piece_2 <- sapply(dat$y, function(y) {
     unique_piece_2[unique_y == y]
   })
-  w_distinct <- dplyr::distinct(dat$w)
-  # if there actually is missingness to deal with
-  if (sum(dat$s) != length(dat$s)){
-    piece_4 <- sapply(Riemann_grid, function(y) {
-      mean(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
-    })
-
-    # calculate the Riemann integral w.r.t. the conditional density
-    # for each unique value of w
-    unique_Riemann_integrals <- apply(w_distinct, MARGIN = 1, function(w){
-      density_vals <- sapply(Riemann_grid, function(y){
-        f_sIx_n(y = y, w = as.numeric(w))
-      })
-      Riemann_integrals <- sapply(Riemann_grid, function(y){
-        sum(diff(Riemann_grid[Riemann_grid <= y]) * piece_4[Riemann_grid <= y][-1] * density_vals[Riemann_grid <= y][-1])
-      })
-      Riemann_integrals
-    })
-
-    unique_Riemann_integrals <- t(unique_Riemann_integrals)
-  } else{
-    unique_Riemann_integrals <- matrix(1, nrow = nrow(w_distinct), ncol = length(Riemann_grid))
-  }
+  # w_distinct <- dplyr::distinct(dat$w)
+  # # if there actually is missingness to deal with
+  # if (sum(dat$s) != length(dat$s)){
+  #   piece_4 <- sapply(Riemann_grid, function(y) {
+  #     mean(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
+  #   })
+  #
+  #   # calculate the Riemann integral w.r.t. the conditional density
+  #   # for each unique value of w
+  #   unique_Riemann_integrals <- apply(w_distinct, MARGIN = 1, function(w){
+  #     density_vals <- sapply(Riemann_grid, function(y){
+  #       f_sIx_n(y = y, w = as.numeric(w))
+  #     })
+  #     Riemann_integrals <- sapply(Riemann_grid, function(y){
+  #       sum(diff(Riemann_grid[Riemann_grid <= y]) * piece_4[Riemann_grid <= y][-1] * density_vals[Riemann_grid <= y][-1])
+  #     })
+  #     Riemann_integrals
+  #   })
+  #
+  #   unique_Riemann_integrals <- t(unique_Riemann_integrals)
+  # } else{
+  #   unique_Riemann_integrals <- matrix(1, nrow = nrow(w_distinct), ncol = length(Riemann_grid))
+  # }
 
   fnc <- function(y) {
     piece_3 <- as.integer(dat$y<=y) * dat$s
-    obs_pieces <- (sum(piece_3*piece_1) + mean(piece_3*piece_2))/n_orig
+    obs_pieces <- mean(piece_3*piece_1) + mean(piece_3*piece_2)
     return(obs_pieces)
   }
 
   return(fnc)
 }
+
+#' Estimate primitive
+#' @noRd
+construct_Gamma_n_copula <- function(dat, mu_n, g_n, F_sIx_n,
+                                     Riemann_grid, theta) {
+
+  m <- function(u,v){
+    -(1/theta)*log(1 - (u*(1 - exp(-theta)))/(exp(-theta * v) + u*(1 - exp(-theta*v))))
+  }
+
+  partial_u <- function(u,v){
+    -(1/theta) * (exp(-theta * v)*(exp(-theta) - 1))/((exp(-theta*v) + u*(exp(-theta)-exp(-theta*v)))*(exp(-theta*v) + u*(1 - exp(-theta*v))))
+  }
+
+  partial_v <- function(u,v){
+    (u*exp(-theta*v)*(1-u)*(1-exp(-theta)))/((exp(-theta*v) + u*(exp(-theta)-exp(-theta*v)))*(exp(-theta*v) + u*(1 - exp(-theta*v))))
+  }
+
+  n_orig <- length(dat$y)
+  dim_w <- length(dat$w)
+  mu_ns <- apply(as_df(dat), 1, function(r) {
+    y <- r[["y"]]
+    w <- as.numeric(r)[1:dim_w]
+    mu_n(y=y, w=w)
+  })
+
+  g_ns <- apply(as_df(dat), 1, function(r) {
+    y <- r[["y"]]
+    w <- as.numeric(r)[1:dim_w]
+    g_n(y=y, w=w)
+  })
+
+  F_ns <- apply(as_df(dat), 1, function(r) {
+    y <- r[["y"]]
+    w <- as.numeric(r)[1:dim_w]
+    F_sIx_n(y = y, w = w)
+  })
+
+  partial_us <- apply(cbind(mu_ns, F_ns),
+                      MARGIN = 1,
+                      FUN = function(r){
+                        partial_u(r[1], r[2])
+                      })
+
+  # will later be multiplied by indicator
+  piece_1 <- (dat$delta - mu_ns) / g_ns * partial_us
+  piece_1[is.na(piece_1)] <- 0
+
+  # often there aren't so many unique monitoring times, and we can save a lot of
+  # time by only computing piece_2 on the unique values
+  unique_y <- sort(unique(dat$y))
+  uniq_w <- dplyr::distinct(dat$w)
+
+  unique_mus <- lapply(unique_y, function(y){
+    unique_mus <- apply(uniq_w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) })
+    unique_mus
+  })
+
+  unique_Fs <- lapply(unique_y, function(y){
+    unique_Fs <- apply(uniq_w, 1, function(w) { F_sIx_n(y=y, w=as.numeric(w)) })
+    unique_Fs
+  })
+
+  unique_lambda <- sapply(unique_y, function(y) {
+    this_mus <- unique_mus[[which(y == unique_y)]]
+    this_Fs <- unique_Fs[[which(y == unique_y)]]
+    mus <- apply(dat$w, 1, function(w) {this_mus[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    Fs <- apply(dat$w, 1, function(w) {this_Fs[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    ms <- apply(cbind(mus, Fs),
+                MARGIN = 1,
+                FUN = function(r){
+                  m(r[1], r[2])
+                })
+    mean(ms)
+  })
+
+  piece_2 <- sapply(dat$y, function(y) {
+    unique_lambda[unique_y == y]
+  })
+
+  unique_piece_3 <- sapply(unique_y, function(y) {
+    this_mus <- unique_mus[[which(y == unique_y)]]
+    this_Fs <- unique_Fs[[which(y == unique_y)]]
+    mus <- apply(dat$w, 1, function(w) {this_mus[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    Fs <- apply(dat$w, 1, function(w) {this_Fs[which(colSums(t(uniq_w) == w) == ncol(uniq_w))]})
+    indicators <- (dat$y <= y)
+    mart <- indicators - Fs
+    partial_vs <- apply(cbind(mus, Fs),
+                        MARGIN = 1,
+                        FUN = function(r){
+                          partial_v(r[1], r[2])
+                        })
+    mean(partial_vs * mart)
+  })
+
+  piece_3 <- sapply(dat$y, function(y) {
+    unique_piece_3[unique_y == y]})
+
+  fnc <- function(y) {
+    piece_4 <- as.integer(dat$y<=y) * dat$s
+    obs_pieces <- mean(piece_4 * piece_1) + mean(piece_4 * piece_2) + mean(piece_4*piece_3)
+    return(obs_pieces)
+  }
+
+  return(fnc)
+}
+
 
 #' Estimate part of scale factor
 #' @noRd
@@ -456,6 +628,27 @@ construct_deriv <- function(deriv_method="m-spline", r_Mn, y) {
     }
   }
   return(fnc)
+}
+
+#' Estimate the conditional cdf
+#' @noRd
+construct_F_sIx_n <- function(dat, SL_control){
+
+  newX <- dplyr::distinct(dat$w)
+  newtimes <- sort(unique(dat$y))
+  fit <- stackG(time = dat$y,
+                X = dat$w,
+                newX = newX,
+                newtimes = newtimes,
+                SL_control = SL_control,
+                bin_size = 0.05,
+                time_basis = "continuous",
+                time_grid_approx = quantile(dat$y, probs = seq(0, 1, by = 0.01)))
+  preds <- 1-fit$S_T_preds
+
+  fnc <- function(y, w){
+    return(preds[which(colSums(t(newX) == w) == ncol(newX)),which(newtimes == y)])
+  }
 }
 
 #' Convert list data to df
