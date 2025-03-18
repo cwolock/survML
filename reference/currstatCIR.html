@@ -54,7 +54,9 @@
 <span>  deriv_method <span class="op">=</span> <span class="st">"m-spline"</span>,</span>
 <span>  <span class="va">eval_region</span>,</span>
 <span>  n_eval_pts <span class="op">=</span> <span class="fl">101</span>,</span>
-<span>  alpha <span class="op">=</span> <span class="fl">0.05</span></span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  sensitivity_analysis <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  copula_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>taus <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.1</span>, <span class="op">-</span><span class="fl">0.05</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -107,10 +109,21 @@ The points will be evenly spaced, on the quantile scale, between the endpoints o
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
 <dd><p>The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05</p></dd>
 
+
+<dt id="arg-sensitivity-analysis">sensitivity_analysis<a class="anchor" aria-label="anchor" href="#arg-sensitivity-analysis"></a></dt>
+<dd><p>Logical, whether to perform a copula-based sensitivity analysis. Defaults to <code>FALSE</code></p></dd>
+
+
+<dt id="arg-copula-control">copula_control<a class="anchor" aria-label="anchor" href="#arg-copula-control"></a></dt>
+<dd><p>A named list of control parameters for the copula-based sensitivity analysis.
+This should be a named list.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Data frame giving results, with columns:</p>
+    <p>List of data frames giving results. If not performing a sensitivity analysis, a single data frame is returned; if
+performing a sensitivity analysis, a separate data frame will be returned for each value of the copula association parameter.
+The results data frames have columns:</p>
 <dl><dt>t</dt>
 <dd><p>Time at which survival function is estimated</p></dd>
 
@@ -159,7 +172,8 @@ The points will be evenly spaced, on the quantile scale, between the endpoints o
 <span class="r-in"><span>                           HAL_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n_bins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                                              grid_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"equal_mass"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                                              V <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                           eval_region <span class="op">=</span> <span class="va">eval_region</span><span class="op">)</span></span></span>
+<span class="r-in"><span>                           sensitivity_analysis <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>                           eval_region <span class="op">=</span> <span class="va">eval_region</span><span class="op">)</span><span class="op">$</span><span class="va">primary_results</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Some fit_control arguments are neither default nor glmnet/cv.glmnet arguments: n_folds; </span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> They will be removed from fit_control</span>
 <span class="r-in"><span></span></span>
