@@ -29,7 +29,7 @@ res <- survML::currstatCIR(time = dat$y,
                            HAL_control = list(n_bins = c(5),
                                               grid_type = c("equal_mass"),
                                               V = 2),
-                           eval_region = eval_region)
+                           eval_region = eval_region)$primary_results
 
 test_that("currstatCIR()", {
   expect_equal(dim(res), c(100, 4))

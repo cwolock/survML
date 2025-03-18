@@ -47,10 +47,10 @@ The points will be evenly spaced, on the quantile scale, between the endpoints o
 
 \item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
 
+\item{sensitivity_analysis}{Logical, whether to perform a copula-based sensitivity analysis. Defaults to \code{FALSE}}
+
 \item{copula_control}{A named list of control parameters for the copula-based sensitivity analysis.
 This should be a named list.}
-
-\item{sensitivity_analysis.}{Logical, whether to perform a copula-based sensitivity analysis. Defaults to \code{FALSE}}
 }
 \value{
 List of data frames giving results. If not performing a sensitivity analysis, a single data frame is returned; if
@@ -97,7 +97,8 @@ res <- survML::currstatCIR(time = dat$y,
                            HAL_control = list(n_bins = c(5),
                                               grid_type = c("equal_mass"),
                                               V = 3),
-                           eval_region = eval_region)
+                           sensitivity_analysis = FALSE,
+                           eval_region = eval_region)$primary_results
 
 xvals = res$t
 yvals = res$S_hat_est

@@ -19,7 +19,7 @@
 #' @param n_eval_pts Number of points in grid on which to evaluate survival function.
 #' The points will be evenly spaced, on the quantile scale, between the endpoints of \code{eval_region}.
 #' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
-#' @param sensitivity_analysis. Logical, whether to perform a copula-based sensitivity analysis. Defaults to \code{FALSE}
+#' @param sensitivity_analysis Logical, whether to perform a copula-based sensitivity analysis. Defaults to \code{FALSE}
 #' @param copula_control A named list of control parameters for the copula-based sensitivity analysis.
 #' This should be a named list.
 #'
@@ -64,7 +64,8 @@
 #'                            HAL_control = list(n_bins = c(5),
 #'                                               grid_type = c("equal_mass"),
 #'                                               V = 3),
-#'                            eval_region = eval_region)
+#'                            sensitivity_analysis = FALSE,
+#'                            eval_region = eval_region)$primary_results
 #'
 #' xvals = res$t
 #' yvals = res$S_hat_est
@@ -643,7 +644,7 @@ construct_F_sIx_n <- function(dat, SL_control){
                 SL_control = SL_control,
                 bin_size = 0.05,
                 time_basis = "continuous",
-                time_grid_approx = quantile(dat$y, probs = seq(0, 1, by = 0.01)))
+                time_grid_approx = stats::quantile(dat$y, probs = seq(0, 1, by = 0.01)))
   preds <- 1-fit$S_T_preds
 
   fnc <- function(y, w){
