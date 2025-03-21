@@ -74,14 +74,14 @@ following papers:
 - **Global survival stacking:** Charles J. Wolock, Peter B. Gilbert,
   Noah Simon and Marco Carone. [“A framework for leveraging machine
   learning tools to estimate personalized survival
-  curves.”](https://www.tandfonline.com/doi/full/10.1080/10618600.2024.2304070)
-  *Journal of Computational and Graphical Statistics* (2024).
+  curves.”](https://doi.org/10.1080/10618600.2024.2304070) *Journal of
+  Computational and Graphical Statistics* (2024).
 
 - **Survival variable importance:** Charles J. Wolock, Peter B. Gilbert,
   Noah Simon and Marco Carone. [“Assessing variable importance in
   survival analysis using machine
-  learning.”](https://academic.oup.com/biomet/advance-article-abstract/doi/10.1093/biomet/asae061/7874959)
-  *Biometrika* (2024).
+  learning.”](https://doi.org/10.1093/biomet/asae061) *Biometrika*
+  (2025).
 
 - **Covariate-adjusted survival curves from current status data:**
   Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
@@ -120,15 +120,16 @@ please cite the following:
 After using the variable importance functions, please cite the
 following:
 
-    @article{wolock2024assessing,
+    @article{wolock2025assessing,
         author = {Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
         title = {Assessing variable importance in survival analysis using machine learning},
         journal = {Biometrika},
+        volume = {112},
+        issue = {2}
         pages = {asae061},
-        year = {2024},
-        month = {11},
+        year = {2025},
         doi = {10.1093/biomet/asae061},
-        published={Oxford University Press}
+        publisher={Oxford University Press}
     }
 
 After using the functionality for current status data, please cite the
