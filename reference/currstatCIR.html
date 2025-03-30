@@ -52,6 +52,8 @@
 <span>  SL_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>, V <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
 <span>  HAL_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n_bins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>, grid_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"equal_mass"</span><span class="op">)</span>, V <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
 <span>  deriv_method <span class="op">=</span> <span class="st">"m-spline"</span>,</span>
+<span>  sample_split <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  m <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  <span class="va">eval_region</span>,</span>
 <span>  n_eval_pts <span class="op">=</span> <span class="fl">101</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -95,6 +97,14 @@ individuals that were never monitored.</p></dd>
 fit a smoothing spline to the estimated function and differentiate the smooth approximation),
 <code>"linear"</code> (linearly interpolate the estimated function and use the slope of that line), and
 <code>"line"</code> (use the slope of the line connecting the endpoints of the estimated function).</p></dd>
+
+
+<dt id="arg-sample-split">sample_split<a class="anchor" aria-label="anchor" href="#arg-sample-split"></a></dt>
+<dd><p>Logical indicating whether to perform inference using sample splitting</p></dd>
+
+
+<dt id="arg-m">m<a class="anchor" aria-label="anchor" href="#arg-m"></a></dt>
+<dd><p>Number of sample-splitting folds, defaults to 5.</p></dd>
 
 
 <dt id="arg-eval-region">eval_region<a class="anchor" aria-label="anchor" href="#arg-eval-region"></a></dt>
