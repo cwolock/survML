@@ -15,6 +15,8 @@
 #' fit a smoothing spline to the estimated function and differentiate the smooth approximation),
 #' \code{"linear"} (linearly interpolate the estimated function and use the slope of that line), and
 #' \code{"line"} (use the slope of the line connecting the endpoints of the estimated function).
+#' @param sample_split Logical indicating whether to perform inference using sample splitting
+#' @param m Number of sample-splitting folds, defaults to 5.
 #' @param eval_region Region over which to estimate the survival function.
 #' @param n_eval_pts Number of points in grid on which to evaluate survival function.
 #' The points will be evenly spaced, on the quantile scale, between the endpoints of \code{eval_region}.
@@ -82,6 +84,8 @@ currstatCIR <- function(time,
                                            grid_type = c("equal_mass"),
                                            V = 3),
                         deriv_method = "m-spline",
+                        sample_split = FALSE,
+                        m = 5,
                         eval_region,
                         n_eval_pts = 101,
                         alpha = 0.05,
@@ -103,79 +107,106 @@ currstatCIR <- function(time,
                                           dat$w)[,-1])
   names(dat$w) <- paste("w", 1:ncol(dat$w), sep="")
 
-  # estimate conditional density (only among observed)
-  cond_density_fit <- construct_f_sIx_n(dat = dat,
-                                        HAL_control = HAL_control,
-                                        SL_control = SL_control)
-  f_sIx_n <- cond_density_fit$fnc
-  Riemann_grid <- c(0, cond_density_fit$breaks)
-  # estimate marginal density (marginalizing the conditional density over whole sample)
-  f_s_n <- construct_f_s_n(dat = dat, f_sIx_n = f_sIx_n)
-  # estimate density ratio
-  g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
-
-  # estimate outcome regression (only among observed)
-  mu_n <- construct_mu_n(dat = dat, SL_control = SL_control, Riemann_grid = Riemann_grid)
-
+  if (sample_split){
+    folds <- sample(rep(seq_len(m), length = length(dat$y)))
+  } else{
+    folds <- rep(1, length(dat$y))
+  }
+  K <- length(unique(folds))
   y_vals <- sort(unique(dat$y))
+  est_matrix <- matrix(NA, nrow = n_eval_pts, ncol = K)
 
-  # Use the empirical cdf for F_n
-  F_n <- stats::ecdf(dat$y)
-  F_n_inverse <- function(t){
-    stats::quantile(dat$y, probs = t, type = 1)
+  for (k in 1:K){
+    dat_k <- list(delta = dat$delta[folds == k],
+                  y = dat$y[folds == k],
+                  s = dat$s[folds == k],
+                  w = dat$w[folds == k,])
+    # estimate conditional density (only among observed)
+    cond_density_fit <- construct_f_sIx_n(dat = dat_k,
+                                          HAL_control = HAL_control,
+                                          SL_control = SL_control)
+    f_sIx_n <- cond_density_fit$fnc
+    Riemann_grid <- c(0, cond_density_fit$breaks)
+    # estimate marginal density (marginalizing the conditional density over whole sample)
+    f_s_n <- construct_f_s_n(dat = dat, f_sIx_n = f_sIx_n)
+    # estimate density ratio
+    g_n <- construct_g_n(f_sIx_n = f_sIx_n, f_s_n = f_s_n)
+
+    # estimate outcome regression (only among observed)
+    mu_n <- construct_mu_n(dat = dat_k, SL_control = SL_control, Riemann_grid = Riemann_grid)
+
+    # Use the empirical cdf for F_n
+    F_n <- stats::ecdf(dat_k$y)
+    F_n_inverse <- function(t){
+      stats::quantile(dat_k$y, probs = t, type = 1)
+    }
+
+    Gamma_n <- construct_Gamma_n(dat=dat_k, mu_n=mu_n, g_n=g_n,
+                                 f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
+    kappa_n <- construct_kappa_n(dat = dat_k, mu_n = mu_n, g_n = g_n)
+
+    # only estimate in the evaluation region, which doesn't include the upper bound
+    # gcm_x_vals <- sapply(y_vals[y_vals <= eval_region[2]], F_n)
+    gcm_x_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]], F_n)
+    inds_to_keep <- !base::duplicated(gcm_x_vals)
+    gcm_x_vals <- gcm_x_vals[inds_to_keep]
+    # gcm_y_vals <- sapply(y_vals[y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
+    gcm_y_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
+    # check with avi here
+    if (!any(gcm_x_vals==0)) {
+      gcm_x_vals <- c(0, gcm_x_vals)
+      gcm_y_vals <- c(0, gcm_y_vals)
+    }
+    gcm <- fdrtool::gcmlcm(x=gcm_x_vals, y=gcm_y_vals, type="gcm")
+    theta_n <- stats::approxfun(
+      x = gcm$x.knots[-length(gcm$x.knots)],
+      y = gcm$slope.knots,
+      method = "constant",
+      rule = 2,
+      f = 0
+    )
+
+    eval_cdf_upper <- mean(dat$y <= eval_region[2])
+    eval_cdf_lower <- mean(dat$y <= eval_region[1])
+
+    # Compute estimates
+    ests <- sapply(seq(eval_cdf_lower,eval_cdf_upper,length.out = n_eval_pts), theta_n)
+    est_matrix[,k] <- ests
   }
 
-  Gamma_n <- construct_Gamma_n(dat=dat, mu_n=mu_n, g_n=g_n,
-                               f_sIx_n = f_sIx_n, Riemann_grid = Riemann_grid)
-  kappa_n <- construct_kappa_n(dat = dat, mu_n = mu_n, g_n = g_n)
+  if (!sample_split){
+    ests <- est_matrix[,1]
+    theta_prime <- construct_deriv(r_Mn = theta_n,
+                                   deriv_method = deriv_method,
+                                   # y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
+                                   y = seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts))
 
-  # only estimate in the evaluation region, which doesn't include the upper bound
-  # gcm_x_vals <- sapply(y_vals[y_vals <= eval_region[2]], F_n)
-  gcm_x_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]], F_n)
-  inds_to_keep <- !base::duplicated(gcm_x_vals)
-  gcm_x_vals <- gcm_x_vals[inds_to_keep]
-  # gcm_y_vals <- sapply(y_vals[y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
-  gcm_y_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]][inds_to_keep], Gamma_n)
-  # check with avi here
-  if (!any(gcm_x_vals==0)) {
-    gcm_x_vals <- c(0, gcm_x_vals)
-    gcm_y_vals <- c(0, gcm_y_vals)
+    deriv_ests <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
+    kappa_ests <- sapply(y_vals, kappa_n)
+    # transform kappa to quantile scale
+    kappa_ests_rescaled <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), function(x){
+      # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
+      ind <- which(y_vals == F_n_inverse(x))
+      kappa_ests[ind]
+    })
+    tau_ests <- deriv_ests * kappa_ests_rescaled
+    q <- ChernoffDist::qChern(p = alpha/2)
+    half_intervals <- sapply(1:n_eval_pts, function(x){
+      (4*tau_ests[x]/length(dat$y))^{1/3}*q
+    })
+    cils <- ests - half_intervals
+    cius <- ests + half_intervals
+  } else{
+    avg_ests <- rowMeans(est_matrix)
+    sigmas <- sapply(1:n_eval_pts, function(x) sqrt((1/(m-1)) * sum((est_matrix[x,] - avg_ests[x])^2)))
+    q <- stats::qt(p = alpha/2, df = m-1)
+    half_intervals <- sapply(1:n_eval_pts, function(x){
+      sigmas[x]/(sqrt(m)*(length(dat$y))^{1/3})*q
+    })
+    ests <- avg_ests
+    cils <- ests - half_intervals
+    cius <- ests + half_intervals
   }
-  gcm <- fdrtool::gcmlcm(x=gcm_x_vals, y=gcm_y_vals, type="gcm")
-  theta_n <- stats::approxfun(
-    x = gcm$x.knots[-length(gcm$x.knots)],
-    y = gcm$slope.knots,
-    method = "constant",
-    rule = 2,
-    f = 0
-  )
-
-  eval_cdf_upper <- mean(dat$y <= eval_region[2])
-  eval_cdf_lower <- mean(dat$y <= eval_region[1])
-  theta_prime <- construct_deriv(r_Mn = theta_n,
-                                 deriv_method = deriv_method,
-                                 # y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
-                                 y = seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts))
-
-  # Compute estimates
-  # ests <- sapply(seq(0,eval_cdf_upper,length.out = n_eval_pts), theta_n)
-  # deriv_ests <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
-  ests <- sapply(seq(eval_cdf_lower,eval_cdf_upper,length.out = n_eval_pts), theta_n)
-  deriv_ests <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
-  kappa_ests <- sapply(y_vals, kappa_n)
-  # transform kappa to quantile scale
-  kappa_ests_rescaled <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), function(x){
-    # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
-    ind <- which(y_vals == F_n_inverse(x))
-    kappa_ests[ind]
-  })
-  tau_ests <- deriv_ests * kappa_ests_rescaled
-  q <- ChernoffDist::qChern(p = alpha/2)
-  half_intervals <- sapply(1:n_eval_pts, function(x){
-    (4*tau_ests[x]/length(dat$y))^{1/3}*q
-  })
-  cils <- ests - half_intervals
-  cius <- ests + half_intervals
 
   ests[ests < 0] <- 0
   ests[ests > 1] <- 1
@@ -419,39 +450,11 @@ construct_Gamma_n <- function(dat, mu_n, g_n, f_sIx_n, Riemann_grid) {
     mean(mus)
   })
 
-  #
-  #   unique_piece_2 <- sapply(unique_y, function(y) {
-  #     sum(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
-  #   })
-
   # match to pre-computed values
   # piece 2 maps to \theta_n(Y_i)
   piece_2 <- sapply(dat$y, function(y) {
     unique_piece_2[unique_y == y]
   })
-  # w_distinct <- dplyr::distinct(dat$w)
-  # # if there actually is missingness to deal with
-  # if (sum(dat$s) != length(dat$s)){
-  #   piece_4 <- sapply(Riemann_grid, function(y) {
-  #     mean(apply(dat$w, 1, function(w) { mu_n(y=y, w=as.numeric(w)) }))
-  #   })
-  #
-  #   # calculate the Riemann integral w.r.t. the conditional density
-  #   # for each unique value of w
-  #   unique_Riemann_integrals <- apply(w_distinct, MARGIN = 1, function(w){
-  #     density_vals <- sapply(Riemann_grid, function(y){
-  #       f_sIx_n(y = y, w = as.numeric(w))
-  #     })
-  #     Riemann_integrals <- sapply(Riemann_grid, function(y){
-  #       sum(diff(Riemann_grid[Riemann_grid <= y]) * piece_4[Riemann_grid <= y][-1] * density_vals[Riemann_grid <= y][-1])
-  #     })
-  #     Riemann_integrals
-  #   })
-  #
-  #   unique_Riemann_integrals <- t(unique_Riemann_integrals)
-  # } else{
-  #   unique_Riemann_integrals <- matrix(1, nrow = nrow(w_distinct), ncol = length(Riemann_grid))
-  # }
 
   fnc <- function(y) {
     piece_3 <- as.integer(dat$y<=y) * dat$s

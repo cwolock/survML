@@ -11,6 +11,8 @@ currstatCIR(
   SL_control = list(SL.library = c("SL.mean", "SL.glm"), V = 3),
   HAL_control = list(n_bins = c(5), grid_type = c("equal_mass"), V = 3),
   deriv_method = "m-spline",
+  sample_split = FALSE,
+  m = 5,
   eval_region,
   n_eval_pts = 101,
   alpha = 0.05,
@@ -39,6 +41,10 @@ individuals that were never monitored.}
 fit a smoothing spline to the estimated function and differentiate the smooth approximation),
 \code{"linear"} (linearly interpolate the estimated function and use the slope of that line), and
 \code{"line"} (use the slope of the line connecting the endpoints of the estimated function).}
+
+\item{sample_split}{Logical indicating whether to perform inference using sample splitting}
+
+\item{m}{Number of sample-splitting folds, defaults to 5.}
 
 \item{eval_region}{Region over which to estimate the survival function.}
 
