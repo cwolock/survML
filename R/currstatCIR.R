@@ -201,7 +201,7 @@ currstatCIR <- function(time,
     sigmas <- sapply(1:n_eval_pts, function(x) sqrt((1/(m-1)) * sum((est_matrix[x,] - avg_ests[x])^2)))
     q <- stats::qt(p = alpha/2, df = m-1)
     half_intervals <- sapply(1:n_eval_pts, function(x){
-      sigmas[x]/(sqrt(m))s*q
+      sigmas[x]/(sqrt(m))*q
     })
     ests <- avg_ests
     cils <- ests - half_intervals
