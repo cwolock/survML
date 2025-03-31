@@ -198,10 +198,10 @@ currstatCIR <- function(time,
     cius <- ests + half_intervals
   } else{
     avg_ests <- rowMeans(est_matrix)
-    sigmas <- sapply(1:n_eval_pts, function(x) sqrt((1/(m-1)) * sum((est_matrix[,x] - avg_ests[x])^2)))
+    sigmas <- sapply(1:n_eval_pts, function(x) sqrt((1/(m-1)) * sum((est_matrix[x,] - avg_ests[x])^2)))
     q <- stats::qt(p = alpha/2, df = m-1)
     half_intervals <- sapply(1:n_eval_pts, function(x){
-      sigmas[x]/(sqrt(m)*(length(dat$y))^{1/3})*q
+      sigmas[x]/(sqrt(m))s*q
     })
     ests <- avg_ests
     cils <- ests - half_intervals
