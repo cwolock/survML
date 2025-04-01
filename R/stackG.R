@@ -167,6 +167,15 @@ stackG <- function(time,
                                      method = "method.NNLS",
                                      stratifyCV = FALSE),
                    tau = NULL){
+
+  if (!is.data.frame(X)){
+    stop("`X` must be a data frame.")
+  }
+
+  if (!(all(sort(names(X)) == sort(names(newX))))){
+    stop("`newX` must be a data frame with the same column names as `X`.")
+  }
+
   P_Delta_opt <- NULL
   S_Y_opt <- NULL
   F_Y_1_opt <- NULL

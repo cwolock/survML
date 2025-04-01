@@ -124,6 +124,14 @@ stackL <- function(time,
                                      stratifyCV = FALSE),
                    tau = NULL){
 
+  if (!is.data.frame(X)){
+    stop("`X` must be a data frame.")
+  }
+
+  if (!(all(sort(names(X)) == sort(names(newX))))){
+    stop("`newX` must be a data frame with the same column names as `X`.")
+  }
+
   if (is.null(newX)){
     newX <- X
   }
