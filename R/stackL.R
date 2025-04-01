@@ -128,6 +128,10 @@ stackL <- function(time,
     stop("`X` must be a data frame.")
   }
 
+  if (!is.data.frame(newX)){
+    stop("`newX` must be a data frame.")
+  }
+
   if (!(all(sort(names(X)) == sort(names(newX))))){
     stop("`newX` must be a data frame with the same column names as `X`.")
   }
