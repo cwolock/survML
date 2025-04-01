@@ -247,14 +247,15 @@ stackL <- function(time,
 
   # don't estimate hazard at t =0
   #hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1)
-  hazard_preds <- apply(X = matrix(1:length(trunc_time_grid)),
-                        FUN = get_hazard_preds,
-                        MARGIN = 1)
+  hazard_preds <- matrix(apply(X = matrix(1:length(trunc_time_grid)),
+                               FUN = get_hazard_preds,
+                               MARGIN = 1),
+                         nrow = nrow(newX))
 
   get_surv_preds <- function(t){
     if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
       final_index <- max(which(trunc_time_grid <= t))
-      haz <- as.matrix(hazard_preds[,1:final_index])
+      haz <- hazard_preds[,1:final_index,drop=FALSE]
       anti_haz <- 1 - haz
       surv <- apply(anti_haz, MARGIN = 1, prod)
     } else{
@@ -263,7 +264,8 @@ stackL <- function(time,
     return(surv)
   }
 
-  surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+  surv_preds <- matrix(apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1),
+                       nrow = nrow(newX))
 
   if (direction == "retrospective"){
     surv_preds <- 1 - surv_preds
@@ -379,9 +381,10 @@ predict.stackL <- function(object,
 
   # don't estimate hazard at t =0
   #hazard_preds <- apply(X = matrix(time_grid), FUN = get_hazard_preds, MARGIN = 1)
-  hazard_preds <- apply(X = matrix(1:length(trunc_time_grid)),
-                        FUN = get_hazard_preds,
-                        MARGIN = 1)
+  hazard_preds <- matrix(apply(X = matrix(1:length(trunc_time_grid)),
+                               FUN = get_hazard_preds,
+                               MARGIN = 1),
+                         nrow = nrow(newX))
 
   get_surv_preds <- function(t){
     if (sum(trunc_time_grid <= t) != 0){ # if you don't fall before the first time in the grid
@@ -395,7 +398,8 @@ predict.stackL <- function(object,
     return(surv)
   }
 
-  surv_preds <- apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1)
+  surv_preds <- matrix(apply(X = matrix(newtimes), FUN = get_surv_preds, MARGIN = 1),
+                       nrow = nrow(newX))
 
 
   if (object$direction == "retrospective"){

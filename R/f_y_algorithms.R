@@ -148,7 +148,8 @@ predict.f_y_stack_SuperLearner <- function(fit, newX, newtimes){
       return(preds)
     }
 
-    predictions <- apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1)
+    predictions <- matrix(apply(X = matrix(newtimes), FUN = get_stacked_pred, MARGIN = 1),
+                          nrow = nrow(newX))
   } else{
     get_preds <- function(t){
       dummies <- matrix(0, ncol = length(time_grid), nrow = nrow(newX))
@@ -162,7 +163,8 @@ predict.f_y_stack_SuperLearner <- function(fit, newX, newtimes){
       return(preds)
     }
 
-    predictions <- apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1)
+    predictions <- matrix(apply(X = matrix(newtimes), FUN = get_preds, MARGIN = 1),
+                          nrow = nrow(newX))
   }
 
   if (fit$isotonize){

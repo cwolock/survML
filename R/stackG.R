@@ -330,8 +330,8 @@ stackG <- function(time,
                                  MARGIN = 1,
                                  FUN = estimate_S_T)), nrow = 2*length(newtimes)))
 
-  S_T_preds <- preds[,1:length(newtimes)]
-  S_C_preds <- preds[,(length(newtimes) + 1):(2*length(newtimes))]
+  S_T_preds <- preds[,1:length(newtimes),drop=FALSE]
+  S_C_preds <- preds[,(length(newtimes) + 1):(2*length(newtimes)),drop=FALSE]
 
   if (direction == "retrospective"){
     S_T_preds <- 1 - S_T_preds
