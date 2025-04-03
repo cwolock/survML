@@ -128,16 +128,16 @@ stackL <- function(time,
     stop("`X` must be a data frame.")
   }
 
+  if (is.null(newX)){
+    newX <- X
+  }
+
   if (!is.data.frame(newX)){
     stop("`newX` must be a data frame.")
   }
 
   if (!(all(sort(names(X)) == sort(names(newX))))){
     stop("`newX` must be a data frame with the same column names as `X`.")
-  }
-
-  if (is.null(newX)){
-    newX <- X
   }
 
   if (is.null(newtimes)){
@@ -272,6 +272,8 @@ stackL <- function(time,
   }
 
   res <- list(S_T_preds = surv_preds,
+              newtimes = newtimes,
+              newX = newX,
               direction = direction,
               time_basis = time_basis,
               time_grid = time_grid,
@@ -406,5 +408,7 @@ predict.stackL <- function(object,
     surv_preds <- 1 - surv_preds
   }
 
-  return(list(S_T_preds = surv_preds))
+  return(list(S_T_preds = surv_preds,
+              newtimes = newtimes,
+              newX = newX))
 }

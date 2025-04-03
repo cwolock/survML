@@ -172,14 +172,6 @@ stackG <- function(time,
     stop("`X` must be a data frame.")
   }
 
-  if (!is.data.frame(newX)){
-    stop("`newX` must be a data frame.")
-  }
-
-  if (!(all(sort(names(X)) == sort(names(newX))))){
-    stop("`newX` must be a data frame with the same column names as `X`.")
-  }
-
   P_Delta_opt <- NULL
   S_Y_opt <- NULL
   F_Y_1_opt <- NULL
@@ -192,6 +184,14 @@ stackG <- function(time,
 
   if (is.null(newX)){
     newX <- X
+  }
+
+  if (!is.data.frame(newX)){
+    stop("`newX` must be a data frame.")
+  }
+
+  if (!(all(sort(names(X)) == sort(names(newX))))){
+    stop("`newX` must be a data frame with the same column names as `X`.")
   }
 
   if (is.null(newtimes)){
@@ -382,6 +382,8 @@ stackG <- function(time,
               S_C_preds = S_C_preds,
               Lambda_T_preds = Lambda_T_preds,
               Lambda_C_preds = Lambda_C_preds,
+              newtimes = newtimes,
+              newX = newX,
               time_grid_approx = time_grid_approx,
               direction = direction,
               tau = tau,
@@ -631,6 +633,8 @@ predict.stackG <- function(object,
               S_C_preds = S_C_preds,
               Lambda_T_preds = Lambda_T_preds,
               Lambda_C_preds = Lambda_C_preds,
+              newtimes = newtimes,
+              newX = newX,
               surv_form = surv_form,
               time_grid_approx = time_grid_approx)
   return(res)
