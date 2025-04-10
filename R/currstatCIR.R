@@ -588,13 +588,15 @@ construct_kappa_n <- function(dat, mu_n, g_n){
 
 #' Estimate derivative
 #' @noRd
-construct_deriv <- function(deriv_method="m-spline", r_Mn, y) {
+construct_deriv <- function(deriv_method="m-spline", r_Mn, y, width = 0.1) {
   # r_Mn should be the theta_n function
   # grid should be something like seq(0, 1, by = 0.01)
+  min_x <- min(y)
+  max_x <- max(y)
   if (deriv_method=="line") {
-    fnc <- function(y) { r_Mn(1)-r_Mn(0) }
+    fnc <- function(y) { r_Mn(max_x)-r_Mn(min_x) }
   } else {
-    if (r_Mn(0)==r_Mn(1)) {
+    if (r_Mn(min_x)==r_Mn(max_x)) {
       fnc <- function(y) { 0 }
       warning("Estimated function is flat; variance estimation not possible.")
     }
@@ -623,11 +625,10 @@ construct_deriv <- function(deriv_method="m-spline", r_Mn, y) {
 
     # Construct numerical derivative
     fnc <- function(y) {
-      width <- 0.1 # Note: may need to play around with this value
       x1 <- y - width/2
       x2 <- y + width/2
-      if (x1<0) { x2<-width; x1<-0; }
-      if (x2>1) { x1<-1-width; x2<-1; }
+      if (x1<min_x) { x2<-width; x1<-min_x; }
+      if (x2>max_x) { x1<-max_x-width; x2<-max_x; }
       return(max((fnc_pre(x2)-fnc_pre(x1))/width,0))
     }
   }
