@@ -1,4 +1,4 @@
-#' Estimate AUC VIM
+#' Estimate variable importance
 #'
 #' @param type Type of VIM to compute. Options include \code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}
 #' \code{"C-index"}, and \code{"survival_time_MSE"}.
@@ -195,6 +195,10 @@ vim <- function(type,
     if (verbose){print("Using pre-computed conditional survival function estimates...")}
   }
 
+  if (any(unlist(conditional_surv_preds$G_hat) < 0.05)){
+    warning("Some estimates of the conditional survival function of the censoring variable are small (less than 0.05). These small values may create unstable VIM estimates.")
+  }
+
   # switch <- FALSE
   if (is.null(large_oracle_preds)){
     if (verbose){print("Estimating 'big' oracle prediction function...")}
@@ -379,6 +383,7 @@ vim <- function(type,
               folds = list(cf_folds = cf_folds, ss_folds = ss_folds),
               approx_times = approx_times,
               conditional_surv_preds = conditional_surv_preds,
+              conditional_surv_generator_object = conditional_surv_preds$generator_object,
               large_oracle_preds = large_oracle_preds,
               small_oracle_preds = small_oracle_preds))
 }
