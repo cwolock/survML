@@ -334,6 +334,10 @@ used when interpreting the resulting confidence interval.</p>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">age_index</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
@@ -425,6 +429,34 @@ look at the results for all feature groups.</p>
 <span>  <span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">indx_name</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">pooled_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">pooled_output</span>, <span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span></span>
 <span><span class="va">plot_results</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">results</span>, <span class="va">plot_title</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co"># plot results</span></span>
@@ -493,6 +525,14 @@ all person-level features relative to the full feature vector.</p>
 <span>    <span class="va">pooled_output</span> <span class="op">&lt;-</span> <span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector (groups)"</span><span class="op">)</span></span>
 <span><span class="va">p_auc</span></span></code></pre></div>
@@ -582,6 +622,26 @@ the current set of predictors.)</p>
 <span>    <span class="va">pooled_output</span> <span class="op">&lt;-</span> <span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to person-level features"</span><span class="op">)</span></span>
 <span><span class="va">p_auc</span></span></code></pre></div>
@@ -681,6 +741,26 @@ estimates.</p>
 <span>    <span class="va">pooled_output</span> <span class="op">&lt;-</span> <span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
+<span><span class="co">#&gt; Warning in vim(type = "AUC", time = time, event = event, X = X, landmark_times</span></span>
+<span><span class="co">#&gt; = landmark_times, : Some estimates of the conditional survival function of the</span></span>
+<span><span class="co">#&gt; censoring variable are small (less than 0.05). These small values may create</span></span>
+<span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"Adjusted AUC variable importance relative to all tumor-level features"</span><span class="op">)</span></span>
 <span><span class="va">p_auc</span></span></code></pre></div>
@@ -775,7 +855,7 @@ Biostatistics</em> (2007).</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer>
