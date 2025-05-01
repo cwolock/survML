@@ -100,6 +100,7 @@ vim <- function(type,
                 landmark_times = stats::quantile(time[event == 1], probs = c(0.25, 0.5, 0.75)),
                 restriction_time = max(time[event == 1]),
                 approx_times = NULL,
+                confounder_feature_vector = 1:ncol(X),
                 large_feature_vector,
                 small_feature_vector,
                 conditional_surv_preds = NULL,
@@ -185,7 +186,7 @@ vim <- function(type,
     conditional_surv_preds <- do.call(crossfit_surv_preds,
                                       c(list(time = time,
                                              event = event,
-                                             X = X,
+                                             X = X[,confounder_feature_vector,drop=FALSE],
                                              newtimes = approx_times,
                                              folds = cf_folds,
                                              pred_generator = conditional_surv_generator),
@@ -195,9 +196,9 @@ vim <- function(type,
     if (verbose){print("Using pre-computed conditional survival function estimates...")}
   }
 
-  if (any(unlist(conditional_surv_preds$G_hat) < 0.05)){
-    warning("Some estimates of the conditional survival function of the censoring variable are small (less than 0.05). These small values may create unstable VIM estimates.")
-  }
+  # if (any(unlist(conditional_surv_preds$G_hat) < 0.05)){
+  #   warning("Some estimates of the conditional survival function of the censoring variable are small (less than 0.05). These small values may create unstable VIM estimates.")
+  # }
 
   # switch <- FALSE
   if (is.null(large_oracle_preds)){
@@ -378,6 +379,7 @@ vim <- function(type,
   res$vim <- type
   res$large_feature_vector <- paste0(large_feature_vector, collapse = ",")
   res$small_feature_vector <- paste0(small_feature_vector, collapse = ",")
+  res$confounder_feature_vector <- paste0(confounder_feature_vector, collapse = ",")
 
   return(list(result = res,
               folds = list(cf_folds = cf_folds, ss_folds = ss_folds),
