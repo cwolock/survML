@@ -108,11 +108,6 @@ estimate_cindex <- function(time,
   V_1 <- mean(phi_tilde_01_uncentered)/2
   V_2 <- mean(phi_tilde_02_uncentered)/2
 
-  if_func_1 <- phi_01 + phi_tilde_01 + phi_01_extra
-  if_func_2 <- phi_02 + phi_tilde_02 + phi_02_extra
-
-  V_1_os <- V_1 + mean(if_func_1)
-  V_2_os <- V_2 + mean(if_func_2)
   V_1_alternative <- mean(phi_01_combined)/2
   V_2_alternative <- mean(phi_02_combined)/2
 
