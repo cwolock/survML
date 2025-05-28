@@ -15,7 +15,7 @@ generate_nuisance_predictions_stackG <- function(time,
                              event = event,
                              X = X,
                              newX = rbind(X_holdout, X),
-                             newtimes = approx_times,
+                             newtimes = newtimes,
                              time_grid_approx = approx_times,
                              bin_size = bin_size,
                              time_basis = "continuous",
@@ -26,6 +26,83 @@ generate_nuisance_predictions_stackG <- function(time,
   G_hat <- surv_out$S_C_preds[1:nrow(X_holdout),]
   S_hat_train <- surv_out$S_T_preds[(nrow(X_holdout)+1):(nrow(X_holdout)+nrow(X)),]
   G_hat_train <- surv_out$S_C_preds[(nrow(X_holdout)+1):(nrow(X_holdout)+nrow(X)),]
+  return(list(S_hat = S_hat,
+              G_hat = G_hat,
+              S_hat_train = S_hat_train,
+              G_hat_train = G_hat_train))
+}
+
+#' Estimate nuisances using coxph
+#'
+#' @noRd
+generate_nuisance_predictions_coxph <- function(time,
+                                                event,
+                                                X,
+                                                X_holdout,
+                                                newtimes){
+
+  S_fit <- survival::coxph(
+    survival::Surv(time, event) ~ .,
+    data = as.data.frame(cbind(time=time,
+                               event=event,
+                               X))
+  )
+  S_hat <- t(summary(survival::survfit(S_fit,
+                                       newdata=X_holdout,
+                                       se.fit = FALSE,
+                                       conf.int = FALSE),
+                     times=newtimes)$surv)
+  S_hat <- S_hat[,-ncol(S_hat)]
+  if(ncol(S_hat) < length(newtimes)) {
+    S_hat <- cbind(S_hat, matrix(S_hat[,ncol(S_hat)],
+                                 nrow=nrow(S_hat),
+                                 ncol=length(newtimes) - ncol(S_hat)))
+
+  }
+  S_hat_train <- t(summary(survival::survfit(S_fit,
+                                             newdata=X,
+                                             se.fit = FALSE,
+                                             conf.int = FALSE),
+                           times=newtimes)$surv)
+  S_hat_train <- S_hat_train[,-ncol(S_hat_train)]
+  if(ncol(S_hat_train) < length(newtimes)) {
+    S_hat_train <- cbind(S_hat_train, matrix(S_hat_train[,ncol(S_hat_train)],
+                                             nrow=nrow(S_hat_train),
+                                             ncol=length(newtimes) - ncol(S_hat_train)))
+
+  }
+  cens_event <- 1 - event
+  G_fit <- survival::coxph(
+    survival::Surv(time, event) ~ .,
+    data = as.data.frame(cbind(time=time,
+                               event=cens_event,
+                               X))
+  )
+  G_hat <- t(summary(survival::survfit(G_fit,
+                                       newdata=X_holdout,
+                                       se.fit = FALSE,
+                                       conf.int = FALSE),
+                     times=newtimes)$surv)
+  G_hat <- G_hat[,-ncol(G_hat)]
+  if(ncol(G_hat) < length(newtimes)) {
+    G_hat <- cbind(G_hat, matrix(G_hat[,ncol(G_hat)],
+                                 nrow=nrow(G_hat),
+                                 ncol=length(newtimes) - ncol(G_hat)))
+
+  }
+  G_hat_train <- t(summary(survival::survfit(G_fit,
+                                             newdata=X,
+                                             se.fit = FALSE,
+                                             conf.int = FALSE),
+                           times=newtimes)$surv)
+  G_hat_train <- G_hat_train[,-ncol(G_hat_train)]
+  if(ncol(G_hat_train) < length(newtimes)) {
+    G_hat_train <- cbind(G_hat_train, matrix(G_hat_train[,ncol(G_hat_train)],
+                                             nrow=nrow(G_hat_train),
+                                             ncol=length(newtimes) - ncol(G_hat_train)))
+
+  }
+
   return(list(S_hat = S_hat,
               G_hat = G_hat,
               S_hat_train = S_hat_train,
