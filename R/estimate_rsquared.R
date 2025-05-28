@@ -53,7 +53,6 @@ estimate_rsquared <- function(time,
   V_2 <- mean(phi_tilde02_uncentered) - (mean(phi_tilde02_uncentered))^2
   EIF <- (phi0 + phi_tilde_0)/V_2 - V_1/(V_2^2)*(phi02 + phi_tilde02)
 
-
   plug_in <- mean(2*preds*S_hat_k - preds^2 - S_hat_k)
 
   V1_os <- one_step

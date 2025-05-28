@@ -60,16 +60,12 @@ vim_AUC <- function(time,
   var_est <- rep(NA, J1)
   full_one_step <- rep(NA, J1)
   reduced_one_step <- rep(NA, J1)
-  # full_plug_in <- rep(NA, J1)
-  # reduced_plug_in <- rep(NA, J1)
   cil <- rep(NA, J1)
   ciu <- rep(NA, J1)
   cil_1sided <- rep(NA, J1)
   p <- rep(NA, J1)
   for(i in 1:J1) {
     tau <- landmark_times[i]
-    # CV_full_plug_ins <- rep(NA, V)
-    # CV_reduced_plug_ins <- rep(NA, V)
     CV_var_ests <- rep(NA, V)
     CV_full_numerators <- rep(NA, V)
     CV_reduced_numerators <- rep(NA, V)
@@ -78,8 +74,6 @@ vim_AUC <- function(time,
     split_denominator_fulls <- rep(NA, V)
     split_numerator_reduceds <- rep(NA, V)
     split_denominator_reduceds <- rep(NA, V)
-    # split_plug_in_fulls <- rep(NA, V)
-    # split_plug_in_reduceds <- rep(NA, V)
     split_var_est_fulls <- rep(NA, V)
     split_var_est_reduceds <- rep(NA, V)
     for (j in 1:V){
@@ -103,8 +97,6 @@ vim_AUC <- function(time,
                            G_hat = G_hat[[j]],
                            robust = robust)
 
-      # CV_full_plug_ins[j] <- V_0$plug_in
-      # CV_reduced_plug_ins[j] <- V_0s$plug_in
       CV_full_numerators[j] <- V_0$numerator
       CV_reduced_numerators[j] <- V_0s$numerator
       CV_denominators[j] <- V_0$denominator
@@ -112,8 +104,6 @@ vim_AUC <- function(time,
       split_denominator_fulls[j] <- V_0$denominator
       split_numerator_reduceds[j] <- V_0s$numerator
       split_denominator_reduceds[j] <- V_0s$denominator
-      # split_plug_in_fulls[j] <- V_0$plug_in
-      # split_plug_in_reduceds[j] <- V_0s$plug_in
       split_var_est_fulls[j] <- mean(V_0$EIF^2)
       split_var_est_reduceds[j] <- mean(V_0s$EIF^2)
       EIF <- V_0$EIF - V_0s$EIF
@@ -126,18 +116,14 @@ vim_AUC <- function(time,
       one_step[i] <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0]) -
         mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
       full_one_step[i] <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0])
-      # full_plug_in[i] <- mean(split_plug_in_fulls[folds_0])
       reduced_one_step[i] <- mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
-      # reduced_plug_in[i] <- mean(split_plug_in_reduceds[folds_1])
       var_est[i] <- mean(split_var_est_fulls[folds_0]) +
         mean(split_var_est_reduceds[folds_1])
     } else{
-      one_step[i] <- mean(CV_full_numerators - CV_reduced_numerators)/mean(CV_denominators)#mean(CV_one_steps)
+      one_step[i] <- mean(CV_full_numerators - CV_reduced_numerators)/mean(CV_denominators)
       var_est[i] <- mean(CV_var_ests)
-      full_one_step[i] <- mean(CV_full_numerators)/mean(CV_denominators)#mean(CV_full_one_steps)
-      reduced_one_step[i] <- mean(CV_reduced_numerators)/mean(CV_denominators)#mean(CV_reduced_one_steps)
-      # full_plug_in[i] <- mean(CV_full_plug_ins)
-      # reduced_plug_in[i] <- mean(CV_reduced_plug_ins)
+      full_one_step[i] <- mean(CV_full_numerators)/mean(CV_denominators)
+      reduced_one_step[i] <- mean(CV_reduced_numerators)/mean(CV_denominators)
     }
     n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
     cil[i] <- one_step[i] - stats::qnorm(1-alpha/2)*sqrt(var_est[i]/n_eff)

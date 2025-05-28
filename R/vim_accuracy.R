@@ -55,8 +55,6 @@ vim_accuracy <- function(time,
   var_est <- rep(NA, J1)
   full_one_step <- rep(NA, J1)
   reduced_one_step <- rep(NA, J1)
-  # full_plug_in <- rep(NA, J1)
-  # reduced_plug_in <- rep(NA, J1)
   cil <- rep(NA, J1)
   ciu <- rep(NA, J1)
   cil_1sided <- rep(NA, J1)
@@ -64,16 +62,12 @@ vim_accuracy <- function(time,
 
   for(i in 1:J1) {
     tau <- landmark_times[i]
-    # CV_full_plug_ins <- rep(NA, V)
-    # CV_reduced_plug_ins <- rep(NA, V)
     CV_full_one_steps <- rep(NA, V)
     CV_reduced_one_steps <- rep(NA, V)
     CV_one_steps <- rep(NA, V)
     CV_var_ests <- rep(NA, V)
     split_one_step_fulls <- rep(NA, V)
-    # split_plug_in_fulls <- rep(NA, V)
     split_one_step_reduceds <- rep(NA, V)
-    # split_plug_in_reduceds <- rep(NA, V)
     split_var_est_fulls <- rep(NA, V)
     split_var_est_reduceds <- rep(NA, V)
     for (j in 1:V){
@@ -94,14 +88,10 @@ vim_accuracy <- function(time,
                                 S_hat = S_hat[[j]],
                                 G_hat = G_hat[[j]])
       CV_full_one_steps[j] <- V_0$one_step
-      # CV_full_plug_ins[j] <- V_0$plug_in
       CV_reduced_one_steps[j] <- V_0s$one_step
-      # CV_reduced_plug_ins[j] <- V_0s$plug_in
       CV_one_steps[j] <-  V_0$one_step -V_0s$one_step
       split_one_step_fulls[j] <- V_0$one_step
-      # split_plug_in_fulls[j] <- V_0$plug_in
       split_one_step_reduceds[j] <- V_0s$one_step
-      # split_plug_in_reduceds[j] <- V_0s$plug_in
       split_var_est_fulls[j] <- mean(V_0$EIF^2)
       split_var_est_reduceds[j] <- mean(V_0s$EIF^2)
       EIF <- V_0$EIF - V_0s$EIF
@@ -115,9 +105,7 @@ vim_accuracy <- function(time,
       one_step[i] <- mean(split_one_step_fulls[folds_0]) -
         mean(split_one_step_reduceds[folds_1])
       full_one_step[i] <- mean(split_one_step_fulls[folds_0])
-      # full_plug_in[i] <- mean(split_plug_in_fulls[folds_0])
       reduced_one_step[i] <- mean(split_one_step_reduceds[folds_1])
-      # reduced_plug_in[i] <- mean(split_plug_in_reduceds[folds_1])
       var_est[i] <- mean(split_var_est_fulls[folds_0]) +
         mean(split_var_est_reduceds[folds_1])
     } else{
@@ -125,8 +113,6 @@ vim_accuracy <- function(time,
       var_est[i] <- mean(CV_var_ests)
       full_one_step[i] <- mean(CV_full_one_steps)
       reduced_one_step[i] <- mean(CV_reduced_one_steps)
-      # full_plug_in[i] <- mean(CV_full_plug_ins)
-      # reduced_plug_in[i] <- mean(CV_reduced_plug_ins)
     }
 
     n_eff <- ifelse(sample_split, length(time)/2, length(time)) # for sample splitting
