@@ -341,15 +341,15 @@ used when interpreting the resulting confidence interval.</p>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">age_index</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt;   landmark_time est   var_est cil        ciu cil_1sided         p</span></span>
-<span><span class="co">#&gt; 1          1000   0 0.5064895   0 0.06755926          0 0.5799834</span></span>
-<span><span class="co">#&gt; 2          2000   0 3.3089520   0 0.08363344          0 0.8661705</span></span>
-<span><span class="co">#&gt;   large_predictiveness small_predictiveness vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.7049526            0.7127091 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 2            0.6523270            0.7612004 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt;   small_feature_vector indx indx_name</span></span>
-<span><span class="co">#&gt; 1      2,3,4,5,6,7,8,9    1       age</span></span>
-<span><span class="co">#&gt; 2      2,3,4,5,6,7,8,9    1       age</span></span></code></pre></div>
+<span><span class="co">#&gt;   landmark_time est var_est cil ciu cil_1sided   p large_predictiveness</span></span>
+<span><span class="co">#&gt; 1          1000 NaN     NaN NaN NaN        NaN NaN            0.7086387</span></span>
+<span><span class="co">#&gt; 2          2000 NaN     NaN NaN NaN        NaN NaN            0.7362366</span></span>
+<span><span class="co">#&gt;   small_predictiveness vim large_feature_vector small_feature_vector indx</span></span>
+<span><span class="co">#&gt; 1                  NaN AUC    1,2,3,4,5,6,7,8,9      2,3,4,5,6,7,8,9    1</span></span>
+<span><span class="co">#&gt; 2                  NaN AUC    1,2,3,4,5,6,7,8,9      2,3,4,5,6,7,8,9    1</span></span>
+<span><span class="co">#&gt;   indx_name</span></span>
+<span><span class="co">#&gt; 1       age</span></span>
+<span><span class="co">#&gt; 2       age</span></span></code></pre></div>
 <p>If we want to examine other features, we could simply repeat the
 above call to <code><a href="../reference/vim.html">vim()</a></code>, substituting in the correct
 <code>large_feature_vector</code> and <code>small_feature_vector</code>.
@@ -486,7 +486,11 @@ look at the results for all feature groups.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 16 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 16 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
 <p>We can also look at the importance of all tumor-level features and
 all person-level features relative to the full feature vector.</p>
@@ -535,7 +539,11 @@ all person-level features relative to the full feature vector.</p>
 <span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector (groups)"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 4 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-4-1.png" width="768"></p>
 </div>
 <div class="section level3">
@@ -644,7 +652,11 @@ the current set of predictors.)</p>
 <span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to person-level features"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-5-1.png" width="768"></p>
 </div>
 <div class="section level3">
@@ -763,7 +775,11 @@ estimates.</p>
 <span><span class="co">#&gt; unstable VIM estimates.</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"Adjusted AUC variable importance relative to all tumor-level features"</span><span class="op">)</span></span>
-<span><span class="va">p_auc</span></span></code></pre></div>
+<span><span class="va">p_auc</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_errorbarh()`).</span></span>
+<span><span class="co">#&gt; Warning: Removed 10 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/unnamed-chunk-6-1.png" width="768"></p>
 </div>
 </div>
