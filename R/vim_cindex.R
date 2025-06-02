@@ -95,8 +95,8 @@ vim_cindex <- function(time,
   }
 
   if (sample_split){
-    folds_0 <- sort(unique(cf_folds[ss_folds == 0]))
-    folds_1 <- sort(unique(cf_folds[ss_folds == 1]))
+    folds_0 <- sort(unique(cf_folds[ss_folds == 1]))
+    folds_1 <- sort(unique(cf_folds[ss_folds == 2]))
     one_step <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0]) -
       mean(split_numerator_reduceds[folds_1])/mean(split_denominator_reduceds[folds_1])
     full_one_step <- mean(split_numerator_fulls[folds_0])/mean(split_denominator_fulls[folds_0])
