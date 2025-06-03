@@ -8,38 +8,38 @@ vignette: >
 ---
   
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+  knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
-)
+  )
 ```
-
+  
 ```{r setup}
-library(survML)
-library(survival)
-library(dplyr)
-library(ggplot2)
-set.seed(72924)
+  library(survML)
+  library(survival)
+  library(dplyr)
+  library(ggplot2)
+  set.seed(72924)
 ```
-
+  
 ## Introduction
-
+  
 The `survML` package includes functions that can be used to estimate model-free, algorithm-agnostic variable importance when the outcome of interest is subject to right censoring. Specifically, this functionality is aimed at estimating *intrinsic* variable importance, which is the population-level predictiveness potential of a feature or group of features.
-
+  
 Suppose we have access to a vector $X$ of features, which we wish to use to make a prediction involving $T$, a time-to-event outcome. We use $C$ to denote the right censoring variable. The observed data are given by $(X, Y, \Delta)$, where $\Delta := I(T \leq C)$ and $Y := \text{min}(T, C)$. For an index set $s$, we use $X_s$ to denote the elements of $X$ with index in $s$ and $X_{-s}$ its complement. For a given prediction task (say, estimating the probability that $T$ is smaller than some landmark time $\tau$) and prediction function $f$, we require a measure of predictiveness. We let $V(f, P_0)$ denote the predictiveness of $f$ under sampling from distribution $P_0$. We define $f_{0,s}$ as the *oracle prediction function* excluding features with index in $s$; this is the best possible prediction function, according to $V$, that uses only $X_{-s}$. 
-
+  
 For intrinsic variable importance, we consider nested index sets $r \subset s$ and define the importance of $X_{s \setminus r}$ relative to $X_s$ as $V(f_{0,r}, P_0) - V(f_{0,s}, P_0)$; this is the difference in maximum achievable predictiveness when only $r$ is excluded compared to when $s$ is excluded. We refer to this parameter as a variable importance measure (VIM). Colloquially, we refer to $X_{-r}$ and $X_{-s}$ as the 'large' and 'small' feature groups, respectively. Variable importance is assessed by comparing the predictiveness of a model using the large feature group to that of a model using the small feature group. 
-
+  
 Due to right censoring, the VIM estimation procedure requires estimates of the conditional survival functions of $T$ and $C$ given $X$, which we define pointwise as $S_0(t \mid x) := P_0(T > t \mid X = x)$ and $G_0(t \mid x) := P_0(C > t \mid X = x)$, respectively. These functions must be estimated over the interval $(0, \tau]$ and may be obtained from any conditional survival estimation algorithm. This may be as simple as a Cox proportional hazards model (Cox, 1972) or parametric survival regression model, or as complex as a stacked regression procedure such as survival Super Learner (Westling et al., 2023) or global survival stacking (Wolock et al., 2024).
-
-We also require estimates of the oracle prediction functions $f_{0,r}$ and $f_{0,s}$, which we refer to as the 'large' and 'small' oracle prediction functions, respectively, and whose exact form depends on the chosen predictiveness measure. For several commonly used measures, the oracle prediction functions can be written in terms of $S_0(\cdot \mid x)$. The form of the oracle prediction function for the measures included in `survML` is given in the Appendix.
-
+  
+  We also require estimates of the oracle prediction functions $f_{0,r}$ and $f_{0,s}$, which we refer to as the 'large' and 'small' oracle prediction functions, respectively, and whose exact form depends on the chosen predictiveness measure. For several commonly used measures, the oracle prediction functions can be written in terms of $S_0(\cdot \mid x)$. The form of the oracle prediction function for the measures included in `survML` is given in the Appendix.
+  
 ## Example: Predicting recurrence-free survival time in cancer patients
-
+  
 As an example, we consider estimating variable importance for predicting recurrence-free survival using the `gbsg` dataset in the `survival` package. The Kaplan-Meier estimate of the survival curve for this dataset is shown below. 
-
+  
 ```{r km, fig.width=8, fig.height=6}
-data(cancer)
+  data(cancer)
 km_fit <- survfit(Surv(rfstime, status) ~ 1, data = gbsg)
 plot(km_fit, xlab = "Time (days)", ylab = "Recurrence-free survival probability")
 ```
@@ -103,7 +103,7 @@ There are three options for estimating the nuisance functions (conditional survi
 (2) Provide a function to estimate each nuisance. 
 (3) Provide pre-computed estimates for each nuisance. 
 
-These are ordered from least to most flexible; in this vignette, we focus on (1). When using the built-in nuisance estimation algorithms, control parameters can be set using the `conditional_surv_generator_control`, `large_oracle_generator_control`, and `small_oracle_generator_control` arguments. To reduce runtime in this example, we use a very small Super Learner library and large `bin_size` to estimate the conditional survival nuisance functions (see `stackG()` function documentation), as well as the two oracle prediction functions (see the `SuperLearner` package documentation). 
+These are ordered from least to most flexible; in this vignette, we focus on (1), although we will also use (3) below, when we repeat calls to `vim()` while using the already-computed nuisance estimates. When using the built-in nuisance estimation algorithms, control parameters can be set using the `conditional_surv_generator_control`, `large_oracle_generator_control`, and `small_oracle_generator_control` arguments. To reduce runtime in this example, we use a very small Super Learner library and large `bin_size` to estimate the conditional survival nuisance functions (see `stackG()` function documentation), as well as the two oracle prediction functions (see the `SuperLearner` package documentation). 
 
 We also use two-fold cross-fitting (i.e, set `cf_fold_num = 2`) and two-fold cross-validation for nuisance estimation (i.e., set `V = 2` for each nuisance estimator). Finally, we use a relatively coarse grid of 40 timepoints, evenly spaced on the quantile scale of observed event times, for the `approx_times` argument, which determines the grid over which integrals are approximated in the estimation procedure. In actual analyses, it is generally a good idea to use a larger library of learners, more cross-fitting and cross-validation folds, a finer grid of `approx_times`, and a smaller `bin_size`. 
 
@@ -145,7 +145,7 @@ If we want to examine other features, we could simply repeat the above call to `
 * `large_oracle_preds` contains the estimated large oracle prediction function (using all features)
 * `small_oracle_preds` contains the estimated small oracle prediction function (using all features except, in this case, for age)
 
-As we examine the importance of other features relative to the full feature vector, we can recycle `conditional_surv_preds` and `large_oracle_preds` (which requires us to use the same `folds` and `approx_times` as well). We can then look at the results for all feature groups. 
+As we examine the importance of other features relative to the full feature vector, we can recycle `conditional_surv_preds` and `large_oracle_preds` (which requires us to use the same `folds` and `approx_times` as well). This is an example of using pre-computed nuisance estimates in the `vim()` function. We can then look at the results for all feature groups. 
 
 ```{r}
 # save the objects that we will reuse
@@ -284,40 +284,40 @@ for (i in 1:length(feature_group_names)){
   
   if (i == 1){
     output <- vim(type = "AUC",
-                time = time,
-                event = event,
-                X = X,
-                landmark_times = landmark_times,
-                approx_times = saved_approx_times,
-                large_feature_vector = indx,
-                small_feature_vector =  person_index_numeric,
-                conditional_surv_preds = saved_conditional_surv_preds,
-                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
-                                                      V = 2),
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
-                                                      V = 2),
-                cf_folds = saved_folds$cf_folds,
-                ss_folds = saved_folds$ss_folds,
-                sample_split = TRUE,
-                scale_est = TRUE)
+                  time = time,
+                  event = event,
+                  X = X,
+                  landmark_times = landmark_times,
+                  approx_times = saved_approx_times,
+                  large_feature_vector = indx,
+                  small_feature_vector =  person_index_numeric,
+                  conditional_surv_preds = saved_conditional_surv_preds,
+                  large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                        V = 2),
+                  small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                        V = 2),
+                  cf_folds = saved_folds$cf_folds,
+                  ss_folds = saved_folds$ss_folds,
+                  sample_split = TRUE,
+                  scale_est = TRUE)
     saved_small_oracle_preds <- output$small_oracle_preds
   } else{
     output <- vim(type = "AUC",
-                time = time,
-                event = event,
-                X = X,
-                landmark_times = landmark_times,
-                approx_times = saved_approx_times,
-                large_feature_vector = indx,
-                small_feature_vector =  person_index_numeric,
-                conditional_surv_preds = saved_conditional_surv_preds,
-                small_oracle_preds = saved_small_oracle_preds,
-                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
-                                                      V = 2),
-                cf_folds = saved_folds$cf_folds,
-                ss_folds = saved_folds$ss_folds,
-                sample_split = TRUE,
-                scale_est = TRUE)
+                  time = time,
+                  event = event,
+                  X = X,
+                  landmark_times = landmark_times,
+                  approx_times = saved_approx_times,
+                  large_feature_vector = indx,
+                  small_feature_vector =  person_index_numeric,
+                  conditional_surv_preds = saved_conditional_surv_preds,
+                  small_oracle_preds = saved_small_oracle_preds,
+                  large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                        V = 2),
+                  cf_folds = saved_folds$cf_folds,
+                  ss_folds = saved_folds$ss_folds,
+                  sample_split = TRUE,
+                  scale_est = TRUE)
   }
   
   output$result$indx <- rep(indx_char, nrow(output$result))
@@ -360,41 +360,41 @@ for (i in 1:length(feature_group_names)){
   indx <- as.numeric(strsplit(indx_char, split = ",")[[1]])
   
   if (i == 1){
-     output <- vim(type = "AUC",
-                time = time,
-                event = event,
-                X = X,
-                landmark_times = landmark_times,
-                approx_times = saved_approx_times,
-                large_feature_vector = (1:ncol(X))[-person_index_numeric],
-                small_feature_vector =  (1:ncol(X))[-indx],
-                conditional_surv_preds = saved_conditional_surv_preds,
-                large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
-                                                      V = 2),
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
-                                                      V = 2),
-                cf_folds = saved_folds$cf_folds,
-                ss_folds = saved_folds$ss_folds,
-                sample_split = TRUE,
-                scale_est = TRUE)
-     saved_large_oracle_preds <- output$large_oracle_preds
+    output <- vim(type = "AUC",
+                  time = time,
+                  event = event,
+                  X = X,
+                  landmark_times = landmark_times,
+                  approx_times = saved_approx_times,
+                  large_feature_vector = (1:ncol(X))[-person_index_numeric],
+                  small_feature_vector =  (1:ncol(X))[-indx],
+                  conditional_surv_preds = saved_conditional_surv_preds,
+                  large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                        V = 2),
+                  small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                        V = 2),
+                  cf_folds = saved_folds$cf_folds,
+                  ss_folds = saved_folds$ss_folds,
+                  sample_split = TRUE,
+                  scale_est = TRUE)
+    saved_large_oracle_preds <- output$large_oracle_preds
   } else{
-     output <- vim(type = "AUC",
-                time = time,
-                event = event,
-                X = X,
-                landmark_times = landmark_times,
-                approx_times = saved_approx_times,
-                large_feature_vector = (1:ncol(X))[-person_index_numeric],
-                small_feature_vector =  (1:ncol(X))[-indx],
-                conditional_surv_preds = saved_conditional_surv_preds,
-                large_oracle_preds = saved_large_oracle_preds,
-                small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
-                                                      V = 2),
-                cf_folds = saved_folds$cf_folds,
-                ss_folds = saved_folds$ss_folds,
-                sample_split = TRUE,
-                scale_est = TRUE)
+    output <- vim(type = "AUC",
+                  time = time,
+                  event = event,
+                  X = X,
+                  landmark_times = landmark_times,
+                  approx_times = saved_approx_times,
+                  large_feature_vector = (1:ncol(X))[-person_index_numeric],
+                  small_feature_vector =  (1:ncol(X))[-indx],
+                  conditional_surv_preds = saved_conditional_surv_preds,
+                  large_oracle_preds = saved_large_oracle_preds,
+                  small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                        V = 2),
+                  cf_folds = saved_folds$cf_folds,
+                  ss_folds = saved_folds$ss_folds,
+                  sample_split = TRUE,
+                  scale_est = TRUE)
   }
   
   output$result$indx <- rep(indx_char, nrow(output$result))
@@ -410,33 +410,144 @@ p_auc <- plot_results(pooled_output, "Adjusted AUC variable importance relative 
 p_auc
 ```
 
+## Writing a custom generator function
+
+So far, we've used two of three options for nuisance estimation: using the built-in generators, and providing pre-computed estimates. The third option is to write a custom generator function. In order to maintain double-robustness, we strongly recommend using the built-in generator functions to estimate the large and small oracle prediction functions. As such, here we only describe how to write a custom `conditional_surv_generator`. This function must satisfy the following criteria: 
+
+* `conditional_surv_generator`:
+    * Input: arguments `time` (follow-up times $Y$ for training), `event` (event indicators $\Delta$ for training), `X` (covariates for training), `X_holdout` (covariate values at which to generate conditional survival function estimates), and `newtimes` (times at which to estimate conditional survival function)
+    * Ouput: a named list with elements `S_hat` (estimated event conditional survival function for `X_holdout`, with rows corresponding to rows of `X_holdout` and columns to `newtimes`), `S_hat_train` (estimated event conditional survival function for `X`, with rows corresponding to rows of `X` and columns to `newtimes`), `G_hat` (analogous to `S_hat` but for censoring), and `G_hat_train` (analogous to `S_hat_train` but for censoring). 
+
+For example, suppose that, instead of using `stackG` to estimate the conditional survival functions, we wish to use a simple Cox proportional hazards model. We first write the generator function: 
+
+```{r}
+generate_nuisance_predictions_coxph <- function(time,
+                                                event,
+                                                X,
+                                                X_holdout,
+                                                newtimes){
+  
+  S_fit <- survival::coxph(
+    survival::Surv(time, event) ~ .,
+    data = as.data.frame(cbind(time=time,
+                               event=event,
+                               X))
+  )
+  S_hat <- t(summary(survival::survfit(S_fit,
+                                       newdata=X_holdout,
+                                       se.fit = FALSE,
+                                       conf.int = FALSE),
+                     times=newtimes)$surv)
+  S_hat <- S_hat[,-ncol(S_hat)]
+  if(ncol(S_hat) < length(newtimes)) {
+    S_hat <- cbind(S_hat, matrix(S_hat[,ncol(S_hat)],
+                                 nrow=nrow(S_hat),
+                                 ncol=length(newtimes) - ncol(S_hat)))
+    
+  }
+  S_hat_train <- t(summary(survival::survfit(S_fit,
+                                             newdata=X,
+                                             se.fit = FALSE,
+                                             conf.int = FALSE),
+                           times=newtimes)$surv)
+  S_hat_train <- S_hat_train[,-ncol(S_hat_train)]
+  if(ncol(S_hat_train) < length(newtimes)) {
+    S_hat_train <- cbind(S_hat_train, matrix(S_hat_train[,ncol(S_hat_train)],
+                                             nrow=nrow(S_hat_train),
+                                             ncol=length(newtimes) - ncol(S_hat_train)))
+    
+  }
+  cens_event <- 1 - event
+  G_fit <- survival::coxph(
+    survival::Surv(time, event) ~ .,
+    data = as.data.frame(cbind(time=time,
+                               event=cens_event,
+                               X))
+  )
+  G_hat <- t(summary(survival::survfit(G_fit,
+                                       newdata=X_holdout,
+                                       se.fit = FALSE,
+                                       conf.int = FALSE),
+                     times=newtimes)$surv)
+  G_hat <- G_hat[,-ncol(G_hat)]
+  if(ncol(G_hat) < length(newtimes)) {
+    G_hat <- cbind(G_hat, matrix(G_hat[,ncol(G_hat)],
+                                 nrow=nrow(G_hat),
+                                 ncol=length(newtimes) - ncol(G_hat)))
+    
+  }
+  G_hat_train <- t(summary(survival::survfit(G_fit,
+                                             newdata=X,
+                                             se.fit = FALSE,
+                                             conf.int = FALSE),
+                           times=newtimes)$surv)
+  G_hat_train <- G_hat_train[,-ncol(G_hat_train)]
+  if(ncol(G_hat_train) < length(newtimes)) {
+    G_hat_train <- cbind(G_hat_train, matrix(G_hat_train[,ncol(G_hat_train)],
+                                             nrow=nrow(G_hat_train),
+                                             ncol=length(newtimes) - ncol(G_hat_train)))
+    
+  }
+  
+  return(list(S_hat = S_hat,
+              G_hat = G_hat,
+              S_hat_train = S_hat_train,
+              G_hat_train = G_hat_train))
+}
+```
+
+Next, we again estimate the importance of age relative to all available features: 
+
+```{r}
+output <- vim(type = "AUC",
+              time = time,
+              event = event,
+              X = X,
+              landmark_times = landmark_times,
+              large_feature_vector = 1:ncol(X),
+              small_feature_vector = (1:ncol(X))[-as.numeric(age_index)],
+              conditional_surv_generator = generate_nuisance_predictions_coxph,
+              large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                    V = 2),
+              small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                    V = 2),
+              approx_times = sort(unique(stats::quantile(time[event == 1 & time <= max(landmark_times)],
+                                                         probs = seq(0, 1, by = 0.025)))),
+              cf_fold_num = 2,
+              sample_split = TRUE,
+              scale_est = TRUE)
+output$result$indx <- rep(age_index, nrow(output$result))
+output$result$indx_name <- rep("age", nrow(output$result))
+output$result
+```
+
 ## Appendix
 
 Some example predictiveness measures, along with the corresponding oracle prediction functions, are given below. 
 
 * *AUC*:
-    * $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\}$ 
-    * $f_0(x) = 1 - S_0(\tau \mid x)$
+* $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\}$ 
+* $f_0(x) = 1 - S_0(\tau \mid x)$
 
 * *Brier score*: 
-    * $V(f, P_0) = E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]$
-    * $f_0(x) = 1 - S_0(\tau \mid x)$
+* $V(f, P_0) = E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]$
+* $f_0(x) = 1 - S_0(\tau \mid x)$
 
 * *Survival time MSE*: 
-    * $V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]$
-    * $f_0(x) = \int_0^\tau S_0(t \mid x)dt$
+* $V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]$
+* $f_0(x) = \int_0^\tau S_0(t \mid x)dt$
 
 * *Proportion of explained variance (R-squared)*: 
-    * $V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]}{var_{P_0}[I(T \leq \tau)]}$
-    * $f_0(x) = 1 - S_0(\tau \mid x)$
+* $V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]}{var_{P_0}[I(T \leq \tau)]}$
+* $f_0(x) = 1 - S_0(\tau \mid x)$
 
 * *Binary classification accuracy*: 
-    * $V(f, P_0) = P_0\{f(X) = I(T \leq \tau)\}$
-    * $f_0(x) = I\{S_0(\tau \mid x) \leq 0.5\}$
+* $V(f, P_0) = P_0\{f(X) = I(T \leq \tau)\}$
+* $f_0(x) = I\{S_0(\tau \mid x) \leq 0.5\}$
 
 * *C-index*: 
-    * $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq T_2\}$
-    * For the C-index, there is, to our knowledge, no closed form of the oracle prediction function; see the preprint for more details on our proposed procedure for direct numerical optimization. 
+* $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq T_2\}$
+* For the C-index, there is, to our knowledge, no closed form of the oracle prediction function; see the preprint for more details on our proposed procedure for direct numerical optimization. 
 
 
 ## References
