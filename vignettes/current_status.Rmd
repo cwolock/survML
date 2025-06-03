@@ -1,8 +1,8 @@
 ---
-title: "Estimating a covariate-adjusted survival function using current status data"
+title: "Covariate-adjusted survival curves with current status data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Estimating a covariate-adjusted survival function using current status data}
+  %\VignetteIndexEntry{Covariate-adjusted survival curves with current status data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

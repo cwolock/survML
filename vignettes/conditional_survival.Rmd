@@ -1,8 +1,8 @@
 ---
-title: "Estimating a conditional survival function using off-the-shelf machine learning tools"
+title: "Conditional survival function estimation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Estimating a conditional survival function using off-the-shelf machine learning tools}
+  %\VignetteIndexEntry{Conditional survival function estimation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

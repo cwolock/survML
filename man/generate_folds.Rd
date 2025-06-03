@@ -4,7 +4,7 @@
 \alias{generate_folds}
 \title{Generate cross-fitting and sample-splitting folds}
 \usage{
-generate_folds(n, V, sample_split)
+generate_folds(n, V, sample_split, cf_folds = NULL)
 }
 \arguments{
 \item{n}{Total sample size}

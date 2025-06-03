@@ -2,7 +2,7 @@
 % Please edit documentation in R/vim.R
 \name{vim}
 \alias{vim}
-\title{Estimate AUC VIM}
+\title{Estimate variable importance}
 \usage{
 vim(
   type,
@@ -14,15 +14,15 @@ vim(
   approx_times = NULL,
   large_feature_vector,
   small_feature_vector,
-  conditional_surv_preds = NULL,
-  large_oracle_preds = NULL,
-  small_oracle_preds = NULL,
   conditional_surv_generator = NULL,
   conditional_surv_generator_control = NULL,
   large_oracle_generator = NULL,
   large_oracle_generator_control = NULL,
   small_oracle_generator = NULL,
   small_oracle_generator_control = NULL,
+  conditional_surv_preds = NULL,
+  large_oracle_preds = NULL,
+  small_oracle_preds = NULL,
   cf_folds = NULL,
   cf_fold_num = 5,
   sample_split = TRUE,
@@ -59,51 +59,57 @@ approximate integrals. Defaults to a grid of 100 timepoints, evenly spaced on th
 \item{small_feature_vector}{Numeric vector giving indices of features to include in the 'small' prediction model. Must be a
 subset of \code{large_feature_vector}.}
 
-\item{conditional_surv_preds}{User-provided estimates of the conditional survival functions of the event and censoring
-variables given the full covariate vector (if not using the \code{vim()} function to compute these nuisance estimates).
-Must be a named list of lists with elements \code{S_hat}, \code{S_hat_train}, \code{G_hat}, and \code{G_hat_train}. Each of these is itself
-a list of length \code{K}, where \code{K} is the number of cross-fitting folds. Each element of these lists is a matrix with J2 columns and number of rows
-equal to either the number of samples in the \code{k}th fold (for \code{S_hat} or \code{G_hat}) or the number of samples used to compute the nuisance estimator
-for the \code{k}th fold.}
-
-\item{large_oracle_preds}{User-provided estimates of the oracle prediction function using \code{large_feature_vector}. Must be a named list of lists
-with elements \code{f_hat} and \code{f_hat_train}. Each of these is itself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
-(for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).}
-
-\item{small_oracle_preds}{User-provided estimates of the oracle prediction function using \code{small_feature_vector}. Must be a named list of lists
-with elements \code{f_hat} and \code{f_hat_train}. Each of these is itself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
-(for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).}
-
-\item{conditional_surv_generator}{A user-written function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
-\code{time}, \code{event}, \code{folds} (cross-fitting fold identifiers), and
-\code{newtimes} (times at which to generate predictions).}
+\item{conditional_surv_generator}{A function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
+\code{time}, \code{event}, \code{folds} (referring to cross-fitting fold identifiers), and \code{newtimes} (times at which to generate predictions). Defaults to a
+pre-built generator function based on the \link{stackG} function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to \code{conditional_surv_preds}.}
 
 \item{conditional_surv_generator_control}{A list of arguments to pass to \code{conditional_surv_generator}.}
 
-\item{large_oracle_generator}{A user-written function to estimate the oracle prediction function using \code{large_feature_vector}.Must take arguments
-\code{time}, \code{event}, and \code{folds} (cross-fitting fold identifiers).}
+\item{large_oracle_generator}{A function to estimate the oracle prediction function using \code{large_feature_vector}. Must take arguments
+\code{time}, \code{event}, and \code{folds} (referring to cross-fitting fold identifiers). Defaults to a pre-built generator function using
+doubly-robust pseudo-outcome regression. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{large_oracle_preds}.}
 
 \item{large_oracle_generator_control}{A list of arguments to pass to \code{large_oracle_generator}.}
 
-\item{small_oracle_generator}{A user-written function to estimate the oracle prediction function using \code{small_feature_vector}.Must take arguments
-\code{time}, \code{event}, and \code{folds} (cross-fitting fold identifiers).}
+\item{small_oracle_generator}{A function to estimate the oracle prediction function using \code{small_feature_vector}. Must take arguments
+\code{time}, \code{event}, and \code{folds} (referring to cross-fitting fold identifiers). Defaults to a pre-built generator function using
+doubly-robust pseudo-outcome regression. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{small_oracle_preds}.}
 
 \item{small_oracle_generator_control}{A list of arguments to pass to \code{small_oracle_generator}.}
 
-\item{cf_folds}{Numeric vector of length \code{n} giving cross-fitting folds}
+\item{conditional_surv_preds}{User-provided estimates of the conditional survival functions of the event and censoring
+variables given the full covariate vector (if not using the \code{conditional_surv_generator} functionality to compute these nuisance estimates).
+Must be a named list of lists with elements \code{S_hat}, \code{S_hat_train}, \code{G_hat}, and \code{G_hat_train}. If using sample splitting, each of these is
+itself a list of length \code{2K}, where \code{K} is the number of cross-fitting folds (if not using sample splitting, each is a list of length \code{K}).
+Each element of these lists is a matrix with J2 columns and number of rows equal to either the number of samples in the \code{k}th fold (for \code{S_hat} and
+\code{G_hat}) or the number of samples used to compute the nuisance estimates for the \code{k}th fold (for \code{S_hat_train} and \code{G_hat_train}).}
 
-\item{cf_fold_num}{The number of cross-fitting folds, if not providing \code{cf_folds}}
+\item{large_oracle_preds}{User-provided estimates of the oracle prediction function using \code{large_feature_vector} (if not using the \code{large_oracle_generator} functionality to compute these nuisance estimates). Must be a named list of lists
+with elements \code{f_hat} and \code{f_hat_train}. If using sample splitting, each of these is itself a list of length \code{2K} (if not using sample
+splitting, each is a list of length \code{K}). Each element of these lists is a matrix with J1 columns (for landmark time VIMs) or 1 column
+(for \code{"C-index"} and \code{"survival_time_MSE"}) and number of rows equal to either the number of samples in the \code{k}th fold (for \code{f_hat})
+or the number of samples used to compute the nuisance estimates for the \code{k}th fold (for \code{f_hat_train}).}
 
-\item{sample_split}{Logical indicating whether or not to sample split}
+\item{small_oracle_preds}{User-provided estimates of the oracle prediction function using \code{small_feature_vector} (if not using the \code{small_oracle_generator} functionality to compute these nuisance estimates). Must be a named list of lists
+with elements \code{f_hat} and \code{f_hat_train}. If using sample splitting, each of these is itself a list of length \code{2K} (if not using sample
+splitting, each is a list of length \code{K}). Each element of these lists is a matrix with J1 columns (for landmark time VIMs) or 1 column
+(for \code{"C-index"} and \code{"survival_time_MSE"}) and number of rows equal to either the number of samples in the \code{k}th fold (for \code{f_hat})
+or the number of samples used to compute the nuisance estimates for the \code{k}th fold (for \code{f_hat_train}).}
 
-\item{ss_folds}{Numeric vector of length \code{n} giving sample-splitting folds}
+\item{cf_folds}{Numeric vector of length \code{n} giving cross-fitting folds, if specifying the folds explicitly. This is required if you are providing pre-computed nuisance estimations --- if providing a nuisance generator function, the \code{vim()} will assign folds.}
+
+\item{cf_fold_num}{The number of cross-fitting folds, if not providing \code{cf_folds}. Note that with samples-splitting, the data will be split into \code{2 x cf_fold_num} folds (i.e., there will be \code{cf_fold_num} folds within each half of the data).}
+
+\item{sample_split}{Logical indicating whether or not to sample split. Sample-splitting is required for valid hypothesis testing of null importance and is generally recommended. Defaults to \code{TRUE}.}
+
+\item{ss_folds}{Numeric vector of length \code{n} giving sample-splitting folds, if specifying the folds explicitly. This is required if you are providing pre-computed nuisance estimations --- if providing a nuisance generator function, the \code{vim()} will assign folds.}
 
 \item{robust}{Logical, whether or not to use the doubly-robust debiasing approach. This option
 is meant for illustration purposes only --- it should be left as \code{TRUE}.}
 
-\item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative}
+\item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative.}
 
-\item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
+\item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05.}
 
 \item{verbose}{Whether to print progress messages.}
 }
@@ -117,7 +123,10 @@ Named list with the following elements:
 \item{small_oracle_preds}{A named list containing the estimated small oracle prediction function.}
 }
 \description{
-Estimate AUC VIM
+Estimate variable importance
+}
+\details{
+For nuisance estimation, it is generally advisable to use the pre-built nuisance generator functions provided by \code{survML}. See the ''Variable importance in survival analysis'' vignette, or the \href{https://cwolock.github.io/survML/}{package website} for an illustration.
 }
 \examples{
 # This is a small simulation example

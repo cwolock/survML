@@ -1,8 +1,8 @@
 ---
-title: "Assessing variable importance in survival analysis using machine learning"
+title: "Variable importance in survival analysis"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Assessing variable importance in survival analysis using machine learning}
+  %\VignetteIndexEntry{Variable importance in survival analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

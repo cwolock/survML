@@ -16,34 +16,40 @@
 #' @param large_feature_vector Numeric vector giving indices of features to include in the 'large' prediction model.
 #' @param small_feature_vector Numeric vector giving indices of features to include in the 'small' prediction model. Must be a
 #' subset of \code{large_feature_vector}.
-#' @param conditional_surv_preds User-provided estimates of the conditional survival functions of the event and censoring
-#' variables given the full covariate vector (if not using the \code{vim()} function to compute these nuisance estimates).
-#' Must be a named list of lists with elements \code{S_hat}, \code{S_hat_train}, \code{G_hat}, and \code{G_hat_train}. Each of these is itself
-#' a list of length \code{K}, where \code{K} is the number of cross-fitting folds. Each element of these lists is a matrix with J2 columns and number of rows
-#' equal to either the number of samples in the \code{k}th fold (for \code{S_hat} or \code{G_hat}) or the number of samples used to compute the nuisance estimator
-#' for the \code{k}th fold.
-#' @param large_oracle_preds User-provided estimates of the oracle prediction function using \code{large_feature_vector}. Must be a named list of lists
-#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is itself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
-#' (for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).
-#' @param small_oracle_preds User-provided estimates of the oracle prediction function using \code{small_feature_vector}. Must be a named list of lists
-#' with elements \code{f_hat} and \code{f_hat_train}. Each of these is itself a list of length \code{K}. Each element of these lists is a matrix with J1 columns
-#' (for landmark time VIMs) or 1 column (for \code{"C-index"} and \code{"survival_time_MSE"}).
-#' @param conditional_surv_generator A user-written function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
-#' \code{time}, \code{event}, \code{folds} (cross-fitting fold identifiers), and
-#' \code{newtimes} (times at which to generate predictions).
+#' @param conditional_surv_generator A function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
+#' \code{time}, \code{event}, \code{folds} (referring to cross-fitting fold identifiers), and \code{newtimes} (times at which to generate predictions). Defaults to a
+#' pre-built generator function based on the [stackG] function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to \code{conditional_surv_preds}.
 #' @param conditional_surv_generator_control A list of arguments to pass to \code{conditional_surv_generator}.
-#' @param large_oracle_generator A user-written function to estimate the oracle prediction function using \code{large_feature_vector}.Must take arguments
-#' \code{time}, \code{event}, and \code{folds} (cross-fitting fold identifiers).
+#' @param large_oracle_generator A function to estimate the oracle prediction function using \code{large_feature_vector}. Must take arguments
+#' \code{time}, \code{event}, and \code{folds} (referring to cross-fitting fold identifiers). Defaults to a pre-built generator function using
+#' doubly-robust pseudo-outcome regression. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{large_oracle_preds}.
 #' @param large_oracle_generator_control A list of arguments to pass to \code{large_oracle_generator}.
-#' @param small_oracle_generator  A user-written function to estimate the oracle prediction function using \code{small_feature_vector}.Must take arguments
-#' \code{time}, \code{event}, and \code{folds} (cross-fitting fold identifiers).
+#' @param small_oracle_generator  A function to estimate the oracle prediction function using \code{small_feature_vector}. Must take arguments
+#' \code{time}, \code{event}, and \code{folds} (referring to cross-fitting fold identifiers). Defaults to a pre-built generator function using
+#' doubly-robust pseudo-outcome regression. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{small_oracle_preds}.
 #' @param small_oracle_generator_control A list of arguments to pass to \code{small_oracle_generator}.
-#' @param cf_folds Numeric vector of length \code{n} giving cross-fitting folds
-#' @param cf_fold_num The number of cross-fitting folds, if not providing \code{cf_folds}
-#' @param sample_split Logical indicating whether or not to sample split
-#' @param ss_folds Numeric vector of length \code{n} giving sample-splitting folds
-#' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative
-#' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
+#' @param conditional_surv_preds User-provided estimates of the conditional survival functions of the event and censoring
+#' variables given the full covariate vector (if not using the \code{conditional_surv_generator} functionality to compute these nuisance estimates).
+#' Must be a named list of lists with elements \code{S_hat}, \code{S_hat_train}, \code{G_hat}, and \code{G_hat_train}. If using sample splitting, each of these is
+#' itself a list of length \code{2K}, where \code{K} is the number of cross-fitting folds (if not using sample splitting, each is a list of length \code{K}).
+#' Each element of these lists is a matrix with J2 columns and number of rows equal to either the number of samples in the \code{k}th fold (for \code{S_hat} and
+#' \code{G_hat}) or the number of samples used to compute the nuisance estimates for the \code{k}th fold (for \code{S_hat_train} and \code{G_hat_train}).
+#' @param large_oracle_preds User-provided estimates of the oracle prediction function using \code{large_feature_vector} (if not using the \code{large_oracle_generator} functionality to compute these nuisance estimates). Must be a named list of lists
+#' with elements \code{f_hat} and \code{f_hat_train}. If using sample splitting, each of these is itself a list of length \code{2K} (if not using sample
+#' splitting, each is a list of length \code{K}). Each element of these lists is a matrix with J1 columns (for landmark time VIMs) or 1 column
+#' (for \code{"C-index"} and \code{"survival_time_MSE"}) and number of rows equal to either the number of samples in the \code{k}th fold (for \code{f_hat})
+#' or the number of samples used to compute the nuisance estimates for the \code{k}th fold (for \code{f_hat_train}).
+#' @param small_oracle_preds User-provided estimates of the oracle prediction function using \code{small_feature_vector} (if not using the \code{small_oracle_generator} functionality to compute these nuisance estimates). Must be a named list of lists
+#' with elements \code{f_hat} and \code{f_hat_train}. If using sample splitting, each of these is itself a list of length \code{2K} (if not using sample
+#' splitting, each is a list of length \code{K}). Each element of these lists is a matrix with J1 columns (for landmark time VIMs) or 1 column
+#' (for \code{"C-index"} and \code{"survival_time_MSE"}) and number of rows equal to either the number of samples in the \code{k}th fold (for \code{f_hat})
+#' or the number of samples used to compute the nuisance estimates for the \code{k}th fold (for \code{f_hat_train}).
+#' @param cf_folds Numeric vector of length \code{n} giving cross-fitting folds, if specifying the folds explicitly. This is required if you are providing pre-computed nuisance estimations --- if providing a nuisance generator function, the \code{vim()} will assign folds.
+#' @param cf_fold_num The number of cross-fitting folds, if not providing \code{cf_folds}. Note that with samples-splitting, the data will be split into \code{2 x cf_fold_num} folds (i.e., there will be \code{cf_fold_num} folds within each half of the data).
+#' @param sample_split Logical indicating whether or not to sample split. Sample-splitting is required for valid hypothesis testing of null importance and is generally recommended. Defaults to \code{TRUE}.
+#' @param ss_folds Numeric vector of length \code{n} giving sample-splitting folds, if specifying the folds explicitly. This is required if you are providing pre-computed nuisance estimations --- if providing a nuisance generator function, the \code{vim()} will assign folds.
+#' @param scale_est Logical, whether or not to force the VIM estimate to be nonnegative.
+#' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05.
 #' @param robust Logical, whether or not to use the doubly-robust debiasing approach. This option
 #' is meant for illustration purposes only --- it should be left as \code{TRUE}.
 #' @param verbose Whether to print progress messages.
@@ -55,6 +61,8 @@
 #' \item{conditional_surv_preds}{A named list containing the estimated conditional event and censoring survival functions.}
 #' \item{large_oracle_preds}{A named list containing the estimated large oracle prediction function.}
 #' \item{small_oracle_preds}{A named list containing the estimated small oracle prediction function.}
+#'
+#' @details For nuisance estimation, it is generally advisable to use the pre-built nuisance generator functions provided by \code{survML}. See the ''Variable importance in survival analysis'' vignette, or the \href{https://cwolock.github.io/survML/}{package website} for an illustration.
 #'
 #' @seealso [vim_accuracy] [vim_AUC] [vim_brier] [vim_cindex] [vim_rsquared] [vim_survival_time_mse]
 #'
@@ -102,15 +110,15 @@ vim <- function(type,
                 approx_times = NULL,
                 large_feature_vector,
                 small_feature_vector,
-                conditional_surv_preds = NULL,
-                large_oracle_preds = NULL,
-                small_oracle_preds = NULL,
                 conditional_surv_generator = NULL,
                 conditional_surv_generator_control = NULL,
                 large_oracle_generator = NULL,
                 large_oracle_generator_control = NULL,
                 small_oracle_generator = NULL,
                 small_oracle_generator_control = NULL,
+                conditional_surv_preds = NULL,
+                large_oracle_preds = NULL,
+                small_oracle_preds = NULL,
                 cf_folds = NULL,
                 cf_fold_num = 5,
                 sample_split = TRUE,
@@ -120,19 +128,111 @@ vim <- function(type,
                 alpha = 0.05,
                 verbose = FALSE){
 
-  if (is.null(cf_folds)){
-    if (verbose){print("Setting up cross-fitting and sample-splitting folds...")}
-    folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = sample_split)
-    cf_folds <- folds$cf_folds
-    ss_folds <- folds$ss_folds
-  } else{
-    if (verbose){print("Using user-provided folds...")}
+  precomputed_SG <- FALSE
+  precomputed_f <- FALSE
+  precomputed_fs <- FALSE
+  cf_folds_nuisance <- NULL # cf fold identifiers for nuisance estimation will not always be equal to this for VIM estimation
+  # since with sample splitting + no cross-fitting, you use the whole sample to estimate nuisances
+
+  # Deal with folds...
+  if (sample_split){ # if sample splitting
+    if (is.null(ss_folds)){ # sample splitting folds must be generated.
+      if (is.null(cf_folds)){ # cross-fitting folds also blank, generate everything ourselves
+        if (!is.numeric(cf_fold_num) | cf_fold_num <= 0 | cf_fold_num%%1 != 0){
+          stop("The number of cross-fitting folds must be a positive integer.")
+        }
+        if (cf_fold_num == 1){ # sample-splitting, no cross-fitting
+          cf_folds_nuisance <- rep(1, length(time)) # make cross-fitting folds just a vector of 1s for nuisance purposes
+          folds <- generate_folds(n = length(time), V = 1, sample_split = TRUE)
+          ss_folds <- folds$ss_folds
+          cf_folds <- folds$cf_folds # cross-fitting folds for vim estimation are equal to sample-splitting folds
+        } else if (cf_fold_num > 1){ # sample-splitting and cross-fitting, generate both
+          if (verbose){print("Setting up cross-fitting and sample-splitting folds...")}
+          folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = TRUE)
+          ss_folds <- folds$ss_folds
+          cf_folds <- folds$cf_folds
+        }
+      } else{ # cross-fitting folds were provided --- generate only ss_folds
+        if (verbose){print("Setting up sample-splitting folds to accompany user-specified cross-fitting folds...")}
+        folds <- generate_folds(n = length(time),
+                                V = length(unique(cf_folds))/2,
+                                sample_split = TRUE,
+                                cf_folds = cf_folds)
+        ss_folds <- folds$ss_folds
+      }
+    } else{ # if sample splitting folds provided
+      if (verbose){print("Using user-provided folds...")}
+      if (is.null(cf_folds)){ # cf_folds were not provided. This is okay if no cross-fitting intended, otherwise it's an error
+        if (cf_fold_num == 1){
+          cf_folds_nuisance <- rep(1, length(time)) # all 1s for nuisance estimation
+          cf_folds <- ss_folds # equal to ss_folds for vim estimaton
+        } else{
+          stop("You have provided sample-spliting folds without cross-fitting folds. This is not allowed.")
+        }
+      } # otherwise cf folds were provided, check they are okay below
+    }
+  } else{ # otherwise
+    if (is.null(cf_folds)){ # if cf_folds aren't provided, generate some (even if all 1s)
+      if (!is.numeric(cf_fold_num) | cf_fold_num <= 0 | cf_fold_num%%1 != 0){
+        stop("The number of cross-fitting folds must be a positive integer.")
+      }
+      if (cf_fold_num == 1){
+        if (verbose){print("No cross-fitting and no sample-splitting indicated; no folds to set up...")}
+        cf_folds = rep(1, length(time))
+      } else if (cf_fold_num > 1){
+        if (verbose){print("Setting up cross-fitting folds...")}
+        folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = FALSE)
+        cf_folds <- folds$cf_folds
+      }
+    } else{ # if cross-fitting folds are provided, make sure they're valid below
+      if (verbose){print("Using user-provided folds...")}
+    }
+    ss_folds <- rep(1, length(time))
   }
+
+  if (!all(sort(unique(cf_folds)) == 1:max(cf_folds)) | any(cf_folds <= 0)){ # check validity of cf_folds
+    stop("Cross-fiting fold identifiers must be consecutive, positive integers.")
+  }
+  if (!all(sort(unique(ss_folds)) == 1:max(ss_folds)) | any(ss_folds <= 0) | any(ss_folds >= 3)){ # check validity of ss_folds
+    stop("Sample-fiting fold identifiers must be either 1 or 2.")
+  }
+
+  if (is.null(cf_folds_nuisance)){ # if not setting to all 1s in the no xfit + sample split case, then just set equal to cf_folds
+    cf_folds_nuisance <- cf_folds
+  }
+
+  # if (is.null(cf_folds)){
+  #   folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = sample_split)
+  #   if (cf_fold_num > 1){
+  #     if (verbose){
+  #       print("Setting up cross-fitting and sample-splitting folds...")
+  #       if (!is.null(ss_folds)){
+  #         print("Note that user-specified sample-splitting folds will be ignored because cross-fitting has been indicated but no cross-fitting folds provided.")
+  #       }
+  #     }
+  #   } else if (cf_fold_num == 1 & sample_split & is.null(ss_folds)){
+  #     if (verbose){print("No cross-fitting indicated; setting up sample-splitting folds only...")}
+  #   } else if (cf_fold_num == 1 & sample_split & !is.null(ss_folds)){
+  #     if (verbose){print("Using user-provided folds...")}
+  #   } else if (!sample_split & cf_fold_num == 1){
+  #     if (verbose){print("No cross-fitting and no sample-splitting indicated; no folds to set up...")}
+  #   }
+  #   ss_folds <- folds$ss_folds
+  #   cf_folds <- folds$cf_folds
+  # } else if (!is.null(cf_folds) & is.null(ss_folds) & sample_split){
+  #   if (verbose){print("Setting up sample-splitting folds to accompany user-specified cross-fitting folds...")}
+  #   folds <- generate_folds(n = length(time), V = length(unique(cf_folds))/2,
+  #                           sample_split = sample_split, cf_folds = cf_folds)
+  #   ss_folds <- folds$ss_folds
+  #   cf_folds <- folds$cf_folds
+  # } else{
+  #   if (verbose){print("Using user-provided folds...")}
+  # }
 
   if (!is.null(conditional_surv_preds$S_hat) & !is.null(conditional_surv_preds$G_hat) & !is.null(conditional_surv_preds$S_hat_train) & !is.null(conditional_surv_preds$G_hat_train) & is.null(approx_times)){
     stop("If using precomputed nuisance estimates, you must provide the grid of approx_times on which they were estimated.")
   }
-  if (!is.null(conditional_surv_preds$S_hat) & !is.null(conditional_surv_preds$G_hat) & !is.null(conditional_surv_preds$S_hat_train) & !is.null(conditional_surv_preds$G_hat_train) & (is.null(cf_folds)) | is.null(ss_folds)){
+  if (!is.null(conditional_surv_preds$S_hat) & !is.null(conditional_surv_preds$G_hat) & !is.null(conditional_surv_preds$S_hat_train) & !is.null(conditional_surv_preds$G_hat_train) & (is.null(cf_folds)) | is.null(ss_folds)){ # this *should* never trigger given that I have manually set up the folds by this point, regardless of the path taken.
     stop("If using precomputed nuisance estimates, you must provide cross-fitting fold identifiers.")
   }
 
@@ -171,6 +271,10 @@ vim <- function(type,
     if (verbose){print("Estimating conditional survival nuisance functions...")}
     if (is.null(conditional_surv_generator)){
       conditional_surv_generator <- generate_nuisance_predictions_stackG
+    } else if (conditional_surv_generator == "stackG"){
+      conditional_surv_generator <- generate_nuisance_predictions_stackG
+    } else if (conditional_surv_generator == "coxph"){
+      conditional_surv_generator <- generate_nuisance_predictions_coxph
     }
     if (is.null(conditional_surv_generator_control)){
       conditional_surv_generator_control <- list()
@@ -187,19 +291,15 @@ vim <- function(type,
                                              event = event,
                                              X = X,
                                              newtimes = approx_times,
-                                             folds = cf_folds,
+                                             folds = cf_folds_nuisance,
                                              pred_generator = conditional_surv_generator),
                                         conditional_surv_generator_control))
 
   } else{
+    precomputed_SG <- TRUE
     if (verbose){print("Using pre-computed conditional survival function estimates...")}
   }
 
-  if (any(unlist(conditional_surv_preds$G_hat) < 0.05)){
-    warning("Some estimates of the conditional survival function of the censoring variable are small (less than 0.05). These small values may create unstable VIM estimates.")
-  }
-
-  # switch <- FALSE
   if (is.null(large_oracle_preds)){
     if (verbose){print("Estimating 'big' oracle prediction function...")}
     if (is.null(large_oracle_generator_control)){
@@ -234,10 +334,11 @@ vim <- function(type,
                                   c(list(time = time,
                                          event = event,
                                          X = X,
-                                         folds = cf_folds,
+                                         folds = cf_folds_nuisance,
                                          pred_generator = large_oracle_generator),
                                     large_oracle_generator_control))
   } else{
+    precomputed_f <- TRUE
     if (verbose){print("Using pre-computed 'big' oracle prediction function estimates...")}
   }
 
@@ -280,14 +381,47 @@ vim <- function(type,
                                   c(list(time = time,
                                          event = event,
                                          X = X,
-                                         folds = cf_folds,
+                                         folds = cf_folds_nuisance,
                                          pred_generator = small_oracle_generator),
                                     small_oracle_generator_control))
   } else{
+    precomputed_fs <- TRUE
     if (verbose){print("Using pre-computed 'small' oracle prediction function estimates...")}
   }
+  conditional_surv_preds_temp <- conditional_surv_preds
+  large_oracle_preds_temp <- large_oracle_preds
+  small_oracle_preds_temp <- small_oracle_preds
+  if (sample_split & length(unique(cf_folds_nuisance)) == 1){ # if sample splitting without cross-fitting, then cf_folds_nuisance will be a vector of 1s for
+    # nuisance estimation, but the nuisance estimates need to be split up for vim estimation
+    # if user has provided pre-computed estimates, don't do this splitting
+    if (!precomputed_SG){
+      conditional_surv_preds_temp$S_hat <- list(conditional_surv_preds$S_hat[[1]][cf_folds == 1,],
+                                           conditional_surv_preds$S_hat[[1]][cf_folds == 2,])
+      conditional_surv_preds_temp$S_hat_train <- list(conditional_surv_preds$S_hat[[1]],
+                                                 conditional_surv_preds$S_hat[[1]])
+      conditional_surv_preds_temp$G_hat <- list(conditional_surv_preds$G_hat[[1]][cf_folds == 1,],
+                                           conditional_surv_preds$G_hat[[1]][cf_folds == 2,])
+      conditional_surv_preds_temp$G_hat_train <- list(conditional_surv_preds$G_hat[[1]],
+                                                 conditional_surv_preds$G_hat[[1]])
+    }
+    if (!precomputed_f){
+      large_oracle_preds_temp$f_hat <- list(large_oracle_preds$f_hat[[1]][cf_folds == 1,],
+                                       large_oracle_preds$f_hat[[1]][cf_folds == 2,])
+      large_oracle_preds_temp$f_hat_train <- list(large_oracle_preds$f_hat[[1]],
+                                             large_oracle_preds$f_hat[[1]])
+    }
+    if (!precomputed_fs){
+      small_oracle_preds_temp$f_hat <- list(small_oracle_preds$f_hat[[1]][cf_folds == 1,],
+                                       small_oracle_preds$f_hat[[1]][cf_folds == 2,])
+      small_oracle_preds_temp$f_hat_train <- list(small_oracle_preds$f_hat[[1]],
+                                             small_oracle_preds$f_hat[[1]])
+    }
+    conditional_surv_preds <- conditional_surv_preds_temp
+    large_oracle_preds <- large_oracle_preds_temp
+    small_oracle_preds <- small_oracle_preds_temp
+  }
 
-  if (verbose){print("Estimating variable importance...")}
+    if (verbose){print("Estimating variable importance...")}
   if (type == "AUC"){
     res <- vim_AUC(time = time,
                    event = event,
@@ -383,7 +517,6 @@ vim <- function(type,
               folds = list(cf_folds = cf_folds, ss_folds = ss_folds),
               approx_times = approx_times,
               conditional_surv_preds = conditional_surv_preds,
-              conditional_surv_generator_object = conditional_surv_preds$generator_object,
               large_oracle_preds = large_oracle_preds,
               small_oracle_preds = small_oracle_preds))
 }
