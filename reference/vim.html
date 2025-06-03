@@ -124,8 +124,8 @@ subset of <code>large_feature_vector</code>.</p></dd>
 
 <dt id="arg-conditional-surv-generator">conditional_surv_generator<a class="anchor" aria-label="anchor" href="#arg-conditional-surv-generator"></a></dt>
 <dd><p>A function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
-<code>time</code>, <code>event</code>, <code>folds</code> (referring to cross-fitting fold identifiers), and <code>newtimes</code> (times at which to generate predictions). Defaults to a
-pre-built generator function based on the <a href="stackG.html">stackG</a> function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to <code>conditional_surv_preds</code>.</p></dd>
+(<code>time</code>, <code>event</code>, <code>X</code>) (for training purposes) and (<code>X_holdout</code> and <code>newtimes</code>) (covariate values and times at which to generate predictions). Defaults to a
+pre-built generator function based on the <a href="stackG.html">stackG</a> function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to <code>conditional_surv_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-conditional-surv-generator-control">conditional_surv_generator_control<a class="anchor" aria-label="anchor" href="#arg-conditional-surv-generator-control"></a></dt>
@@ -134,8 +134,8 @@ pre-built generator function based on the <a href="stackG.html">stackG</a> funct
 
 <dt id="arg-large-oracle-generator">large_oracle_generator<a class="anchor" aria-label="anchor" href="#arg-large-oracle-generator"></a></dt>
 <dd><p>A function to estimate the oracle prediction function using <code>large_feature_vector</code>. Must take arguments
-<code>time</code>, <code>event</code>, and <code>folds</code> (referring to cross-fitting fold identifiers). Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>large_oracle_preds</code>.</p></dd>
+<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. Defaults to a pre-built generator function using
+doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>large_oracle_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-large-oracle-generator-control">large_oracle_generator_control<a class="anchor" aria-label="anchor" href="#arg-large-oracle-generator-control"></a></dt>
@@ -144,8 +144,8 @@ doubly-robust pseudo-outcome regression. Alternatively, the user can provide the
 
 <dt id="arg-small-oracle-generator">small_oracle_generator<a class="anchor" aria-label="anchor" href="#arg-small-oracle-generator"></a></dt>
 <dd><p>A function to estimate the oracle prediction function using <code>small_feature_vector</code>. Must take arguments
-<code>time</code>, <code>event</code>, and <code>folds</code> (referring to cross-fitting fold identifiers). Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>small_oracle_preds</code>.</p></dd>
+<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. Defaults to a pre-built generator function using
+doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>small_oracle_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-small-oracle-generator-control">small_oracle_generator_control<a class="anchor" aria-label="anchor" href="#arg-small-oracle-generator-control"></a></dt>
@@ -163,18 +163,18 @@ Each element of these lists is a matrix with J2 columns and number of rows equal
 
 <dt id="arg-large-oracle-preds">large_oracle_preds<a class="anchor" aria-label="anchor" href="#arg-large-oracle-preds"></a></dt>
 <dd><p>User-provided estimates of the oracle prediction function using <code>large_feature_vector</code> (if not using the <code>large_oracle_generator</code> functionality to compute these nuisance estimates). Must be a named list of lists
-with elements <code>f_hat</code> and <code>f_hat_train</code>. If using sample splitting, each of these is itself a list of length <code>2K</code> (if not using sample
+with elements <code>f0_hat</code> and <code>f0_hat_train</code>. If using sample splitting, each of these is itself a list of length <code>2K</code> (if not using sample
 splitting, each is a list of length <code>K</code>). Each element of these lists is a matrix with J1 columns (for landmark time VIMs) or 1 column
-(for <code>"C-index"</code> and <code>"survival_time_MSE"</code>) and number of rows equal to either the number of samples in the <code>k</code>th fold (for <code>f_hat</code>)
-or the number of samples used to compute the nuisance estimates for the <code>k</code>th fold (for <code>f_hat_train</code>).</p></dd>
+(for <code>"C-index"</code> and <code>"survival_time_MSE"</code>) and number of rows equal to either the number of samples in the <code>k</code>th fold (for <code>f0_hat</code>)
+or the number of samples used to compute the nuisance estimates for the <code>k</code>th fold (for <code>f0_hat_train</code>).</p></dd>
 
 
 <dt id="arg-small-oracle-preds">small_oracle_preds<a class="anchor" aria-label="anchor" href="#arg-small-oracle-preds"></a></dt>
 <dd><p>User-provided estimates of the oracle prediction function using <code>small_feature_vector</code> (if not using the <code>small_oracle_generator</code> functionality to compute these nuisance estimates). Must be a named list of lists
-with elements <code>f_hat</code> and <code>f_hat_train</code>. If using sample splitting, each of these is itself a list of length <code>2K</code> (if not using sample
+with elements <code>f0_hat</code> and <code>f0_hat_train</code>. If using sample splitting, each of these is itself a list of length <code>2K</code> (if not using sample
 splitting, each is a list of length <code>K</code>). Each element of these lists is a matrix with J1 columns (for landmark time VIMs) or 1 column
-(for <code>"C-index"</code> and <code>"survival_time_MSE"</code>) and number of rows equal to either the number of samples in the <code>k</code>th fold (for <code>f_hat</code>)
-or the number of samples used to compute the nuisance estimates for the <code>k</code>th fold (for <code>f_hat_train</code>).</p></dd>
+(for <code>"C-index"</code> and <code>"survival_time_MSE"</code>) and number of rows equal to either the number of samples in the <code>k</code>th fold (for <code>f0_hat</code>)
+or the number of samples used to compute the nuisance estimates for the <code>k</code>th fold (for <code>f0_hat_train</code>).</p></dd>
 
 
 <dt id="arg-cf-folds">cf_folds<a class="anchor" aria-label="anchor" href="#arg-cf-folds"></a></dt>

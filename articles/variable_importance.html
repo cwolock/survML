@@ -68,7 +68,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cwolock/survML" class="external-link">survML</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/cwolock/survML" class="external-link">survML</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: SuperLearner</span></span>
 <span><span class="co">#&gt; Loading required package: nnls</span></span>
 <span><span class="co">#&gt; Loading required package: gam</span></span>
@@ -78,8 +78,8 @@
 <span><span class="co">#&gt; Super Learner</span></span>
 <span><span class="co">#&gt; Version: 2.0-29</span></span>
 <span><span class="co">#&gt; Package created on 2024-02-06</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
@@ -88,8 +88,8 @@
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">72924</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">72924</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -203,7 +203,7 @@ predicting recurrence-free survival using the <code>gbsg</code> dataset
 in the <code>survival</code> package. The Kaplan-Meier estimate of the
 survival curve for this dataset is shown below.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">cancer</span><span class="op">)</span></span>
+<code class="sourceCode R"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">cancer</span><span class="op">)</span></span>
 <span><span class="va">km_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">rfstime</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">gbsg</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">km_fit</span>, xlab <span class="op">=</span> <span class="st">"Time (days)"</span>, ylab <span class="op">=</span> <span class="st">"Recurrence-free survival probability"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="variable_importance_files/figure-html/km-1.png" width="768"></p>
@@ -281,7 +281,9 @@ prediction functions.</li>
 <li>Provide pre-computed estimates for each nuisance.</li>
 </ol>
 <p>These are ordered from least to most flexible; in this vignette, we
-focus on (1). When using the built-in nuisance estimation algorithms,
+focus on (1), although we will also use (3) below, when we repeat calls
+to <code><a href="../reference/vim.html">vim()</a></code> while using the already-computed nuisance
+estimates. When using the built-in nuisance estimation algorithms,
 control parameters can be set using the
 <code>conditional_surv_generator_control</code>,
 <code>large_oracle_generator_control</code>, and
@@ -387,8 +389,10 @@ age)</li>
 <p>As we examine the importance of other features relative to the full
 feature vector, we can recycle <code>conditional_surv_preds</code> and
 <code>large_oracle_preds</code> (which requires us to use the same
-<code>folds</code> and <code>approx_times</code> as well). We can then
-look at the results for all feature groups.</p>
+<code>folds</code> and <code>approx_times</code> as well). This is an
+example of using pre-computed nuisance estimates in the
+<code><a href="../reference/vim.html">vim()</a></code> function. We can then look at the results for all
+feature groups.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># save the objects that we will reuse</span></span>
 <span><span class="va">saved_conditional_surv_preds</span> <span class="op">&lt;-</span> <span class="va">output</span><span class="op">$</span><span class="va">conditional_surv_preds</span></span>
@@ -538,40 +542,40 @@ the current set of predictors.)</p>
 <span>  </span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">{</span></span>
 <span>    <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
-<span>                time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
-<span>                large_feature_vector <span class="op">=</span> <span class="va">indx</span>,</span>
-<span>                small_feature_vector <span class="op">=</span>  <span class="va">person_index_numeric</span>,</span>
-<span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
-<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
-<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
-<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
-<span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
-<span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>                  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                  event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                  landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                  approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
+<span>                  large_feature_vector <span class="op">=</span> <span class="va">indx</span>,</span>
+<span>                  small_feature_vector <span class="op">=</span>  <span class="va">person_index_numeric</span>,</span>
+<span>                  conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
+<span>                  large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                        V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                  small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                        V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                  cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
+<span>                  ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
+<span>                  sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                  scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>    <span class="va">saved_small_oracle_preds</span> <span class="op">&lt;-</span> <span class="va">output</span><span class="op">$</span><span class="va">small_oracle_preds</span></span>
 <span>  <span class="op">}</span> <span class="kw">else</span><span class="op">{</span></span>
 <span>    <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
-<span>                time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
-<span>                large_feature_vector <span class="op">=</span> <span class="va">indx</span>,</span>
-<span>                small_feature_vector <span class="op">=</span>  <span class="va">person_index_numeric</span>,</span>
-<span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
-<span>                small_oracle_preds <span class="op">=</span> <span class="va">saved_small_oracle_preds</span>,</span>
-<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
-<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
-<span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
-<span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>                  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                  event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                  landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                  approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
+<span>                  large_feature_vector <span class="op">=</span> <span class="va">indx</span>,</span>
+<span>                  small_feature_vector <span class="op">=</span>  <span class="va">person_index_numeric</span>,</span>
+<span>                  conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
+<span>                  small_oracle_preds <span class="op">=</span> <span class="va">saved_small_oracle_preds</span>,</span>
+<span>                  large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                        V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                  cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
+<span>                  ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
+<span>                  sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                  scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span>  </span>
 <span>  <span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">indx_char</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
@@ -636,41 +640,41 @@ estimates.</p>
 <span>  <span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">indx_char</span>, split <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span>  </span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">i</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">{</span></span>
-<span>     <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
-<span>                time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
-<span>                large_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">person_index_numeric</span><span class="op">]</span>,</span>
-<span>                small_feature_vector <span class="op">=</span>  <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">indx</span><span class="op">]</span>,</span>
-<span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
-<span>                large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
-<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
-<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
-<span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
-<span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>     <span class="va">saved_large_oracle_preds</span> <span class="op">&lt;-</span> <span class="va">output</span><span class="op">$</span><span class="va">large_oracle_preds</span></span>
+<span>    <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
+<span>                  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                  event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                  landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                  approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
+<span>                  large_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">person_index_numeric</span><span class="op">]</span>,</span>
+<span>                  small_feature_vector <span class="op">=</span>  <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">indx</span><span class="op">]</span>,</span>
+<span>                  conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
+<span>                  large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                        V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                  small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                        V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                  cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
+<span>                  ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
+<span>                  sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                  scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="va">saved_large_oracle_preds</span> <span class="op">&lt;-</span> <span class="va">output</span><span class="op">$</span><span class="va">large_oracle_preds</span></span>
 <span>  <span class="op">}</span> <span class="kw">else</span><span class="op">{</span></span>
-<span>     <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
-<span>                time <span class="op">=</span> <span class="va">time</span>,</span>
-<span>                event <span class="op">=</span> <span class="va">event</span>,</span>
-<span>                X <span class="op">=</span> <span class="va">X</span>,</span>
-<span>                landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
-<span>                approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
-<span>                large_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">person_index_numeric</span><span class="op">]</span>,</span>
-<span>                small_feature_vector <span class="op">=</span>  <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">indx</span><span class="op">]</span>,</span>
-<span>                conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
-<span>                large_oracle_preds <span class="op">=</span> <span class="va">saved_large_oracle_preds</span>,</span>
-<span>                small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
-<span>                                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
-<span>                ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
-<span>                sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
+<span>                  time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>                  event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>                  X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>                  landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>                  approx_times <span class="op">=</span> <span class="va">saved_approx_times</span>,</span>
+<span>                  large_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">person_index_numeric</span><span class="op">]</span>,</span>
+<span>                  small_feature_vector <span class="op">=</span>  <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">indx</span><span class="op">]</span>,</span>
+<span>                  conditional_surv_preds <span class="op">=</span> <span class="va">saved_conditional_surv_preds</span>,</span>
+<span>                  large_oracle_preds <span class="op">=</span> <span class="va">saved_large_oracle_preds</span>,</span>
+<span>                  small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                        V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>                  cf_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">cf_folds</span>,</span>
+<span>                  ss_folds <span class="op">=</span> <span class="va">saved_folds</span><span class="op">$</span><span class="va">ss_folds</span>,</span>
+<span>                  sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                  scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span>  </span>
 <span>  <span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">indx_char</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
@@ -688,55 +692,176 @@ estimates.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="writing-a-custom-generator-function">Writing a custom generator function<a class="anchor" aria-label="anchor" href="#writing-a-custom-generator-function"></a>
+</h2>
+<p>So far, we’ve used two of three options for nuisance estimation:
+using the built-in generators, and providing pre-computed estimates. The
+third option is to write a custom generator function. In order to
+maintain double-robustness, we strongly recommend using the built-in
+generator functions to estimate the large and small oracle prediction
+functions. As such, here we only describe how to write a custom
+<code>conditional_surv_generator</code>. This function must satisfy the
+following criteria:</p>
+<ul>
+<li>
+<code>conditional_surv_generator</code>:
+<ul>
+<li>Input: arguments <code>time</code> (follow-up times
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
+for training), <code>event</code> (event indicators
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
+for training), <code>X</code> (covariates for training),
+<code>X_holdout</code> (covariate values at which to generate
+conditional survival function estimates), and <code>newtimes</code>
+(times at which to estimate conditional survival function)</li>
+<li>Ouput: a named list with elements <code>S_hat</code> (estimated
+event conditional survival function for <code>X_holdout</code>, with
+rows corresponding to rows of <code>X_holdout</code> and columns to
+<code>newtimes</code>), <code>S_hat_train</code> (estimated event
+conditional survival function for <code>X</code>, with rows
+corresponding to rows of <code>X</code> and columns to
+<code>newtimes</code>), <code>G_hat</code> (analogous to
+<code>S_hat</code> but for censoring), and <code>G_hat_train</code>
+(analogous to <code>S_hat_train</code> but for censoring).</li>
+</ul>
+</li>
+</ul>
+<p>For example, suppose that, instead of using <code>stackG</code> to
+estimate the conditional survival functions, we wish to use a simple Cox
+proportional hazards model. We first write the generator function:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">generate_nuisance_predictions_coxph</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">time</span>,</span>
+<span>                                                <span class="va">event</span>,</span>
+<span>                                                <span class="va">X</span>,</span>
+<span>                                                <span class="va">X_holdout</span>,</span>
+<span>                                                <span class="va">newtimes</span><span class="op">)</span><span class="op">{</span></span>
+<span>  </span>
+<span>  <span class="va">S_fit</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span></span>
+<span>    <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>    data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>time<span class="op">=</span><span class="va">time</span>,</span>
+<span>                               event<span class="op">=</span><span class="va">event</span>,</span>
+<span>                               <span class="va">X</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span>  <span class="va">S_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit</a></span><span class="op">(</span><span class="va">S_fit</span>,</span>
+<span>                                       newdata<span class="op">=</span><span class="va">X_holdout</span>,</span>
+<span>                                       se.fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                                       conf.int <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>                     times<span class="op">=</span><span class="va">newtimes</span><span class="op">)</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span></span>
+<span>  <span class="va">S_hat</span> <span class="op">&lt;-</span> <span class="va">S_hat</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">S_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">S_hat</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">S_hat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                                 nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">S_hat</span><span class="op">)</span>,</span>
+<span>                                 ncol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    </span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">S_hat_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit</a></span><span class="op">(</span><span class="va">S_fit</span>,</span>
+<span>                                             newdata<span class="op">=</span><span class="va">X</span>,</span>
+<span>                                             se.fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                                             conf.int <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>                           times<span class="op">=</span><span class="va">newtimes</span><span class="op">)</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span></span>
+<span>  <span class="va">S_hat_train</span> <span class="op">&lt;-</span> <span class="va">S_hat_train</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat_train</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat_train</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">S_hat_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">S_hat_train</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">S_hat_train</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat_train</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                                             nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">S_hat_train</span><span class="op">)</span>,</span>
+<span>                                             ncol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">S_hat_train</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    </span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">cens_event</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">event</span></span>
+<span>  <span class="va">G_fit</span> <span class="op">&lt;-</span> <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">coxph</a></span><span class="op">(</span></span>
+<span>    <span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">.</span>,</span>
+<span>    data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>time<span class="op">=</span><span class="va">time</span>,</span>
+<span>                               event<span class="op">=</span><span class="va">cens_event</span>,</span>
+<span>                               <span class="va">X</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span>  <span class="va">G_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit</a></span><span class="op">(</span><span class="va">G_fit</span>,</span>
+<span>                                       newdata<span class="op">=</span><span class="va">X_holdout</span>,</span>
+<span>                                       se.fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                                       conf.int <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>                     times<span class="op">=</span><span class="va">newtimes</span><span class="op">)</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span></span>
+<span>  <span class="va">G_hat</span> <span class="op">&lt;-</span> <span class="va">G_hat</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">G_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">G_hat</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">G_hat</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                                 nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">G_hat</span><span class="op">)</span>,</span>
+<span>                                 ncol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    </span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">G_hat_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu">survival</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit</a></span><span class="op">(</span><span class="va">G_fit</span>,</span>
+<span>                                             newdata<span class="op">=</span><span class="va">X</span>,</span>
+<span>                                             se.fit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>                                             conf.int <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>                           times<span class="op">=</span><span class="va">newtimes</span><span class="op">)</span><span class="op">$</span><span class="va">surv</span><span class="op">)</span></span>
+<span>  <span class="va">G_hat_train</span> <span class="op">&lt;-</span> <span class="va">G_hat_train</span><span class="op">[</span>,<span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat_train</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat_train</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">G_hat_train</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">G_hat_train</span>, <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="va">G_hat_train</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat_train</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                                             nrow<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">G_hat_train</span><span class="op">)</span>,</span>
+<span>                                             ncol<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">newtimes</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">G_hat_train</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    </span>
+<span>  <span class="op">}</span></span>
+<span>  </span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>S_hat <span class="op">=</span> <span class="va">S_hat</span>,</span>
+<span>              G_hat <span class="op">=</span> <span class="va">G_hat</span>,</span>
+<span>              S_hat_train <span class="op">=</span> <span class="va">S_hat_train</span>,</span>
+<span>              G_hat_train <span class="op">=</span> <span class="va">G_hat_train</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Next, we again estimate the importance of age relative to all
+available features:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vim.html">vim</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"AUC"</span>,</span>
+<span>              time <span class="op">=</span> <span class="va">time</span>,</span>
+<span>              event <span class="op">=</span> <span class="va">event</span>,</span>
+<span>              X <span class="op">=</span> <span class="va">X</span>,</span>
+<span>              landmark_times <span class="op">=</span> <span class="va">landmark_times</span>,</span>
+<span>              large_feature_vector <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>,</span>
+<span>              small_feature_vector <span class="op">=</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">age_index</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>              conditional_surv_generator <span class="op">=</span> <span class="va">generate_nuisance_predictions_coxph</span>,</span>
+<span>              large_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>              small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
+<span>                                                    V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>              approx_times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">time</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                                                         probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>              cf_fold_num <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>              sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>              scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="va">age_index</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">$</span><span class="va">indx_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">output</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
+<span><span class="co">#&gt;   landmark_time         est   var_est cil        ciu cil_1sided         p</span></span>
+<span><span class="co">#&gt; 1          1000 0.008546815 0.7294774   0 0.09893402          0 0.4264851</span></span>
+<span><span class="co">#&gt; 2          2000 0.005337593 0.8129113   0 0.10075390          0 0.4563472</span></span>
+<span><span class="co">#&gt;   large_predictiveness small_predictiveness vim large_feature_vector</span></span>
+<span><span class="co">#&gt; 1            0.7080532            0.6995064 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 2            0.7012409            0.6959033 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt;   small_feature_vector indx indx_name</span></span>
+<span><span class="co">#&gt; 1      2,3,4,5,6,7,8,9    1       age</span></span>
+<span><span class="co">#&gt; 2      2,3,4,5,6,7,8,9    1       age</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="appendix">Appendix<a class="anchor" aria-label="anchor" href="#appendix"></a>
 </h2>
 <p>Some example predictiveness measures, along with the corresponding
 oracle prediction functions, are given below.</p>
 <ul>
-<li>
-<em>AUC</em>:
-<ul>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><msub><mi>T</mi><mn>1</mn></msub><mo>≤</mo><mi>τ</mi><mo>,</mo><msub><mi>T</mi><mn>2</mn></msub><mo>&gt;</mo><mi>τ</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\}</annotation></semantics></math></li>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = 1 - S_0(\tau \mid x)</annotation></semantics></math></li>
-</ul>
-</li>
-<li>
-<em>Brier score</em>:
-<ul>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">V(f, P_0) = E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]</annotation></semantics></math></li>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = 1 - S_0(\tau \mid x)</annotation></semantics></math></li>
-</ul>
-</li>
-<li>
-<em>Survival time MSE</em>:
-<ul>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>∧</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]</annotation></semantics></math></li>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi>τ</mi></msubsup><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>d</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">f_0(x) = \int_0^\tau S_0(t \mid x)dt</annotation></semantics></math></li>
-</ul>
-</li>
-<li>
-<em>Proportion of explained variance (R-squared)</em>:
-<ul>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><mrow><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><mrow><mi>v</mi><mi>a</mi><msub><mi>r</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]}{var_{P_0}[I(T \leq \tau)]}</annotation></semantics></math></li>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = 1 - S_0(\tau \mid x)</annotation></semantics></math></li>
-</ul>
-</li>
-<li>
-<em>Binary classification accuracy</em>:
-<ul>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X) = I(T \leq \tau)\}</annotation></semantics></math></li>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>I</mi><mo stretchy="false" form="prefix">{</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><mn>0.5</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">f_0(x) = I\{S_0(\tau \mid x) \leq 0.5\}</annotation></semantics></math></li>
-</ul>
-</li>
-<li>
-<em>C-index</em>:
-<ul>
-<li><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><msub><mi>T</mi><mn>1</mn></msub><mo>≤</mo><msub><mi>T</mi><mn>2</mn></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq T_2\}</annotation></semantics></math></li>
-<li>For the C-index, there is, to our knowledge, no closed form of the
-oracle prediction function; see the preprint for more details on our
-proposed procedure for direct numerical optimization.</li>
-</ul>
-</li>
+<li><p><em>AUC</em>:</p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><msub><mi>T</mi><mn>1</mn></msub><mo>≤</mo><mi>τ</mi><mo>,</mo><msub><mi>T</mi><mn>2</mn></msub><mo>&gt;</mo><mi>τ</mi><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq \tau, T_2 &gt; \tau\}</annotation></semantics></math></p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = 1 - S_0(\tau \mid x)</annotation></semantics></math></p></li>
+<li><p><em>Brier score</em>:</p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">V(f, P_0) = E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]</annotation></semantics></math></p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = 1 - S_0(\tau \mid x)</annotation></semantics></math></p></li>
+<li><p><em>Survival time MSE</em>:</p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>∧</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]</annotation></semantics></math></p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msubsup><mo>∫</mo><mn>0</mn><mi>τ</mi></msubsup><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>d</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">f_0(x) = \int_0^\tau S_0(t \mid x)dt</annotation></semantics></math></p></li>
+<li><p><em>Proportion of explained variance (R-squared)</em>:</p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mfrac><mrow><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msup><mo stretchy="false" form="postfix">}</mo><mn>2</mn></msup><mo stretchy="true" form="postfix">]</mo></mrow></mrow><mrow><mi>v</mi><mi>a</mi><msub><mi>r</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]}{var_{P_0}[I(T \leq \tau)]}</annotation></semantics></math></p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mn>1</mn><mo>−</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f_0(x) = 1 - S_0(\tau \mid x)</annotation></semantics></math></p></li>
+<li><p><em>Binary classification accuracy</em>:</p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>T</mi><mo>≤</mo><mi>τ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X) = I(T \leq \tau)\}</annotation></semantics></math></p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>I</mi><mo stretchy="false" form="prefix">{</mo><msub><mi>S</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><mi>τ</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>≤</mo><mn>0.5</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">f_0(x) = I\{S_0(\tau \mid x) \leq 0.5\}</annotation></semantics></math></p></li>
+<li><p><em>C-index</em>:</p></li>
+<li><p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><msub><mi>T</mi><mn>1</mn></msub><mo>≤</mo><msub><mi>T</mi><mn>2</mn></msub><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">V(f, P_0) = P_0\{f(X_1) &gt; f(X_2) \mid T_1 \leq T_2\}</annotation></semantics></math></p></li>
+<li><p>For the C-index, there is, to our knowledge, no closed form of
+the oracle prediction function; see the preprint for more details on our
+proposed procedure for direct numerical optimization.</p></li>
 </ul>
 </div>
 <div class="section level2">
