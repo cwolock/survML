@@ -12,6 +12,8 @@ generate_folds(n, V, sample_split, cf_folds = NULL)
 \item{V}{Number of cross-fitting folds to use}
 
 \item{sample_split}{Logical, whether or not sample-splitting is being used}
+
+\item{cf_folds}{Cross-fitting folds, if already provided by user.}
 }
 \value{
 Named list of cross-fitting and sample-splitting folds

@@ -526,28 +526,28 @@ output$result
 Some example predictiveness measures, along with the corresponding oracle prediction functions, are given below. 
 
 * *AUC*:
-* $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\}$ 
-* $f_0(x) = 1 - S_0(\tau \mid x)$
+    * $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq \tau, T_2 > \tau\}$ 
+    * $f_0(x) = 1 - S_0(\tau \mid x)$
 
 * *Brier score*: 
-* $V(f, P_0) = E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]$
-* $f_0(x) = 1 - S_0(\tau \mid x)$
+    * $V(f, P_0) = E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]$
+    * $f_0(x) = 1 - S_0(\tau \mid x)$
 
 * *Survival time MSE*: 
-* $V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]$
-* $f_0(x) = \int_0^\tau S_0(t \mid x)dt$
+    * $V(f, P_0) = E_{P_0}[\{f(X) - (T \wedge \tau)\}^2]$
+    * $f_0(x) = \int_0^\tau S_0(t \mid x)dt$
 
 * *Proportion of explained variance (R-squared)*: 
-* $V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]}{var_{P_0}[I(T \leq \tau)]}$
-* $f_0(x) = 1 - S_0(\tau \mid x)$
+    * $V(f, P_0) = \frac{E_{P_0}[\{f(X) - I(T \leq \tau)\}^2]}{var_{P_0}[I(T \leq \tau)]}$
+    * $f_0(x) = 1 - S_0(\tau \mid x)$
 
 * *Binary classification accuracy*: 
-* $V(f, P_0) = P_0\{f(X) = I(T \leq \tau)\}$
-* $f_0(x) = I\{S_0(\tau \mid x) \leq 0.5\}$
+    * $V(f, P_0) = P_0\{f(X) = I(T \leq \tau)\}$
+    * $f_0(x) = I\{S_0(\tau \mid x) \leq 0.5\}$
 
 * *C-index*: 
-* $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq T_2\}$
-* For the C-index, there is, to our knowledge, no closed form of the oracle prediction function; see the preprint for more details on our proposed procedure for direct numerical optimization. 
+    * $V(f, P_0) = P_0\{f(X_1) > f(X_2) \mid T_1 \leq T_2\}$
+    * For the C-index, there is, to our knowledge, no closed form of the oracle prediction function; see the preprint for more details on our proposed procedure for direct numerical optimization. 
 
 
 ## References

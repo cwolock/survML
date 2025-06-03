@@ -3,6 +3,7 @@
 #' @param n Total sample size
 #' @param V Number of cross-fitting folds to use
 #' @param sample_split Logical, whether or not sample-splitting is being used
+#' @param cf_folds Cross-fitting folds, if already provided by user.
 #'
 #' @return Named list of cross-fitting and sample-splitting folds
 #'
