@@ -2,11 +2,11 @@ pandoc: 3.1.11
 pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
-  conditional_survival: conditional_survival.html
-  current_status: current_status.html
-  sample_splitting: sample_splitting.html
-  variable_importance: variable_importance.html
-last_built: 2025-06-05T22:40Z
+  v1_conditional_survival: v1_conditional_survival.html
+  v2_variable_importance: v2_variable_importance.html
+  v3_sample_splitting: v3_sample_splitting.html
+  v4_current_status: v4_current_status.html
+last_built: 2025-06-05T23:21Z
 urls:
   reference: https://cwolock.github.io/survML/reference
   article: https://cwolock.github.io/survML/articles
