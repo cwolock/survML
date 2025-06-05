@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Tools for Flexible Survival Analysis Using Machine Learning">
-<meta name="description" content="Statistical tools for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation, standardized survival function estimation for current status data, and methods for algorithm-agnostic variable importance. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) &lt;doi:10.1080/10618600.2024.2304070&gt;.">
-<meta property="og:description" content="Statistical tools for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation, standardized survival function estimation for current status data, and methods for algorithm-agnostic variable importance. See Wolock CJ, Gilbert PB, Simon N, and Carone M (2024) &lt;doi:10.1080/10618600.2024.2304070&gt;.">
+<meta name="description" content="Statistical tools for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation, standardized survival function estimation for current status data, and methods for algorithm-agnostic variable importance.">
+<meta property="og:description" content="Statistical tools for analyzing time-to-event data using machine learning. Implements survival stacking for conditional survival estimation, standardized survival function estimation for current status data, and methods for algorithm-agnostic variable importance.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -103,7 +103,7 @@
 <ul>
 <li><p><strong>Global survival stacking:</strong> Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. <a href="https://doi.org/10.1080/10618600.2024.2304070" class="external-link">“A framework for leveraging machine learning tools to estimate personalized survival curves.”</a> <em>Journal of Computational and Graphical Statistics</em> (2024).</p></li>
 <li><p><strong>Survival variable importance:</strong> Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. <a href="https://doi.org/10.1093/biomet/asae061" class="external-link">“Assessing variable importance in survival analysis using machine learning.”</a> <em>Biometrika</em> (2025).</p></li>
-<li><p><strong>Covariate-adjusted survival curves from current status data:</strong> Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren, Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky, Ana A. Weil, Helen Y. Chu and Marco Carone. “Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome.” <a href="https://arxiv.org/abs/2407.04214" class="external-link">arXiv:2407.04214.</a></p></li>
+<li><p><strong>Covariate-adjusted survival curves from current status data:</strong> Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren, Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky, Ana A. Weil, Helen Y. Chu and Marco Carone. <a href="https://doi.org/10.1097/EDE.0000000000001882" class="external-link">“Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome.”</a> <em>Epidemiology</em> (2025).</p></li>
 </ul>
 <p>Local survival stacking is described in:</p>
 <ul>
@@ -139,12 +139,13 @@
 <span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>    publisher<span class="ot">=</span>{Oxford University Press}</span>
 <span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>}</span></code></pre></div>
 <p>After using the functionality for current status data, please cite the following:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="sc">@</span>article{wolock2024investigating,</span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="sc">@</span>article{wolock2025investigating,</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  title<span class="ot">=</span>{Investigating symptom duration using current status data<span class="sc">:</span> a case study of post<span class="sc">-</span>acute COVID<span class="dv">-19</span> syndrome},</span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  author<span class="ot">=</span>{Wolock, Charles J and Jacob, Susan and Bennett, Julia C and Elias<span class="sc">-</span>Warren, Anna and O<span class="st">'Hanlon, Jessica and Kenny, Avi and Jewell, Nicholas P and Rotnitzky, Andrea and Weil, Ana A and Chu, Helen Y and Carone, Marco},</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="st">  journal={arXiv preprint arXiv:2407.04214},</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="st">  year={2024}</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="st">}</span></span></code></pre></div>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="st">  journal={Epidemiology},</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="st">  year={2025},</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="st">  doi={10.1097/EDE.0000000000001882}</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="st">}</span></span></code></pre></div>
 </div>
 </div>
 
