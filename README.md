@@ -87,9 +87,10 @@ following papers:
 - **Covariate-adjusted survival curves from current status data:**
   Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
   Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky,
-  Ana A. Weil, Helen Y. Chu and Marco Carone. [“Investigating symptom
-  duration using current status data: a case study of post-acute
-  COVID-19 syndrome.”](https://doi.org/10.1097/EDE.0000000000001882)
+  Stephen R. Cole, Ana A. Weil, Helen Y. Chu and Marco Carone.
+  [“Investigating symptom duration using current status data: a case
+  study of post-acute COVID-19
+  syndrome.”](https://doi.org/10.1097/EDE.0000000000001882)
   *Epidemiology* (2025).
 
 Local survival stacking is described in:
@@ -138,7 +139,7 @@ following:
 
     @article{wolock2025investigating,
       title={Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome},
-      author={Wolock, Charles J and Jacob, Susan and Bennett, Julia C and Elias-Warren, Anna and O'Hanlon, Jessica and Kenny, Avi and Jewell, Nicholas P and Rotnitzky, Andrea and Weil, Ana A and Chu, Helen Y and Carone, Marco},
+      author={Wolock, Charles J and Jacob, Susan and Bennett, Julia C and Elias-Warren, Anna and O'Hanlon, Jessica and Kenny, Avi and Jewell, Nicholas P and Rotnitzky, Andrea and Cole, Stephen R and Weil, Ana A and Chu, Helen Y and Carone, Marco},
       journal={Epidemiology},
       year={2025},
       doi={10.1097/EDE.0000000000001882}
