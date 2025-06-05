@@ -92,12 +92,13 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>As discussed in the variable importance , in order to obtain valid
-inference under the null hypothesis of zero importance, we employ
-sample-splitting. We also use cross-fitting in order to allow the use of
-flexible machine learning algorithms for nuisance parameter estimation.
-(For a general overview of variable importance, read that vignette
-first. We use the same notation here.)</p>
+<p>As discussed in the variable importance <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+vignette</a>, in order to obtain valid inference for VIM under the null
+hypothesis of zero importance, we employ sample-splitting. We also use
+cross-fitting in order to allow the use of flexible machine learning
+algorithms for nuisance parameter estimation. (For a general overview of
+variable importance, read the <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+vignette</a> first. We use the same notation here.)</p>
 <p>We recall that the importance of a covariate set
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>X</mi><mrow><mi>s</mi><mo>\</mo><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">X_{s \setminus r}</annotation></semantics></math>
 relative to a larger covariate set
@@ -114,19 +115,21 @@ Sample-splitting entails estimating
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>f</mi><mrow><mn>0</mn><mo>,</mo><mi>r</mi></mrow></msub><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">V(f_{0,r}, P_0)</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>f</mi><mrow><mn>0</mn><mo>,</mo><mi>s</mi></mrow></msub><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">V(f_{0,s}, P_0)</annotation></semantics></math>
-using separate portions of the data. This serves a separate purpose from
+using separate portions of the data. This serves a distinct purpose from
 cross-fitting, which involves dividing the data into
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>
 folds, estimating the nuisance parameters using
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">K-1</annotation></semantics></math>
-folds, estimating predictiveness using the remaining holdout fold, and
-then repeating this process for all
+folds, estimating predictiveness using the remaining holdout fold,
+repeating this process for all
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>
-folds. We recommend using both cross-fitting in conjunction with
-sample-splitting. While cross-fitting does not change the large-sample
-variance of an estimator, sample-splitting leads to an estimator with
-larger variance. Furthermore, both sample-splitting and cross-fitting
-introduce additional randomness into the inferential procedure.</p>
+folds, and averaging the results. We recommend using cross-fitting in
+conjunction with sample-splitting, as illustrated in the figure below.
+While cross-fitting does not change the large-sample variance of an
+estimator, sample-splitting leads to an estimator with larger variance.
+Furthermore, both sample-splitting and cross-fitting introduce
+additional randomness into the inferential procedure.</p>
+<p><embed src="variable_importance_files/cross_fitting_picture.pdf"></embed><!-- --></p>
 </div>
 <div class="section level2">
 <h2 id="muli-seed-vim-estimation">Muli-seed VIM estimation<a class="anchor" aria-label="anchor" href="#muli-seed-vim-estimation"></a>
@@ -184,9 +187,9 @@ corresponding to the hypothesis test of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>H</mi><mi>c</mi></msub><annotation encoding="application/x-tex">H_c</annotation></semantics></math>.
 There is a large literature on combining multiple
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-values
-for the same hypothesis; see Vovk and Wang (2020) for an in-depth
-analysis of potential aggregation functions. Example aggregation methods
-include Bonferroni (multiply the smallest
+for testing the same hypothesis; see Vovk and Wang (2020) for an
+in-depth analysis of potential aggregation methods. Example aggregation
+methods include Bonferroni (multiply the smallest
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-value
 by the number of seeds) and the arithmetic mean (take the arithmetic
 mean of the
@@ -204,7 +207,7 @@ We apply some aggregation function
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">g()</annotation></semantics></math>
 to produce a combined
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-value
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>p</mi><mrow><mi>n</mi><mo>,</mo><mi>c</mi></mrow><mo>*</mo></msubsup><annotation encoding="application/x-tex">p^*_{n,c}</annotation></semantics></math>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>p</mi><mrow><mi>n</mi><mo>,</mo><mi>c</mi></mrow><mo>*</mo></msubsup><mo>=</mo><mi>g</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>p</mi><mrow><mi>n</mi><mo>,</mo><mi>c</mi><mo>,</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>p</mi><mrow><mi>n</mi><mo>,</mo><mi>c</mi><mo>,</mo><mn>2</mn></mrow></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>p</mi><mrow><mi>n</mi><mo>,</mo><mi>c</mi><mo>,</mo><mi>J</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">p^*_{n,c} = g(p_{n,c,1}, p_{n,c,2}, \ldots, p_{n,c,J})</annotation></semantics></math>.
 A
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">1-\alpha</annotation></semantics></math>
 confidence interval for
@@ -235,12 +238,13 @@ corresponding to a one-sided test of
 <h2 id="example-predicting-recurrence-free-survival-time-in-cancer-patients">Example: Predicting recurrence-free survival time in cancer
 patients<a class="anchor" aria-label="anchor" href="#example-predicting-recurrence-free-survival-time-in-cancer-patients"></a>
 </h2>
-<p>As in the variable importance , we consider the importance of various
-features for predicting recurrence-free survival time using the
-<code>gbsg</code> dataset from the <code>survival</code> package. For
-illustration, we look at the importance of tumor-level features (size,
-nodes, estrogen receptor, progesterone receptor, and grade) relative to
-the full feature vector.</p>
+<p>As in the variable importance <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+vignette</a>, we consider the importance of various features for
+predicting recurrence-free survival time using the <code>gbsg</code>
+dataset from the <code>survival</code> package. For illustration, we
+look at the importance of tumor-level features (size, nodes, estrogen
+receptor, progesterone receptor, and grade) relative to the full feature
+vector.</p>
 <p>There are three arguments unique to <code><a href="../reference/multiseed_vim.html">multiseed_vim()</a></code>
 compared to the standard <code><a href="../reference/vim.html">vim()</a></code> function. The first is
 <code>n_seed</code>, which determines the number of iterations to
@@ -250,16 +254,16 @@ of
 for which hypothesis tests are performed. This argument should
 correspond to a range of values over which a feasible confidence
 interval could span. For example, for AUC predictiveness, the importance
-of a feature cannot, mathematically, be outside of
+of a feature cannot be outside of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(0,1)</annotation></semantics></math>,
 so this is a reasonable choice for <code>ci_grid</code>. The third
 argument is <code>agg_method</code>, which determines the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-value
 aggregation method. Vovk and Wang (2020) found the compound
 Bonferroni-geometric mean method <code>"compound_bg"</code> to work well
-in simulation and is the default. Below, we compared the results of a
-single call to <code><a href="../reference/vim.html">vim()</a></code> versus the multiseed approach with 5
-seeds.</p>
+in simulation; this is the default for <code><a href="../reference/multiseed_vim.html">multiseed_vim()</a></code>.
+Below, we compared the results of a single call to <code><a href="../reference/vim.html">vim()</a></code>
+versus the multiseed approach with 3 seeds.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">cancer</span><span class="op">)</span></span>
 <span></span>
