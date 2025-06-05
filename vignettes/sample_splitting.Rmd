@@ -1,0 +1,136 @@
+---
+title: "Variable importance in survival analysis: multi-seed estimation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Variable importance in survival analysis: multi-seed estimation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(survML)
+library(survival)
+library(dplyr)
+library(ggplot2)
+```
+
+## Introduction
+
+As discussed in the variable importance \href{https://cwolock.github.io/survML/articles/variable_importance.html}{overview vignette}, in order to obtain valid inference under the null hypothesis of zero importance, we employ sample-splitting. We also use cross-fitting in order to allow the use of flexible machine learning algorithms for nuisance parameter estimation. (For a general overview of variable importance, read that vignette first. We use the same notation here.) 
+
+We recall that the importance of a covariate set $X_{s \setminus r}$ relative to a larger covariate set $X_s$ is $V(f_{0,r}, P_0) - V(f_{0,s}, P_0)$; the difference in maximum achievable predictiveness when only $r$ is excluded compared to when $s$ is excluded from the full covariate set $X$. Sample-splitting entails estimating $V(f_{0,r}, P_0)$ and $V(f_{0,s}, P_0)$ using separate portions of the data. This serves a separate purpose from cross-fitting, which involves dividing the data into $K$ folds, estimating the nuisance parameters using $K-1$ folds, estimating predictiveness using the remaining holdout fold, and then repeating this process for all $K$ folds. We recommend using both cross-fitting in conjunction with sample-splitting. While cross-fitting does not change the large-sample variance of an estimator, sample-splitting leads to an estimator with larger variance. Furthermore, both sample-splitting and cross-fitting introduce additional randomness into the inferential procedure. 
+
+## Muli-seed VIM estimation
+
+Each iteration of the VIM procedure depends on the seed selected by the user. The seed determines the pseudo-random process by which the data are divided into folds, along with other stochastic components of the VIM estimation procedure (e.g., cross-validation for selection of algorithm tuning parameters). In order to mitigate the randomness introduced by cross-fitting and sample-splitting, we generally recommend performing the VIM procedure multiple times using different seeds, and then aggregating the results. This functionality is carried out by the `multiseed_vim()` function. Suppose we use $J$ different seeds to perform the VIM analyses. We denote the VIM point estimate produced by the $j$th seed as $\psi_{n,j}$, and the corresponding estimated (scaled) variance as $\sigma^2_{n,j}$. Aggregating the point estimates and inferential results across the $J$ iterations require different approaches: 
+
+### Point estimates
+We have point estimates $\{\psi_{n,1}, \psi_{n,2}, \ldots, \psi_{n,J}\}$. Because all of these point estimates are consistent for the true VIM $\psi_{0}$, many aggregation strategies will produce valid results. We recommend simple averaging, constructing an overall VIM estimation $\bar{\psi}_{n} := \frac{1}{J}\sum_{j = 1}^{J}\psi_{n,j}$. 
+
+
+### Inference 
+Combining the inferential results --- confidence intervals and p-values --- across multiple seeds is more complicated. Each of the $J$ iterations of the procedure produces an valid hypothesis test of the null hypothesis $H_{c}: \psi_0 = c$ for any value $c$ (most often, we are interested in testing $H_0$, but we can test any point null). Thus, aggregating the $p$-values from the various seeds in a manner than controls the Type I error of the aggregated hypothesis test allows us to obtain a single, valid $p$-value corresponding to the hypothesis test of $H_c$. There is a large literature on combining multiple $p$-values for the same hypothesis; see Vovk and Wang (2020) for an in-depth analysis of potential aggregation functions. Example aggregation methods include Bonferroni (multiply the smallest $p$-value by the number of seeds) and the arithmetic mean (take the arithmetic mean of the $p$-values and multiply by two). 
+
+In `survML`, we use the Wald test statistic $(\sigma^2_{n,j})^{-1/2}(\psi_{n,j} - c)$ to test $H_c$. We denote the resulting $p$-value as $p_{n,j,c}$. We apply some aggregation function $g()$ to produce a combined $p$-value $p^*_{n,c}$. A $1-\alpha$ confidence interval for $\psi_0$ consists of all values $c$ for which $p^*_{n,c} > \alpha$. If the $p$-values correspond to a one-sided test, the resulting interval is one-sided (i.e., it is of the form $(L_n, \infty)$ for a lower bound $L_n$); if the $p$-values correspond to a two-sided test, the resulting interval is two-sided. The `multiseed_vim()` function produces both types of intervals, along with the aggregated $p$-value corresponding to a one-sided test of $H_0$ (zero importance). 
+
+## Example: Predicting recurrence-free survival time in cancer patients
+
+As in the variable importance \href{https://cwolock.github.io/survML/articles/variable_importance.html}{overview vignette}, we consider the importance of various features for predicting recurrence-free survival time using the `gbsg` dataset from the `survival` package. For illustration, we look at the importance of tumor-level features (size, nodes, estrogen receptor, progesterone receptor, and grade) relative to the full feature vector. 
+
+There are three arguments unique to `multiseed_vim()` compared to the standard `vim()` function. The first is `n_seed`, which determines the number of iterations to perform. The second is `ci_grid`, which determines the values of $c$ for which hypothesis tests are performed. This argument should correspond to a range of values over which a feasible confidence interval could span. For example, for AUC predictiveness, the importance of a feature cannot, mathematically, be outside of $(0,1)$, so this is a reasonable choice for `ci_grid`. The third argument is `agg_method`, which determines the $p$-value aggregation method. Vovk and Wang (2020) found the compound Bonferroni-geometric mean method `"compound_bg"` to work well in simulation and is the default. Below, we compared the results of a single call to `vim()` versus the multiseed approach with 5 seeds. 
+
+```{r}
+data(cancer)
+
+### variables of interest
+# rfstime - recurrence-free survival
+# status - censoring indicator
+# hormon - hormonal therapy treatment indicator
+# age - in years
+# meno - 1 = premenopause, 2 = post
+# size - tumor size in mm
+# grade - factor 1,2,3
+# nodes - number of positive nodes
+# pgr - progesterone receptor in fmol
+# er - estrogen receptor in fmol
+
+# create dummy variables and clean data
+gbsg$tumgrad2 <- ifelse(gbsg$grade == 2, 1, 0)
+gbsg$tumgrad3 <- ifelse(gbsg$grade == 3, 1, 0)
+gbsg <- gbsg %>% na.omit() %>% select(-c(pid, grade))
+
+time <- gbsg$rfstime
+event <- gbsg$status
+X <- gbsg %>% select(-c(rfstime, status)) # remove outcome 
+
+# find column indices of features/feature groups
+X_names <- names(X)
+tum_index <- which(X_names %in% c("size", "nodes", "pgr", "er", "tumgrad2", "tumgrad3"))
+
+landmark_times <- c(1000, 2000)
+
+output_single <- vim(type = "AUC",
+                     time = time,
+                     event = event,
+                     X = X,
+                     landmark_times = landmark_times,
+                     large_feature_vector = 1:ncol(X),
+                     small_feature_vector = (1:ncol(X))[-as.numeric(tum_index)],
+                     conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                               V = 2,
+                                                               bin_size = 0.5),
+                     large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                           V = 2),
+                     small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                           V = 2),
+                     approx_times = sort(unique(stats::quantile(time[event == 1 & time <= max(landmark_times)],
+                                                                probs = seq(0, 1, by = 0.025)))),
+                     cf_fold_num = 2,
+                     sample_split = TRUE,
+                     scale_est = TRUE)
+
+output_single$result
+
+output_multiseed <- multiseed_vim(n_seed = 3,
+                                  ci_grid = seq(0, 1, by = 0.01),
+                                  type = "AUC",
+                                  agg_method = "compound_bg",
+                                  time = time,
+                                  event = event,
+                                  X = X,
+                                  landmark_times = landmark_times,
+                                  large_feature_vector = 1:ncol(X),
+                                  small_feature_vector = (1:ncol(X))[-as.numeric(tum_index)],
+                                  conditional_surv_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                                            V = 2,
+                                                                            bin_size = 0.5),
+                                  large_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                                        V = 2),
+                                  small_oracle_generator_control = list(SL.library = c("SL.mean", "SL.glm"),
+                                                                        V = 2),
+                                  approx_times = sort(unique(stats::quantile(time[event == 1 & time <= max(landmark_times)],
+                                                                             probs = seq(0, 1, by = 0.025)))),
+                                  cf_fold_num = 2,
+                                  sample_split = TRUE,
+                                  scale_est = TRUE)
+output_multiseed$agg_result
+```
+
+
+## References 
+
+The survival variable importance methodology is described in
+
+Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. ["Assessing variable importance in survival analysis using machine learning."](https://doi.org/10.1093/biomet/asae061) *Biometrika* (2025). 
+
+Methods for aggregating $p$-values are discussed in 
+
+Vladimir Vovk and Ruodu Wang. ["Combining p-values via averaging."](https://doi.org/10.1093/biomet/asaa027) *Biometrika* (2020). 
+

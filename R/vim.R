@@ -1,5 +1,10 @@
 #' Estimate variable importance
 #'
+#' Compute estimates of and confidence intervals for nonparametric variable importance
+#' based on the difference predictiveness obtained with and without the feature of interest.
+#' Designed for use with time-to-event outcomes subject to right censoring that may be informed
+#' by measured covariates.
+#'
 #' @param type Type of VIM to compute. Options include \code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}
 #' \code{"C-index"}, and \code{"survival_time_MSE"}.
 #' @param time \code{n x 1} numeric vector of observed
@@ -100,6 +105,9 @@
 #'               scale_est = TRUE)
 #'
 #' print(output$result)
+#'
+#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
+#'   "Assessing variable importance in survival analysis using machine learning."
 
 vim <- function(type,
                 time,

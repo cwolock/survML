@@ -1,25 +1,25 @@
 ---
-title: "Variable importance in survival analysis"
+title: "Variable importance in survival analysis: overview"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Variable importance in survival analysis}
+  %\VignetteIndexEntry{Variable importance in survival analysis: overview}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
   
 ```{r, include = FALSE}
-  knitr::opts_chunk$set(
+knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
-  )
+)
 ```
   
 ```{r setup}
-  library(survML)
-  library(survival)
-  library(dplyr)
-  library(ggplot2)
-  set.seed(72924)
+library(survML)
+library(survival)
+library(dplyr)
+library(ggplot2)
+set.seed(72924)
 ```
   
 ## Introduction
@@ -39,7 +39,7 @@ Due to right censoring, the VIM estimation procedure requires estimates of the c
 As an example, we consider estimating variable importance for predicting recurrence-free survival using the `gbsg` dataset in the `survival` package. The Kaplan-Meier estimate of the survival curve for this dataset is shown below. 
   
 ```{r km, fig.width=8, fig.height=6}
-  data(cancer)
+data(cancer)
 km_fit <- survfit(Surv(rfstime, status) ~ 1, data = gbsg)
 plot(km_fit, xlab = "Time (days)", ylab = "Recurrence-free survival probability")
 ```
