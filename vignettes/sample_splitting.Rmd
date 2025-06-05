@@ -5,8 +5,6 @@ vignette: >
   %\VignetteIndexEntry{Variable importance in survival analysis: multi-seed estimation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-resource_files:
-  - '../man/figures/cross_fitting_picture.pdf'
 ---
 
 ```{r, include = FALSE}
@@ -30,9 +28,9 @@ We recall that the importance of a covariate set $X_{s \setminus r}$ relative to
 
 <!-- ![](cross_fitting_picture.pdf){width=600px} -->
 
-```{r, echo=FALSE, fig.width=8, fig.height=6, eval=TRUE}
+```{r, echo=FALSE, out.width=500, out.height=400, eval=TRUE}
 # knitr::include_graphics("../man/figures/cross_fitting_picture.pdf")
-knitr::include_graphics("cross_fitting_picture.pdf")
+knitr::include_graphics("cross_fitting_picture.png")
 ```
 
 ## Muli-seed VIM estimation
