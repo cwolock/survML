@@ -104,7 +104,8 @@ Named list with the following elements:
 \item{vim_objects}{A list of \code{vim} return objects, each corresponding to a different seed.}
 }
 \description{
-Estimate variable importance with multiple seeds
+Repeat the VIM estimation procedure multiple times and aggregate the results,
+mitigating the additional randomness introduced by sample-splitting and cross-fitting.
 }
 \details{
 Using a larger value of \code{n_seed} will result in more stable results, at a greater computational cost.
@@ -147,7 +148,7 @@ print(output$result)
 
 }
 \references{
-Vovk V. and Wong R. (2020). "Combining p-values via averaging."
+Vovk V. and Wang R. (2020). "Combining p-values via averaging."
 
 Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
 "Assessing variable importance in survival analysis using machine learning."

@@ -123,7 +123,10 @@ Named list with the following elements:
 \item{small_oracle_preds}{A named list containing the estimated small oracle prediction function.}
 }
 \description{
-Estimate variable importance
+Compute estimates of and confidence intervals for nonparametric variable importance
+based on the difference predictiveness obtained with and without the feature of interest.
+Designed for use with time-to-event outcomes subject to right censoring that may be informed
+by measured covariates.
 }
 \details{
 For nuisance estimation, it is generally advisable to use the pre-built nuisance generator functions provided by \code{survML}. See the ''Variable importance in survival analysis'' vignette, or the \href{https://cwolock.github.io/survML/}{package website} for an illustration.

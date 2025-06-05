@@ -129,11 +129,11 @@ multiseed_vim <- function(n_seed,
 
 #' Aggregate multiseed VIM results
 #'
-#' @param n_seed List of result data frames return by the \code{vim} function.
-#' @param agg_method P-value aggregation method use to combine results from different seeds. Current options are \code{"bonferroni"} (Bonferroni's method),
-#' \code{"hommel"} (Hommel's method), \code{"arithmetic"} (arithmetic mean), \code{"geometric"} (geometric mean), \code{"harmonic"} (harmonic mean),
-#' \code{"compound_bg"} (compound Bonferroni and geometric mean), and \code{"compound_ba"} (compound Bonferroni and arithmetic mean). These approaches
-#' are discussed at length in Vovk and Wang (2020). Defaults to \code{"compound_bg"}, which has been shown to work well in many settings.
+#' @param result_list List of result data frames return by the \code{vim} function.
+#' @param agg_method P-value aggregation method use to combine results from different seeds. Current options are \code{"bonferroni"}
+#' (Bonferroni's method), \code{"hommel"} (Hommel's method), \code{"arithmetic"} (arithmetic mean), \code{"geometric"} (geometric mean),
+#' \code{"harmonic"} (harmonic mean), \code{"compound_bg"} (compound Bonferroni and geometric mean), and \code{"compound_ba"}
+#' (compound Bonferroni and arithmetic mean). These approaches are discussed at length in Vovk and Wang (2020). Defaults to \code{"compound_bg"}, which has been shown to work well in many settings.
 #' @param ci_grid Grid of VIM values over which to construct a confidence interval by inverting a hypothesis test. The aggregation works by constructing
 #' hypothesis tests (at level \code{alpha}) of the null corresponding to each value in \code{ci_grid}, and then inverting these tests to yield a
 #' 1 - \code{alpha} confidence interval. For example, for \code{"AUC"} importance, the VIM takes values in (0,1), so a grid of values between 0 and 1
@@ -175,9 +175,9 @@ aggregate_vim <- function(result_list,
     for (j in 1:n2){
       for (k in 1:n1){
         z <- (dat$est[k] - ci_grid[j]) / sqrt(dat$var_est[k]/n_eff)
-        p <- pnorm(abs(z), lower.tail = FALSE)*2
+        p <- stats::pnorm(abs(z), lower.tail = FALSE)*2
         p_array_twosided[k, j, i] <- p
-        p <- pnorm(z, lower.tail = FALSE)
+        p <- stats::pnorm(z, lower.tail = FALSE)
         p_array_onesided[k, j, i] <- p
       }
     }
