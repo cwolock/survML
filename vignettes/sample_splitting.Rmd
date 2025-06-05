@@ -26,7 +26,9 @@ As discussed in the variable importance [overview vignette](https://cwolock.gith
 
 We recall that the importance of a covariate set $X_{s \setminus r}$ relative to a larger covariate set $X_s$ is $V(f_{0,r}, P_0) - V(f_{0,s}, P_0)$; the difference in maximum achievable predictiveness when only $r$ is excluded compared to when $s$ is excluded from the full covariate set $X$. Sample-splitting entails estimating $V(f_{0,r}, P_0)$ and $V(f_{0,s}, P_0)$ using separate portions of the data. This serves a distinct purpose from cross-fitting, which involves dividing the data into $K$ folds, estimating the nuisance parameters using $K-1$ folds, estimating predictiveness using the remaining holdout fold, repeating this process for all $K$ folds, and averaging the results. We recommend using cross-fitting in conjunction with sample-splitting, as illustrated in the figure below. While cross-fitting does not change the large-sample variance of an estimator, sample-splitting leads to an estimator with larger variance. Furthermore, both sample-splitting and cross-fitting introduce additional randomness into the inferential procedure. 
 
-```{r, echo=FALSE, fig.width=8, fig.height=6}
+![](cross_fitting_picture.pdf){width=600px}
+
+```{r, echo=FALSE, fig.width=8, fig.height=6, eval=FALSE}
 knitr::include_graphics("cross_fitting_picture.pdf")
 ```
 
