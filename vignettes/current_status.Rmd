@@ -132,7 +132,7 @@ p1
 
 For details of extended CIR, please see the following paper:
 
-Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren, Jessica O'Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky, Stephen R. Cole, Ana A. Weil, Helen Y. Chu and Marco Carone. "Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome." [arXiv:2407.04214](https://arxiv.org/abs/2407.04214) (2024). 
+Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren, Jessica O'Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky, Stephen R. Cole, Ana A. Weil, Helen Y. Chu and Marco Carone. ["Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome."](https://doi.org/10.1097/EDE.0000000000001882) *Epidemiology* (2025). 
 
 Other references:
 

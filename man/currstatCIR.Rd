@@ -112,3 +112,7 @@ fn=stepfun(xvals, c(yvals[1], yvals))
 plot.function(fn, from=min(xvals), to=max(xvals))}
 
 }
+\references{
+Wolock C.J., et al. (2025).
+"Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome."
+}

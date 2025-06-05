@@ -77,7 +77,7 @@ For details of the methods implemented in this package, please see the following
 
 * **Survival variable importance:** Charles J. Wolock, Peter B. Gilbert, Noah Simon and Marco Carone. ["Assessing variable importance in survival analysis using machine learning."](https://doi.org/10.1093/biomet/asae061) *Biometrika* (2025). 
 
-* **Covariate-adjusted survival curves from current status data:** Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren, Jessica O'Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky, Ana A. Weil, Helen Y. Chu and Marco Carone. "Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome." [arXiv:2407.04214.](https://arxiv.org/abs/2407.04214)
+* **Covariate-adjusted survival curves from current status data:** Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren, Jessica O'Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky, Ana A. Weil, Helen Y. Chu and Marco Carone. ["Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome."](https://doi.org/10.1097/EDE.0000000000001882) *Epidemiology* (2025).
 
 Local survival stacking is described in: 
 
@@ -124,10 +124,11 @@ After using the variable importance functions, please cite the following:
 After using the functionality for current status data, please cite the following: 
 
 ```
-@article{wolock2024investigating,
+@article{wolock2025investigating,
   title={Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome},
   author={Wolock, Charles J and Jacob, Susan and Bennett, Julia C and Elias-Warren, Anna and O'Hanlon, Jessica and Kenny, Avi and Jewell, Nicholas P and Rotnitzky, Andrea and Weil, Ana A and Chu, Helen Y and Carone, Marco},
-  journal={arXiv preprint arXiv:2407.04214},
-  year={2024}
+  journal={Epidemiology},
+  year={2025},
+  doi={10.1097/EDE.0000000000001882}
 }
 ```
