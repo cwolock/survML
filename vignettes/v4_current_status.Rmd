@@ -35,7 +35,7 @@ The extended CIR method implemented in `survML` was originally devised to analyz
 
 One key complication of the long COVID study was *survey nonresponse*. By the time data collection ended, fewer than half of the surveyed individuals had responded to the email survey. We use $c_0$ to denote the time --- measured since the positive test --- at which follow-up ends for a study participant. In many cases, $c_0$ must be determined by the investigator. We consider a participant who has not responded to the survey by time $c_0$ to be a nonrespondent. 
 
-Because the long COVID data are not publicly available, in this vignette, we will analyze a simple simulated dataset, generated below. Note that both the event time $T$ and monitoring time $Y$ depend on covariates $X_1$ and $X_2$. The maximum follow-up time $c_0$ is set to 1.65, so both $Y$ and $Delta$ are set to `NA` for individuals who have not responded by that time. 
+Because the long COVID data are not publicly available, in this vignette, we will analyze a simple simulated dataset, generated below. Note that both the event time $T$ and monitoring time $Y$ depend on covariates $X_1$ and $X_2$. The maximum follow-up time $c_0$ is set to 1.65, so both $Y$ and $\Delta$ are set to `NA` for individuals who have not responded by that time. 
 
 ```{r}
 # Simulate some current status data
@@ -65,7 +65,7 @@ dat$y[dat$y > 1.65] <- NA
 
 ## Extended CIR method
 
-Details of the extended method can be found in the corresponding manuscript (Wolock et al., 2024). In essence, the procedure consists of the steps outlined below. These steps involve two *nuisance functions* that must be estimated: (1) $\mu(y,x) := E(\Delta \mid Y = y, X = x)$, the conditional mean of $\Delta$ given $Y$ and $X$; and (2) $g(y,x) := \pi(y \mid x)/E\{\pi(y \mid X)\}$, a standardization of the conditional density of $Y$ given $X$. For those familiar with causal inference for continuous exposures, these two nuisance functions can be thought of as analogous to the outcome regression and (standardized) propensity score. 
+Details of the extended method can be found in the corresponding manuscript (Wolock et al., 2025). In essence, the procedure consists of the steps outlined below. These steps involve two *nuisance functions* that must be estimated: (1) $\mu(y,x) := E(\Delta \mid Y = y, X = x)$, the conditional mean of $\Delta$ given $Y$ and $X$; and (2) $g(y,x) := \pi(y \mid x)/E\{\pi(y \mid X)\}$, a standardization of the conditional density of $Y$ given $X$. For those familiar with causal inference for continuous exposures, these two nuisance functions can be thought of as analogous to the outcome regression and (standardized) propensity score. 
 
 **Extended CIR procedure:**
 
@@ -77,9 +77,9 @@ Details of the extended method can be found in the corresponding manuscript (Wol
 
 The isotonic regression step requires the investigator to choose a region over which to perform the regression. We denote this region $[t_0,t_1]$. The endpoints of this region should be chosen so that $t_0$ is larger than the lower bound of the support of $Y$, and so that $t_1$ is smaller than $c_0$. Isotonic regression is known to perform poorly near the boundaries of the support of $Y$, so choosing $t_0$ and $t_1$ to lie slightly inside those boundaries (for example, at the 2.5th and 97.5th percentiles of the distribution of $Y$) may be wise. More details are provided in the manuscript. 
 
-The `currstatCIR()` function uses `SuperLearner()` to estimate $\mu$ and `haldensify` to estimate $g$. Control parameters for these functions can be passed using the arguments `SL_control` and `HAL_control`. The isotonic regression bounds $[t_0,t_1]$ are specified using the argument `eval_region`. The `n_eval_pts` argument specifies the number of time points, evenly spaced on the quantile scale of $Y$, at which to estimate the survival function. 
+The `currstatCIR()` function uses `SuperLearner()` to estimate $\mu$ and `haldensify()` to estimate $g$. Control parameters for these functions can be passed using the arguments `SL_control` and `HAL_control`. The isotonic regression bounds $[t_0,t_1]$ are specified using the argument `eval_region`. The `n_eval_pts` argument specifies the number of time points, evenly spaced on the quantile scale of $Y$, at which to estimate the survival function. 
 
-Below, we analyze the simulated data using `currstatCIR`. The control parameters for nuisance function estimate are chosen to speed computation for the purpose of this illustration; in real data analyses it is generally advisable to use a larger number of cross-validation folds and a larger `SuperLearner()` library. 
+Below, we analyze the simulated data using `currstatCIR()`. The control parameters for nuisance function estimate are chosen to speed computation for the purpose of this illustration; in real data analyses it is generally advisable to use a larger number of cross-validation folds and a larger `SuperLearner()` library. 
 
 ```{r}
 eval_region <- c(0.02, 1.5)

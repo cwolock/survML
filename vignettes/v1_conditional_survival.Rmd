@@ -34,7 +34,7 @@ In a basic survival analysis setting with right-censored data (for simplicity, w
 
 Estimating (1) is a standard binary regression problem. We use pooled binary regression to estimate (2) and (3). In essence, at time $t$ each on a user-specified grid, the CDF is a binary regression using the outcome $I(Y \leq t)$. The data sets for each $t$ are combined into a single, pooled data set, including $t$ as a covariate. Currently, `survML` allows Super Learner to be used for binary regression, but more learners will be added in future versions.
 
-The `stackG` function performs global survival stacking. The most important user-specified arguments are described here:
+The `stackG()` function performs global survival stacking. The most important user-specified arguments are described here:
 
 * `bin_size`: This is the size of time grid used for estimating (2) and (3). In most cases, a finer grid performs better than a coarser grid, at increased computational cost. We recommend using as fine a grid as computational resources and time allow. In simulations, a grid of 40 time points performed similarly to a grid of every observed follow-up time. Bin size is given in quantile terms; `bin_size = 0.025` will use times corresponding to quantiles $\{0, 0.025, 0.05, \dots, 0.975, 1\}$. If `NULL`, a grid of every observed time is used. 
 * `time_basis`: This is how the time variable $t$ is included in the pooled data set. The default is `continuous` (i.e., include time as-is). It is also possible to include a dummy variable for each time in the grid (i.e., treat time as a `factor` variable) using option `dummy`. 
@@ -44,7 +44,7 @@ The `stackG` function performs global survival stacking. The most important user
 
 ### Example
 
-Here's a small example applying `stackG` to simulated data. 
+Here's a small example applying `stackG()` to simulated data. 
 
 ```{r stackG_example}
 # This is a small simulation example
@@ -102,7 +102,7 @@ p <- ggplot(data = plot_dat, mapping = aes(x = true, y = fitted)) +
 p
 ```
 
-The `stackG` function simultaneously produces estimates for the conditional censoring distribution. This may be useful, for example, for producing inverse probability of censoring (IPCW) weights. 
+The `stackG()` function simultaneously produces estimates for the conditional censoring distribution. This may be useful, for example, for producing inverse probability of censoring (IPCW) weights. 
 
 ```{r plot_stackG_example_cens}
 plot_dat <- data.frame(fitted = fit$S_C_preds[1,], 
