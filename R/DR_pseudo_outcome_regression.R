@@ -74,7 +74,11 @@ DR_pseudo_outcome_regression <- function(time,
     G_hat_Y <- apply(X = matrix(1:length(Y_t)), MARGIN = 1,
                      FUN = function(x) G_hat[x,which.min(abs(approx_times - Y_t[x]))])
 
-    term1 <- Delta_t*(Y_t >= tau) / G_hat_Y
+    if (outcome == "survival_probability"){
+      term1 <- Delta_t*(Y_t >= tau) / G_hat_Y
+    } else if (outcome == "restricted_survival_time"){
+      term1 <- Delta_t*pmin(Y_t, tau) / G_hat_Y
+    }
 
     term2 <- (1 - Delta_t) * m_Y / G_hat_Y
 
