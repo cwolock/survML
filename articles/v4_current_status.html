@@ -179,7 +179,7 @@ The maximum follow-up time
 is set to 1.65, so both
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>
 and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi><mi>e</mi><mi>l</mi><mi>t</mi><mi>a</mi></mrow><annotation encoding="application/x-tex">Delta</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Δ</mi><annotation encoding="application/x-tex">\Delta</annotation></semantics></math>
 are set to <code>NA</code> for individuals who have not responded by
 that time.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -211,7 +211,7 @@ that time.</p>
 <h2 id="extended-cir-method">Extended CIR method<a class="anchor" aria-label="anchor" href="#extended-cir-method"></a>
 </h2>
 <p>Details of the extended method can be found in the corresponding
-manuscript (Wolock et al., 2024). In essence, the procedure consists of
+manuscript (Wolock et al., 2025). In essence, the procedure consists of
 the steps outlined below. These steps involve two <em>nuisance
 functions</em> that must be estimated: (1)
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>y</mi><mo>,</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>:=</mo><mi>E</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>Δ</mi><mo>∣</mo><mi>Y</mi><mo>=</mo><mi>y</mi><mo>,</mo><mi>X</mi><mo>=</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\mu(y,x) := E(\Delta \mid Y = y, X = x)</annotation></semantics></math>,
@@ -274,7 +274,7 @@ may be wise. More details are provided in the manuscript.</p>
 <p>The <code><a href="../reference/currstatCIR.html">currstatCIR()</a></code> function uses
 <code><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner()</a></code> to estimate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>
-and <code>haldensify</code> to estimate
+and <code>haldensify()</code> to estimate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>g</mi><annotation encoding="application/x-tex">g</annotation></semantics></math>.
 Control parameters for these functions can be passed using the arguments
 <code>SL_control</code> and <code>HAL_control</code>. The isotonic
@@ -285,12 +285,12 @@ are specified using the argument <code>eval_region</code>. The
 evenly spaced on the quantile scale of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Y</mi><annotation encoding="application/x-tex">Y</annotation></semantics></math>,
 at which to estimate the survival function.</p>
-<p>Below, we analyze the simulated data using <code>currstatCIR</code>.
-The control parameters for nuisance function estimate are chosen to
-speed computation for the purpose of this illustration; in real data
-analyses it is generally advisable to use a larger number of
-cross-validation folds and a larger <code><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner()</a></code>
-library.</p>
+<p>Below, we analyze the simulated data using
+<code><a href="../reference/currstatCIR.html">currstatCIR()</a></code>. The control parameters for nuisance function
+estimate are chosen to speed computation for the purpose of this
+illustration; in real data analyses it is generally advisable to use a
+larger number of cross-validation folds and a larger
+<code><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner()</a></code> library.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">eval_region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.02</span>, <span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/currstatCIR.html">currstatCIR</a></span><span class="op">(</span>time <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">y</span>,</span>
