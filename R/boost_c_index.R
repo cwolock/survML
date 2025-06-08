@@ -11,7 +11,7 @@ boost_c_index <- function(time, # follow up times
                           tuning, # whether to do CV or simply fit a model
                           produce_fit, # whether to produce a fit after CV
                           subsample_n,
-                          params){
+                          boosting_params){
 
   if (subsample_n < length(time)){
     subsample_inds <- sample(1:length(time), size = subsample_n, replace = FALSE)
@@ -30,25 +30,25 @@ boost_c_index <- function(time, # follow up times
 
   pi <- S_hat + KM_IFs
 
-  reverse_sorted_mstop <- params$mstop[order(params$mstop, decreasing = TRUE)]
+  reverse_sorted_mstop <- boosting_params$mstop[order(boosting_params$mstop, decreasing = TRUE)]
   tau <- max(approx_times)
 
   k <- length(approx_times)
   n <- length(time)
   folds <- sample(rep(seq_len(V), length = n))
 
-  param_grid <- expand.grid(mstop = max(params$mstop),
-                            nu = params$nu,
-                            sigma = params$sigma,
-                            learner = params$learner)
+  param_grid <- expand.grid(mstop = max(boosting_params$mstop),
+                            nu = boosting_params$nu,
+                            sigma = boosting_params$sigma,
+                            learner = boosting_params$learner)
   param_grid_full <- expand.grid(mstop = reverse_sorted_mstop,
-                                 nu = params$nu,
-                                 sigma = params$sigma,
-                                 learner = params$learner)
+                                 nu = boosting_params$nu,
+                                 sigma = boosting_params$sigma,
+                                 learner = boosting_params$learner)
   param_grid_full$CV_risk <- NA
   mod_list <- vector("list", nrow(param_grid))
 
-  K <- length(params$mstop)
+  K <- length(boosting_params$mstop)
   for (i in 1:nrow(param_grid)){
 
     mstop_curr = param_grid[i,1]
@@ -120,7 +120,7 @@ boost_c_index <- function(time, # follow up times
       )
     }
 
-    if (tuning == "CV"){
+    if (tuning){ # cross-validation tuning
       CV_risks <- matrix(NA, nrow = V, ncol = K)
       for (j in 1:V){
         time_train <- time[folds != j]
@@ -202,7 +202,7 @@ boost_c_index <- function(time, # follow up times
       }
       param_grid_full$CV_risk[(((i-1)*K)+1):(i*K)] <- colMeans(CV_risks)
 
-    } else if (tuning == "none"){
+    } else{ # no tuning
 
       time_train <- time
       event_train <- event
@@ -264,14 +264,14 @@ boost_c_index <- function(time, # follow up times
     }
   }
 
-  if (tuning == "none"){
+  if (!tuning){
     param_grid_full <- param_grid
   }
 
   param_grid_full <- param_grid_full[order(param_grid_full$mstop), ]
   opt_index <- which.min(round(param_grid_full$CV_risk, digits = 3))
 
-  if (tuning == "CV" & produce_fit){
+  if (tuning & produce_fit){
     mstop_curr = param_grid_full[opt_index,1]
     nu_curr <- param_grid_full[opt_index,2]
     sigma_curr <- param_grid_full[opt_index,3]
@@ -331,7 +331,7 @@ boost_c_index <- function(time, # follow up times
                               data = dtrain)
     }
     opt_model <- mod
-  } else if (tuning == "none" & produce_fit){
+  } else if (!tuning & produce_fit){
     opt_model <- mod_list[[opt_index]]
   } else{
     opt_model <- NULL

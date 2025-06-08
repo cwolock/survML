@@ -185,12 +185,12 @@ generate_oracle_predictions_boost <- function(time,
                                               approx_times,
                                               V = 5,
                                               indx,
-                                              tuning = "none",
+                                              tuning = FALSE,
                                               subsample_n = length(time),
-                                              params = list(mstop = c(100),
-                                                            nu = c(0.1),
-                                                            sigma = c(0.01),
-                                                            learner = c("glm"))){
+                                              boosting_params = list(mstop = c(100),
+                                                                     nu = c(0.1),
+                                                                     sigma = c(0.01),
+                                                                     learner = c("glm"))){
 
   if (sum(indx) != 0){ # only remove column if there is a column to remove
     X <- X[,-indx,drop=FALSE]
@@ -207,7 +207,7 @@ generate_oracle_predictions_boost <- function(time,
                                  produce_fit = TRUE,
                                  subsample_n = subsample_n,
                                  V = V,
-                                 params = params)
+                                 boosting_params = boosting_params)
 
   dtest <- data.frame(X_holdout)
   dtrain <- data.frame(X)
