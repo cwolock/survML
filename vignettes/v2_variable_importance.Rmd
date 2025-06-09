@@ -258,7 +258,7 @@ p_auc
 
 ### Estimating variable importance relative to base model
 
-Next, we consider the importance of each of the tumor-level features relative to a *baseline* set of person-level features. Here, the feature of interest is added to a baseline set of features, with importance measured by the resulting gain in predictiveness. 
+Next, we consider the importance of each of the tumor-level features relative to a *baseline* set of person-level features. Here, the feature of interest is added to a baseline set of features, with importance measured by the resulting gain in predictiveness. (Referring to this as VIM "relative to the base model" is an abuse of terminology --- it would be more accurate to describe this as VIM of the feature of interest relative to both the baseline features and the feature of interest. In our framework, importance of a feature is always considered relative to the set of features from which the feature of interest is removed.)
 
 For this analysis, the large oracle predictions use baseline features plus the feature of interest, and the small oracle predictions use only baseline features. This means that we can recycle the small oracle predictions over all feature groups. (NB: `vim()` takes care of this under the hood, but it is worth noting that the large and small oracle prediction functions for this analysis are estimated by regressing the conditional survival function estimates given **all** features on the relevant reduced feature set. As in the previous analysis, this step is necessary to account for censoring that may be informed by covariates, even those which are not included in the current set of predictors.)
 
@@ -341,7 +341,7 @@ There may be covariates that are thought to influence both $T$ and $C$ but are n
 
 We use $r$ to denote the index set of adjustment variables, and again use $s$ to denote the index set of variables of interest. The importance of $X_s$ relative to $X_{-r}$ (i.e., the full covariate vector excluding adjustment variables) is given by $V(f_{0, r}, P_0) - V(f_{0, (r \cup s)}, P_0)$. 
 
-Here, we analyze VIM relative to tumor-level covariates, while adjusting for person-level covariates. This time, the large feature vector consists of all features except for person-level features, and remains the same as we examine each of the other feature groups. Note that in the first iteration of the loop, we save the large oracle prediction function estimates to recycle for other feature group VIM estimates. 
+Here, we analyze VIM  of each tumor-level covariate relative to all tumor-level covariates, while adjusting for person-level covariates. This time, the large feature vector consists of all features except for person-level features, and remains the same as we examine each of the other feature groups. Note that in the first iteration of the loop, we save the large oracle prediction function estimates to recycle for other feature group VIM estimates. 
 
 ```{r, fig.width=8, fig.height=7}
 size_index <- paste0(c(size_index, person_index), collapse = ",")
@@ -412,7 +412,7 @@ p_auc
 
 ## Writing a custom generator function
 
-So far, we've used two of three options for nuisance estimation: using the built-in generators, and providing pre-computed estimates. The third option is to write a custom generator function. In order to maintain double-robustness, we strongly recommend using the built-in generator functions to estimate the large and small oracle prediction functions. As such, here we only describe how to write a custom `conditional_surv_generator`. This function must satisfy the following criteria: 
+So far, we've used two of three options for nuisance estimation: using the built-in generators, and providing pre-computed estimates. The third option is to write a custom generator function. In order to maintain double-robustness, we strongly recommend using the built-in generator functions to estimate the *large and small oracle prediction functions*. As such, here we only describe how to write a custom `conditional_surv_generator` to estimate $S_0$ and $G_0$. This function must satisfy the following criteria: 
 
 * `conditional_surv_generator`:
     * Input: arguments `time` (follow-up times $Y$ for training), `event` (event indicators $\Delta$ for training), `X` (covariates for training), `X_holdout` (covariate values at which to generate conditional survival function estimates), and `newtimes` (times at which to estimate conditional survival function)

@@ -18,13 +18,14 @@ knitr::opts_chunk$set(
 library(survML)
 library(survival)
 library(dplyr)
+set.seed(72924)
 ```
 
 ## Introduction
 
-Our notion of intrinsic variable importance uses the idea of the *oracle prediction function* --- that is, for a given predictiveness measure, the function of the features that achieves optimal predictiveness. Here, the optimality is with respect to a class of possible prediction functions. Generally, we consider this class to be more or less unrestricted; as a result, the oracle prediction function can take a complex form rather than being restricted to, say, an additive function of the features. 
+Our notion of intrinsic variable importance uses the idea of the *oracle prediction function*. For a given predictiveness measure, the oracle prediction function is the function of the features that achieves optimal predictiveness. This optimality is defined with respect to a class of possible prediction functions. Generally, we consider this class to be more or less unrestricted; as a result, the oracle prediction function can take a complex form rather than being restricted to, say, an additive function of the features. 
 
-For some predictiveness measures, such as the time-varying AUC, it is fairly straightforward to characterize the oracle prediction function (see the Appendix of the [overview vignette](https://cwolock.github.io/survML/articles/variable_importance.html) for examples). A notable exception is the concordance index or C-index, a popular predictiveness measure in survival analysis. For a given prediction function $f$, the C-index measures the probability that, for a random selected pair of individuals, the individual who first experiences the event of interest has the higher value of $f$. Using $X$ to denote the feature vector and $T$ the outcome, the C-index $V$ of a prediction function $f$ can be written as
+For some predictiveness measures, such as the time-varying AUC, it is fairly straightforward to characterize the oracle prediction function (see the Appendix of the [overview vignette](https://cwolock.github.io/survML/articles/v2_variable_importance.html) for examples). A notable exception is the concordance index or C-index, a popular predictiveness measure in survival analysis. For a given prediction function $f$, the C-index measures the probability that, for a randomly selected pair of individuals, the individual who first experiences the event of interest has the higher value of $f$. Using $X$ to denote the feature vector and $T$ the outcome, the C-index $V$ of a prediction function $f$ under distribution $P_0$ can be written as
 
 \begin{align*}
 V(f, P_0) = P_0\left\{f(X_1) > f(X_2) \mid T_1 < T_2 \right\}.
@@ -40,15 +41,17 @@ We first note that the C-index can be written as
 V(f, P_0) = P_0\left\{f(X_1) > f(X_2) \mid T_1 < T_2 \right\} = \frac{P_0\left\{f(X_1) > f(X_2), T_1 < T_2 \right\}}{P_0\left\{T_1 < T_2 \right\}}. 
 \end{align*}
 
-Because the denominator does not involve $f$, we focus on maximizer of the numerator, which we can write as $E_{P_0}\left[I\{f(X_1) > f(X_2)\}I(T_1 < T_2)\right]$. Maximization of this objective function with respect to $f$ is difficult because of the indicator function $I\{f(X_1) > f(X_2)\}$. Both Chen et al. (2013) and Mayr and Schmid (2014) have proposed optimizing a smooth approximation of the C-index, where the aforementioned indicator function is replaced by the sigmoid function $h_\sigma(s) = \{1 + \exp(s/\sigma)\}$, where $\sigma$ is a tuning parameter determining the smoothness of the approximation. 
+Because the denominator does not involve $f$, we focus on maximizing the numerator, which we can write as $E_{P_0}\left[I\{f(X_1) > f(X_2)\}I(T_1 < T_2)\right]$. Maximization of this objective function with respect to $f$ is difficult because of the indicator function $I\{f(X_1) > f(X_2)\}$. Both Chen et al. (2013) and Mayr and Schmid (2014) have proposed optimizing a smooth approximation of the C-index, where the aforementioned indicator function is replaced by the sigmoid function $h_\sigma(s) = \{1 + \exp(s/\sigma)\}$, where $\sigma$ is a tuning parameter determining the smoothness of the approximation. 
 
-Because $P_0$ is unknown, and because $T$ is subject to right censoring, we must optimize an *estimate* of the smoothed C-index. In `survML`, we implement optimization of a doubly-robust estimate of the smoothed C-index estimate using gradient boosting. For details, see Wolock et al. (2025). We rely on the `mboost` gradient boosting `R` package, which allows gradient boosting for various types of base learners $f$, including trees, additive models, and linear models. The boosting tuning parameters `mstop` (number of boosting iterations) and `nu` (learning rate), along with the smoothness parameter $\sigma$ are all selected via cross-validation. 
+Because $P_0$ is unknown, and because $T$ is subject to right censoring, we must optimize an *estimate* of the smoothed C-index. In `survML`, we implement optimization of a doubly-robust estimate of the smoothed C-index using gradient boosting. For details, see Wolock et al. (2025). We rely on the `mboost` gradient boosting `R` package, which allows gradient boosting for various types of base learners $f$, including trees, additive models, and linear models. The boosting tuning parameters `mstop` (number of boosting iterations) and `nu` (learning rate), along with the smoothness parameter $\sigma$ are all selected via cross-validation. 
 
-In our experience, we have found that the boosting procedure tends to be relatively insensitive to the choice of $\sigma$. As with most gradient boosting algorithms, it is generally advisable to set a small learning rate `nu` and use cross-validation to select the number of iterations `mstop`; however, the computational cost of a large `mstop` can be quite large. Another computational consideration is the computation of the smoothed C-index estimate and its gradient, both of which involve a double sum. We allow the user to subsample observations for the boosting procedure, using the `subsample_n` parameter, which can greatly decrease computation time without a substantial loss of performance. 
+In our experience, we have found that the boosting procedure tends to be relatively insensitive to the choice of $\sigma$. As with most gradient boosting algorithms, it is generally advisable to set a small learning rate `nu` and use cross-validation to select the number of iterations `mstop`; however, the computational cost of a large `mstop` can be quite large. 
+
+Another computational consideration is the calculation of the smoothed C-index estimate and its gradient, both of which involve a double sum. We allow the user to subsample observations for the boosting procedure, using the `subsample_n` parameter, which can greatly decrease computation time without a substantial loss in performance. 
 
 ## Example: Predicting recurrence-free survival time in cancer patients
 
-As in the variable importance [overview vignette](https://cwolock.github.io/survML/articles/variable_importance.html), we consider the importance of various features for predicting recurrence-free survival time using the `gbsg` dataset from the `survival` package. For illustration, we look at the importance of tumor-level features (size, nodes, estrogen receptor, progesterone receptor, and grade) relative to the full feature vector. 
+As in the variable importance [overview vignette](https://cwolock.github.io/survML/articles/v2_variable_importance.html), we consider the importance of various features for predicting recurrence-free survival time using the `gbsg` dataset from the `survival` package. For illustration, we look at the importance of tumor-level features (size, nodes, estrogen receptor, progesterone receptor, and grade) relative to the full feature vector. 
 
 ```{r}
 data(cancer)
@@ -79,16 +82,16 @@ X_names <- names(X)
 tum_index <- which(X_names %in% c("size", "nodes", "pgr", "er", "tumgrad2", "tumgrad3"))
 ```
 
-We again use the `vim()` function. Compared to estimating time-varying AUC variable importance, as in the [overview vignette](https://cwolock.github.io/survML/articles/variable_importance.html), there are several key differences to keep in mind. 
+We again use the `vim()` function. Compared to estimating time-varying AUC importance, as in the [overview vignette](https://cwolock.github.io/survML/articles/v2_variable_importance.html), there are several key differences to keep in mind. 
 
-First, the C-index predictiveness measure does not involve a `landmark_time`, so this argument is no longer relevant. However, in order to ensure that the C-index is identifiable under right censoring (that is, does not rely on us being able to estimate the conditional survival function $S(t \mid x)$ of $T$ given $X = x$ at times $t$ where nearly all individuals with covariate value $X = x$ are censored), we must choose a `restriction_time`. This is the value $t$ for which events that occur after $t$ are not considered. There is not a data-driven way to select `restriction_time`, but simulations have shown that values of `restriction_time` for which ~10% of individuals are still at-risk for experiencing an event perform reasonably well. We choose 2000 days for the `restriction_time` in this example. 
+First, the C-index predictiveness measure does not involve a `landmark_time`, so this argument is no longer relevant. However, in order to ensure that the C-index is identified under right censoring, we must choose a `restriction_time`. In essence, this is the value $\tau$ for which events that occur after $\tau$ are not considered in computing the C-index. There is not a data-driven way to select the `restriction_time`, but simulations have shown that values of `restriction_time` for which ~10% of individuals are still at-risk for experiencing an event perform reasonably well. We choose 2000 days for the `restriction_time` in this example. 
 
-Second, the nuisance estimation procedure is slightly different for C-index, since the large and small oracle prediction functions are no longer estimated using `SuperLearner()`, but rather the gradient boosting procedure described above. The control parameters relevant to gradient boosting are instead:
+Second, the procedure for estimating nuisance parameters is slightly different for the C-index, since the large and small oracle prediction functions are no longer estimated using `SuperLearner()`, but rather the gradient boosting procedure described above. The control parameters relevant to gradient boosting are instead:
 
 * `V`: Number of folds for cross-validation selection of tuning parameters. 
 * `tuning`: Whether or not to tune the boosting parameters, or simply use the (single) user-provided value of each parameter without tuning. 
-* `subsample_n`: Size of subsample for computation of boosting objective and gradient. Subsampling proportions of 1/4, 1/3, and 1/2 all perform well in simulation, with somewhat larger bias and variance for smaller subsample proportions at smaller overall sample sizes. 
-* `boosting_params`: List of parameters for the actual gradient boosting procedure, including `mstop`, `nu`, `sigma`, and `learner` (which base learner from `mboost` to use, options are `glm`, `gam`, and `tree`).
+* `subsample_n`: Size of subsample for computation of boosting objective function and gradient. Subsampling proportions of 1/4, 1/3, and 1/2 all perform well in simulations, with somewhat larger bias and variance for smaller subsample proportions at smaller overall sample sizes. 
+* `boosting_params`: Named list of parameters for the actual gradient boosting procedure, including `mstop`, `nu`, `sigma`, and `learner` (which base learner from `mboost` to use; options are `glm`, `gam`, and `tree`).
 
 Note that we provide multiple values of `mstop` and set `tuning = TRUE` --- this will trigger a cross-validation procedure (in this case, with `V = 2` folds) to select the estimated optimal `mstop` among the two provided values. 
 
