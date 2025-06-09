@@ -510,7 +510,13 @@ all person-level features relative to the full feature vector.</p>
 <p>Next, we consider the importance of each of the tumor-level features
 relative to a <em>baseline</em> set of person-level features. Here, the
 feature of interest is added to a baseline set of features, with
-importance measured by the resulting gain in predictiveness.</p>
+importance measured by the resulting gain in predictiveness. (Referring
+to this as VIM “relative to the base model” is an abuse of terminology —
+it would be more accurate to describe this as VIM of the feature of
+interest relative to both the baseline features and the feature of
+interest. In our framework, importance of a feature is always considered
+relative to the set of features from which the feature of interest is
+removed.)</p>
 <p>For this analysis, the large oracle predictions use baseline features
 plus the feature of interest, and the small oracle predictions use only
 baseline features. This means that we can recycle the small oracle
@@ -618,13 +624,13 @@ relative to
 (i.e., the full covariate vector excluding adjustment variables) is
 given by
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>f</mi><mrow><mn>0</mn><mo>,</mo><mi>r</mi></mrow></msub><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>−</mo><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>f</mi><mrow><mn>0</mn><mo>,</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>r</mi><mo>∪</mo><mi>s</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msub><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">V(f_{0, r}, P_0) - V(f_{0, (r \cup s)}, P_0)</annotation></semantics></math>.</p>
-<p>Here, we analyze VIM relative to tumor-level covariates, while
-adjusting for person-level covariates. This time, the large feature
-vector consists of all features except for person-level features, and
-remains the same as we examine each of the other feature groups. Note
-that in the first iteration of the loop, we save the large oracle
-prediction function estimates to recycle for other feature group VIM
-estimates.</p>
+<p>Here, we analyze VIM of each tumor-level covariate relative to all
+tumor-level covariates, while adjusting for person-level covariates.
+This time, the large feature vector consists of all features except for
+person-level features, and remains the same as we examine each of the
+other feature groups. Note that in the first iteration of the loop, we
+save the large oracle prediction function estimates to recycle for other
+feature group VIM estimates.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">size_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">size_index</span>, <span class="va">person_index</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
 <span><span class="va">nodes_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">nodes_index</span>, <span class="va">person_index</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
@@ -700,10 +706,13 @@ estimates.</p>
 using the built-in generators, and providing pre-computed estimates. The
 third option is to write a custom generator function. In order to
 maintain double-robustness, we strongly recommend using the built-in
-generator functions to estimate the large and small oracle prediction
-functions. As such, here we only describe how to write a custom
-<code>conditional_surv_generator</code>. This function must satisfy the
-following criteria:</p>
+generator functions to estimate the <em>large and small oracle
+prediction functions</em>. As such, here we only describe how to write a
+custom <code>conditional_surv_generator</code> to estimate
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mn>0</mn></msub><annotation encoding="application/x-tex">S_0</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>G</mi><mn>0</mn></msub><annotation encoding="application/x-tex">G_0</annotation></semantics></math>.
+This function must satisfy the following criteria:</p>
 <ul>
 <li>
 <code>conditional_surv_generator</code>:

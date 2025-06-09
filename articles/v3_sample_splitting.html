@@ -89,16 +89,17 @@
 <span><span class="co">#&gt;     filter, lag</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">72924</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>As discussed in the variable importance <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+<p>As discussed in the variable importance <a href="https://cwolock.github.io/survML/articles/v2_variable_importance.html">overview
 vignette</a>, in order to obtain valid inference for VIM under the null
-hypothesis of zero importance, we employ sample-splitting. We also use
-cross-fitting in order to allow the use of flexible machine learning
-algorithms for nuisance parameter estimation. (For a general overview of
-variable importance, read the <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+hypothesis of zero importance, we employ <em>sample-splitting</em>. We
+also use <em>cross-fitting</em> in order to allow the use of flexible
+machine learning algorithms for nuisance parameter estimation. (For a
+general overview of variable importance, read the <a href="https://cwolock.github.io/survML/articles/v2_variable_importance.html">overview
 vignette</a> first. We use the same notation here.)</p>
 <p>We recall that the importance of a covariate set
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>X</mi><mrow><mi>s</mi><mo>\</mo><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">X_{s \setminus r}</annotation></semantics></math>
@@ -125,23 +126,25 @@ folds, estimating predictiveness using the remaining holdout fold,
 repeating this process for all
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>
 folds, and averaging the results. We recommend using cross-fitting in
-conjunction with sample-splitting, as illustrated in the figure below.
-While cross-fitting does not change the large-sample variance of an
-estimator, sample-splitting leads to an estimator with larger variance.
-Furthermore, both sample-splitting and cross-fitting introduce
-additional randomness into the inferential procedure.</p>
+conjunction with sample-splitting, as illustrated in the figure
+below.</p>
 <!-- ![](cross_fitting_picture.pdf){width=600px} -->
 <p><img src="cross_fitting_picture.png" width="500" height="400"></p>
+<p>While cross-fitting does not change the large-sample variance of the
+VIM estimator, sample-splitting does lead to an estimator with larger
+variance. Furthermore, both sample-splitting and cross-fitting introduce
+additional randomness into the inferential procedure due to the random
+allocation of data units into folds.</p>
 </div>
 <div class="section level2">
 <h2 id="muli-seed-vim-estimation">Muli-seed VIM estimation<a class="anchor" aria-label="anchor" href="#muli-seed-vim-estimation"></a>
 </h2>
-<p>Each iteration of the VIM procedure depends on the seed selected by
-the user. The seed determines the pseudo-random process by which the
-data are divided into folds, along with other stochastic components of
-the VIM estimation procedure (e.g., cross-validation for selection of
-algorithm tuning parameters). In order to mitigate the randomness
-introduced by cross-fitting and sample-splitting, we generally recommend
+<p>Each iteration of the VIM procedure depends on the <em>seed</em>
+selected by the user. The seed determines the pseudo-random process by
+which the data are divided into folds, along with other stochastic
+components of the VIM estimation procedure (e.g., cross-validation for
+selection of algorithm tuning parameters).</p>
+<p>In order to mitigate this randomness, we generally recommend
 performing the VIM procedure multiple times using different seeds, and
 then aggregating the results. This functionality is carried out by the
 <code><a href="../reference/multiseed_vim.html">multiseed_vim()</a></code> function. Suppose we use
@@ -155,7 +158,7 @@ and the corresponding estimated (scaled) variance as
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mrow><mi>n</mi><mo>,</mo><mi>j</mi></mrow><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma^2_{n,j}</annotation></semantics></math>.
 Aggregating the point estimates and inferential results across the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>J</mi><annotation encoding="application/x-tex">J</annotation></semantics></math>
-iterations require different approaches:</p>
+iterations require different approaches.</p>
 <div class="section level3">
 <h3 id="point-estimates">Point estimates<a class="anchor" aria-label="anchor" href="#point-estimates"></a>
 </h3>
@@ -164,30 +167,32 @@ iterations require different approaches:</p>
 Because all of these point estimates are consistent for the true VIM
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ψ</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\psi_{0}</annotation></semantics></math>,
 many aggregation strategies will produce valid results. We recommend
-simple averaging, constructing an overall VIM estimation
+simple averaging, constructing an overall VIM estimate
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>ψ</mi><mo accent="true">‾</mo></mover><mi>n</mi></msub><mo>:=</mo><mfrac><mn>1</mn><mi>J</mi></mfrac><msubsup><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>J</mi></msubsup><msub><mi>ψ</mi><mrow><mi>n</mi><mo>,</mo><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\bar{\psi}_{n} := \frac{1}{J}\sum_{j = 1}^{J}\psi_{n,j}</annotation></semantics></math>.</p>
 </div>
 <div class="section level3">
 <h3 id="inference">Inference<a class="anchor" aria-label="anchor" href="#inference"></a>
 </h3>
-<p>Combining the inferential results — confidence intervals and p-values
+<p>Combining the inferential results — confidence intervals and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-values
 — across multiple seeds is more complicated. Each of the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>J</mi><annotation encoding="application/x-tex">J</annotation></semantics></math>
-iterations of the procedure produces an valid hypothesis test of the
-null hypothesis
+iterations of the procedure produces a valid hypothesis test of the null
+hypothesis
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>H</mi><mi>c</mi></msub><mo>:</mo><msub><mi>ψ</mi><mn>0</mn></msub><mo>=</mo><mi>c</mi></mrow><annotation encoding="application/x-tex">H_{c}: \psi_0 = c</annotation></semantics></math>
 for any value
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
 (most often, we are interested in testing
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>H</mi><mn>0</mn></msub><annotation encoding="application/x-tex">H_0</annotation></semantics></math>,
-but we can test any point null). Thus, aggregating the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>H</mi><mn>0</mn></msub><annotation encoding="application/x-tex">H_0</annotation></semantics></math>
+— that is, zero importance — but we can test any point null). Thus,
+aggregating the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-values
-from the various seeds in a manner than controls the Type I error of the
-aggregated hypothesis test allows us to obtain a single, valid
+from the various seeds in a manner that controls the Type I error of the
+aggregated hypothesis test allows us to obtain a single
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-value
-corresponding to the hypothesis test of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>H</mi><mi>c</mi></msub><annotation encoding="application/x-tex">H_c</annotation></semantics></math>.
-There is a large literature on combining multiple
+corresponding to a hypothesis test of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>H</mi><mi>c</mi></msub><annotation encoding="application/x-tex">H_c</annotation></semantics></math>.</p>
+<p>There is a large literature on combining multiple
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-values
 for testing the same hypothesis; see Vovk and Wang (2020) for an
 in-depth analysis of potential aggregation methods. Example aggregation
@@ -217,7 +222,9 @@ confidence interval for
 consists of all values
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
 for which
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>p</mi><mrow><mi>n</mi><mo>,</mo><mi>c</mi></mrow><mo>*</mo></msubsup><mo>&gt;</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">p^*_{n,c} &gt; \alpha</annotation></semantics></math>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>p</mi><mrow><mi>n</mi><mo>,</mo><mi>c</mi></mrow><mo>*</mo></msubsup><mo>&gt;</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">p^*_{n,c} &gt; \alpha</annotation></semantics></math>,
+i.e., for which we do not reject the null
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>H</mi><mi>c</mi></msub><annotation encoding="application/x-tex">H_c</annotation></semantics></math>.
 If the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-values
 correspond to a one-sided test, the resulting interval is one-sided
@@ -240,7 +247,7 @@ corresponding to a one-sided test of
 <h2 id="example-predicting-recurrence-free-survival-time-in-cancer-patients">Example: Predicting recurrence-free survival time in cancer
 patients<a class="anchor" aria-label="anchor" href="#example-predicting-recurrence-free-survival-time-in-cancer-patients"></a>
 </h2>
-<p>As in the variable importance <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+<p>As in the variable importance <a href="https://cwolock.github.io/survML/articles/v2_variable_importance.html">overview
 vignette</a>, we consider the importance of various features for
 predicting recurrence-free survival time using the <code>gbsg</code>
 dataset from the <code>survival</code> package. For illustration, we
@@ -258,13 +265,13 @@ correspond to a range of values over which a feasible confidence
 interval could span. For example, for AUC predictiveness, the importance
 of a feature cannot be outside of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">(0,1)</annotation></semantics></math>,
-so this is a reasonable choice for <code>ci_grid</code>. The third
+so these are reasonable bounds for <code>ci_grid</code>. The third
 argument is <code>agg_method</code>, which determines the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>p</mi><annotation encoding="application/x-tex">p</annotation></semantics></math>-value
 aggregation method. Vovk and Wang (2020) found the compound
 Bonferroni-geometric mean method <code>"compound_bg"</code> to work well
-in simulation; this is the default for <code><a href="../reference/multiseed_vim.html">multiseed_vim()</a></code>.
-Below, we compared the results of a single call to <code><a href="../reference/vim.html">vim()</a></code>
+in simulations; this is the default for <code><a href="../reference/multiseed_vim.html">multiseed_vim()</a></code>.
+Below, we compare the results of a single call to <code><a href="../reference/vim.html">vim()</a></code>
 versus the multiseed approach with 3 seeds.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">cancer</span><span class="op">)</span></span>
@@ -319,14 +326,15 @@ versus the multiseed approach with 3 seeds.</p>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span></span>
 <span><span class="va">output_single</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt;   landmark_time       est   var_est        cil       ciu cil_1sided</span></span>
-<span><span class="co">#&gt; 1          1000 0.1359657 0.5664234 0.05631826 0.2156131 0.06912345</span></span>
-<span><span class="co">#&gt; 2          2000 0.1122529 4.3468465 0.00000000 0.3328949 0.00000000</span></span>
+<span><span class="co">#&gt;   landmark_time        est   var_est       cil       ciu cil_1sided</span></span>
+<span><span class="co">#&gt; 1          1000 0.18408503 0.5787338 0.1035768 0.2645933  0.1165204</span></span>
+<span><span class="co">#&gt; 2          2000 0.05050178 2.6346037 0.0000000 0.2222763  0.0000000</span></span>
 <span><span class="co">#&gt;              p large_predictiveness small_predictiveness vim</span></span>
-<span><span class="co">#&gt; 1 0.0004101625            0.7058833            0.5699176 AUC</span></span>
-<span><span class="co">#&gt; 2 0.1593475111            0.6677483            0.5554954 AUC</span></span>
+<span><span class="co">#&gt; 1 3.705528e-06            0.7049526            0.5208675 AUC</span></span>
+<span><span class="co">#&gt; 2 2.822298e-01            0.6523270            0.6018252 AUC</span></span>
 <span><span class="co">#&gt;   large_feature_vector small_feature_vector</span></span>
 <span><span class="co">#&gt; 1    1,2,3,4,5,6,7,8,9                1,2,7</span></span>
 <span><span class="co">#&gt; 2    1,2,3,4,5,6,7,8,9                1,2,7</span></span>
@@ -365,13 +373,14 @@ versus the multiseed approach with 3 seeds.</p>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="va">output_multiseed</span><span class="op">$</span><span class="va">agg_result</span></span>
-<span><span class="co">#&gt;   landmark_time        est  var_est  cil  ciu cil_1sided            p</span></span>
-<span><span class="co">#&gt; 1          1000 0.18588669 0.566269 0.12 0.26       0.13 1.257963e-07</span></span>
-<span><span class="co">#&gt; 2          2000 0.09535143 3.340618 0.00 0.31       0.00 1.326559e-01</span></span>
+<span><span class="co">#&gt;   landmark_time       est   var_est  cil  ciu cil_1sided            p</span></span>
+<span><span class="co">#&gt; 1          1000 0.1718534 0.5610887 0.09 0.27       0.10 7.046226e-06</span></span>
+<span><span class="co">#&gt; 2          2000 0.1746481 2.9069883 0.00 0.32       0.02 2.665718e-02</span></span>
 <span><span class="co">#&gt;   large_predictiveness small_predictiveness vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.7187116            0.5328249 AUC    1,2,3,4,5,6,7,8,9</span></span>
-<span><span class="co">#&gt; 2            0.6504558            0.5664478 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 1            0.7079477            0.5360943 AUC    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 2            0.7174815            0.5428334 AUC    1,2,3,4,5,6,7,8,9</span></span>
 <span><span class="co">#&gt;   small_feature_vector</span></span>
 <span><span class="co">#&gt; 1                1,2,7</span></span>
 <span><span class="co">#&gt; 2                1,2,7</span></span></code></pre></div>

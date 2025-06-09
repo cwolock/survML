@@ -89,28 +89,29 @@
 <span><span class="co">#&gt;     filter, lag</span></span>
 <span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span></code></pre></div>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">72924</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
 <p>Our notion of intrinsic variable importance uses the idea of the
-<em>oracle prediction function</em> — that is, for a given
-predictiveness measure, the function of the features that achieves
-optimal predictiveness. Here, the optimality is with respect to a class
-of possible prediction functions. Generally, we consider this class to
-be more or less unrestricted; as a result, the oracle prediction
-function can take a complex form rather than being restricted to, say,
-an additive function of the features.</p>
+<em>oracle prediction function</em>. For a given predictiveness measure,
+the oracle prediction function is the function of the features that
+achieves optimal predictiveness. This optimality is defined with respect
+to a class of possible prediction functions. Generally, we consider this
+class to be more or less unrestricted; as a result, the oracle
+prediction function can take a complex form rather than being restricted
+to, say, an additive function of the features.</p>
 <p>For some predictiveness measures, such as the time-varying AUC, it is
 fairly straightforward to characterize the oracle prediction function
-(see the Appendix of the <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+(see the Appendix of the <a href="https://cwolock.github.io/survML/articles/v2_variable_importance.html">overview
 vignette</a> for examples). A notable exception is the concordance index
 or C-index, a popular predictiveness measure in survival analysis. For a
 given prediction function
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>,
-the C-index measures the probability that, for a random selected pair of
-individuals, the individual who first experiences the event of interest
-has the higher value of
+the C-index measures the probability that, for a randomly selected pair
+of individuals, the individual who first experiences the event of
+interest has the higher value of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>.
 Using
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>X</mi><annotation encoding="application/x-tex">X</annotation></semantics></math>
@@ -120,6 +121,8 @@ the outcome, the C-index
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
 of a prediction function
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>
+under distribution
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>0</mn></msub><annotation encoding="application/x-tex">P_0</annotation></semantics></math>
 can be written as</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mtable><mtr><mtd columnalign="right" style="text-align: right"><mi>V</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>f</mi><mo>,</mo><msub><mi>P</mi><mn>0</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>P</mi><mn>0</mn></msub><mrow><mo stretchy="true" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>∣</mo><msub><mi>T</mi><mn>1</mn></msub><mo>&lt;</mo><msub><mi>T</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">}</mo></mrow><mi>.</mi></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{align*}
 V(f, P_0) = P_0\left\{f(X_1) &gt; f(X_2) \mid T_1 &lt; T_2 \right\}.
@@ -138,7 +141,7 @@ V(f, P_0) = P_0\left\{f(X_1) &gt; f(X_2) \mid T_1 &lt; T_2 \right\} = \frac{P_0\
 \end{align*}</annotation></semantics></math></p>
 <p>Because the denominator does not involve
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>,
-we focus on maximizer of the numerator, which we can write as
+we focus on maximizing the numerator, which we can write as
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><msub><mi>P</mi><mn>0</mn></msub></msub><mrow><mo stretchy="true" form="prefix">[</mo><mi>I</mi><mo stretchy="false" form="prefix">{</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>1</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>&gt;</mo><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>X</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="false" form="postfix">}</mo><mi>I</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>T</mi><mn>1</mn></msub><mo>&lt;</mo><msub><mi>T</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">E_{P_0}\left[I\{f(X_1) &gt; f(X_2)\}I(T_1 &lt; T_2)\right]</annotation></semantics></math>.
 Maximization of this objective function with respect to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>
@@ -158,8 +161,8 @@ is unknown, and because
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
 is subject to right censoring, we must optimize an <em>estimate</em> of
 the smoothed C-index. In <code>survML</code>, we implement optimization
-of a doubly-robust estimate of the smoothed C-index estimate using
-gradient boosting. For details, see Wolock et al. (2025). We rely on the
+of a doubly-robust estimate of the smoothed C-index using gradient
+boosting. For details, see Wolock et al. (2025). We rely on the
 <code>mboost</code> gradient boosting <code>R</code> package, which
 allows gradient boosting for various types of base learners
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>,
@@ -174,18 +177,19 @@ be relatively insensitive to the choice of
 As with most gradient boosting algorithms, it is generally advisable to
 set a small learning rate <code>nu</code> and use cross-validation to
 select the number of iterations <code>mstop</code>; however, the
-computational cost of a large <code>mstop</code> can be quite large.
-Another computational consideration is the computation of the smoothed
-C-index estimate and its gradient, both of which involve a double sum.
-We allow the user to subsample observations for the boosting procedure,
-using the <code>subsample_n</code> parameter, which can greatly decrease
-computation time without a substantial loss of performance.</p>
+computational cost of a large <code>mstop</code> can be quite large.</p>
+<p>Another computational consideration is the calculation of the
+smoothed C-index estimate and its gradient, both of which involve a
+double sum. We allow the user to subsample observations for the boosting
+procedure, using the <code>subsample_n</code> parameter, which can
+greatly decrease computation time without a substantial loss in
+performance.</p>
 </div>
 <div class="section level2">
 <h2 id="example-predicting-recurrence-free-survival-time-in-cancer-patients">Example: Predicting recurrence-free survival time in cancer
 patients<a class="anchor" aria-label="anchor" href="#example-predicting-recurrence-free-survival-time-in-cancer-patients"></a>
 </h2>
-<p>As in the variable importance <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+<p>As in the variable importance <a href="https://cwolock.github.io/survML/articles/v2_variable_importance.html">overview
 vignette</a>, we consider the importance of various features for
 predicting recurrence-free survival time using the <code>gbsg</code>
 dataset from the <code>survival</code> package. For illustration, we
@@ -220,37 +224,27 @@ vector.</p>
 <span><span class="va">X_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span></span>
 <span><span class="va">tum_index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">X_names</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"size"</span>, <span class="st">"nodes"</span>, <span class="st">"pgr"</span>, <span class="st">"er"</span>, <span class="st">"tumgrad2"</span>, <span class="st">"tumgrad3"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>We again use the <code><a href="../reference/vim.html">vim()</a></code> function. Compared to estimating
-time-varying AUC variable importance, as in the <a href="https://cwolock.github.io/survML/articles/variable_importance.html">overview
+time-varying AUC importance, as in the <a href="https://cwolock.github.io/survML/articles/v2_variable_importance.html">overview
 vignette</a>, there are several key differences to keep in mind.</p>
 <p>First, the C-index predictiveness measure does not involve a
 <code>landmark_time</code>, so this argument is no longer relevant.
-However, in order to ensure that the C-index is identifiable under right
-censoring (that is, does not rely on us being able to estimate the
-conditional survival function
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>t</mi><mo>∣</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">S(t \mid x)</annotation></semantics></math>
-of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>T</mi><annotation encoding="application/x-tex">T</annotation></semantics></math>
-given
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">X = x</annotation></semantics></math>
-at times
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
-where nearly all individuals with covariate value
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>=</mo><mi>x</mi></mrow><annotation encoding="application/x-tex">X = x</annotation></semantics></math>
-are censored), we must choose a <code>restriction_time</code>. This is
-the value
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+However, in order to ensure that the C-index is identified under right
+censoring, we must choose a <code>restriction_time</code>. In essence,
+this is the value
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>
 for which events that occur after
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
-are not considered. There is not a data-driven way to select
-<code>restriction_time</code>, but simulations have shown that values of
-<code>restriction_time</code> for which ~10% of individuals are still
-at-risk for experiencing an event perform reasonably well. We choose
-2000 days for the <code>restriction_time</code> in this example.</p>
-<p>Second, the nuisance estimation procedure is slightly different for
-C-index, since the large and small oracle prediction functions are no
-longer estimated using <code><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner()</a></code>, but rather the
-gradient boosting procedure described above. The control parameters
-relevant to gradient boosting are instead:</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>τ</mi><annotation encoding="application/x-tex">\tau</annotation></semantics></math>
+are not considered in computing the C-index. There is not a data-driven
+way to select the <code>restriction_time</code>, but simulations have
+shown that values of <code>restriction_time</code> for which ~10% of
+individuals are still at-risk for experiencing an event perform
+reasonably well. We choose 2000 days for the
+<code>restriction_time</code> in this example.</p>
+<p>Second, the procedure for estimating nuisance parameters is slightly
+different for the C-index, since the large and small oracle prediction
+functions are no longer estimated using <code><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner()</a></code>, but
+rather the gradient boosting procedure described above. The control
+parameters relevant to gradient boosting are instead:</p>
 <ul>
 <li>
 <code>V</code>: Number of folds for cross-validation selection of
@@ -261,15 +255,15 @@ or simply use the (single) user-provided value of each parameter without
 tuning.</li>
 <li>
 <code>subsample_n</code>: Size of subsample for computation of
-boosting objective and gradient. Subsampling proportions of 1/4, 1/3,
-and 1/2 all perform well in simulation, with somewhat larger bias and
-variance for smaller subsample proportions at smaller overall sample
-sizes.</li>
+boosting objective function and gradient. Subsampling proportions of
+1/4, 1/3, and 1/2 all perform well in simulations, with somewhat larger
+bias and variance for smaller subsample proportions at smaller overall
+sample sizes.</li>
 <li>
-<code>boosting_params</code>: List of parameters for the actual
-gradient boosting procedure, including <code>mstop</code>,
+<code>boosting_params</code>: Named list of parameters for the
+actual gradient boosting procedure, including <code>mstop</code>,
 <code>nu</code>, <code>sigma</code>, and <code>learner</code> (which
-base learner from <code>mboost</code> to use, options are
+base learner from <code>mboost</code> to use; options are
 <code>glm</code>, <code>gam</code>, and <code>tree</code>).</li>
 </ul>
 <p>Note that we provide multiple values of <code>mstop</code> and set
@@ -310,11 +304,13 @@ estimated optimal <code>mstop</code> among the two provided values.</p>
 <span>              scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
+<span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt;   restriction_time       est  var_est        cil       ciu cil_1sided  p</span></span>
-<span><span class="co">#&gt; 1             2000 0.1238791 1.131292 0.04428633 0.2034718 0.05708274 NA</span></span>
+<span><span class="co">#&gt;   restriction_time        est   var_est        cil       ciu cil_1sided  p</span></span>
+<span><span class="co">#&gt; 1             2000 0.09958167 0.5763206 0.04277254 0.1563908 0.05190595 NA</span></span>
 <span><span class="co">#&gt;   large_predictiveness small_predictiveness     vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.6537301            0.5298511 C-index    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 1            0.6343642            0.5347826 C-index    1,2,3,4,5,6,7,8,9</span></span>
 <span><span class="co">#&gt;   small_feature_vector</span></span>
 <span><span class="co">#&gt; 1                1,2,7</span></span></code></pre></div>
 </div>
