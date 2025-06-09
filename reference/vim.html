@@ -116,7 +116,9 @@ landmark times at which to estimate VIM (<code>"accuracy"</code>, <code>"AUC"</c
 
 
 <dt id="arg-restriction-time">restriction_time<a class="anchor" aria-label="anchor" href="#arg-restriction-time"></a></dt>
-<dd><p>Maximum follow-up time for calculation of <code>"C-index"</code> and <code>"survival_time_MSE"</code>.</p></dd>
+<dd><p>Maximum follow-up time for calculation of <code>"C-index"</code> and <code>"survival_time_MSE"</code>. Essentially, this time
+should be chosen such that the conditional survival function is identified at this time for all covariate values <code>X</code> present in the data.
+Choosing the restriction time such that roughly 10% of individuals remain at-risk at that time has been shown to work reasonably well in simulations.</p></dd>
 
 
 <dt id="arg-approx-times">approx_times<a class="anchor" aria-label="anchor" href="#arg-approx-times"></a></dt>
@@ -135,8 +137,9 @@ subset of <code>large_feature_vector</code>.</p></dd>
 
 <dt id="arg-conditional-surv-generator">conditional_surv_generator<a class="anchor" aria-label="anchor" href="#arg-conditional-surv-generator"></a></dt>
 <dd><p>A function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
-(<code>time</code>, <code>event</code>, <code>X</code>) (for training purposes) and (<code>X_holdout</code> and <code>newtimes</code>) (covariate values and times at which to generate predictions). Defaults to a
-pre-built generator function based on the <a href="stackG.html">stackG</a> function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to <code>conditional_surv_preds</code> in lieu of this argument.</p></dd>
+(<code>time</code>, <code>event</code>, <code>X</code>) (for training purposes) and (<code>X_holdout</code> and <code>newtimes</code>) (covariate values and times at which to generate predictions). Defaults to <a href="generate_nuisance_predictions_stackG.html">generate_nuisance_predictions_stackG</a>, a pre-built generator function based on the <a href="stackG.html">stackG</a> function.
+Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to
+<code>conditional_surv_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-conditional-surv-generator-control">conditional_surv_generator_control<a class="anchor" aria-label="anchor" href="#arg-conditional-surv-generator-control"></a></dt>
@@ -144,9 +147,12 @@ pre-built generator function based on the <a href="stackG.html">stackG</a> funct
 
 
 <dt id="arg-large-oracle-generator">large_oracle_generator<a class="anchor" aria-label="anchor" href="#arg-large-oracle-generator"></a></dt>
-<dd><p>A function to estimate the oracle prediction function using <code>large_feature_vector</code>. Must take arguments
-<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>large_oracle_preds</code> in lieu of this argument.</p></dd>
+<dd><p>A function to estimate the oracle prediction function using <code>large_feature_vector</code>.
+Must take arguments <code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>.
+For all VIM types except for <code>"C-index"</code>, defaults to <a href="generate_oracle_predictions_DR.html">generate_oracle_predictions_DR</a>, a pre-built generator
+function using doubly-robust pseudo-outcome regression. For <code>"C-index"</code>, defaults
+to <a href="generate_oracle_predictions_boost.html">generate_oracle_predictions_boost</a>, a pre-built generator function using doubly-robust gradient boosting.
+Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>large_oracle_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-large-oracle-generator-control">large_oracle_generator_control<a class="anchor" aria-label="anchor" href="#arg-large-oracle-generator-control"></a></dt>
@@ -155,8 +161,10 @@ doubly-robust pseudo-outcome regression, which we strongly recommend. Alternativ
 
 <dt id="arg-small-oracle-generator">small_oracle_generator<a class="anchor" aria-label="anchor" href="#arg-small-oracle-generator"></a></dt>
 <dd><p>A function to estimate the oracle prediction function using <code>small_feature_vector</code>. Must take arguments
-<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>small_oracle_preds</code> in lieu of this argument.</p></dd>
+<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. For all VIM types except for <code>"C-index"</code>, defaults to
+<a href="generate_oracle_predictions_SL.html">generate_oracle_predictions_SL</a>, a pre-built generator function based on regression the large oracle predictions on the small feature vector.
+For <code>"C-index"</code>, defaults to <a href="generate_oracle_predictions_boost.html">generate_oracle_predictions_boost</a>, a pre-built generator function using doubly-robust gradient boosting.
+Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>small_oracle_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-small-oracle-generator-control">small_oracle_generator_control<a class="anchor" aria-label="anchor" href="#arg-small-oracle-generator-control"></a></dt>
@@ -249,7 +257,7 @@ is meant for illustration purposes only — it should be left as <code>TRUE</cod
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
-    <p>Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
+    <p>Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2025).
 "Assessing variable importance in survival analysis using machine learning."</p>
     </div>
     <div class="section level2">

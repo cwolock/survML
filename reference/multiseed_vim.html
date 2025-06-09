@@ -82,20 +82,28 @@ mitigating the additional randomness introduced by sample-splitting and cross-fi
 
 
 <dl><dt id="arg-n-seed">n_seed<a class="anchor" aria-label="anchor" href="#arg-n-seed"></a></dt>
-<dd><p>Number of iterations (seeds) to perform the VIM estimation procedure. These will be aggregated into a single result.</p></dd>
+<dd><p>Number of iterations (seeds) to perform the VIM estimation procedure.
+These will be aggregated into a single result.</p></dd>
 
 
 <dt id="arg-agg-method">agg_method<a class="anchor" aria-label="anchor" href="#arg-agg-method"></a></dt>
-<dd><p>P-value aggregation method use to combine results from different seeds. Current options are <code>"bonferroni"</code> (Bonferroni's method),
-<code>"hommel"</code> (Hommel's method), <code>"arithmetic"</code> (arithmetic mean), <code>"geometric"</code> (geometric mean), <code>"harmonic"</code> (harmonic mean),
-<code>"compound_bg"</code> (compound Bonferroni and geometric mean), and <code>"compound_ba"</code> (compound Bonferroni and arithmetic mean). These approaches
-are discussed at length in Vovk and Wang (2020). Defaults to <code>"compound_bg"</code>, which has been shown to work well in many settings.</p></dd>
+<dd><p>P-value aggregation method use to combine results from different seeds.
+Current options are <code>"bonferroni"</code> (Bonferroni's method),
+<code>"hommel"</code> (Hommel's method), <code>"arithmetic"</code> (arithmetic mean), <code>"geometric"</code>
+(geometric mean), <code>"harmonic"</code> (harmonic mean),
+<code>"compound_bg"</code> (compound Bonferroni and geometric mean), and <code>"compound_ba"</code>
+(compound Bonferroni and arithmetic mean). These approaches
+are discussed at length in Vovk and Wang (2020). Defaults to <code>"compound_bg"</code>,
+which has been shown to work well in many settings.</p></dd>
 
 
 <dt id="arg-ci-grid">ci_grid<a class="anchor" aria-label="anchor" href="#arg-ci-grid"></a></dt>
-<dd><p>Grid of VIM values over which to construct a confidence interval by inverting a hypothesis test. The aggregation works by constructing
-hypothesis tests (at level <code>alpha</code>) of the null corresponding to each value in <code>ci_grid</code>, and then inverting these tests to yield a
-1 - <code>alpha</code> confidence interval. For example, for <code>"AUC"</code> importance, the VIM takes values in (0,1), so a grid of values between 0 and 1
+<dd><p>Grid of VIM values over which to construct a confidence interval by
+inverting a hypothesis test. The aggregation works by constructing
+hypothesis tests (at level <code>alpha</code>) of the null corresponding to each value in
+<code>ci_grid</code>, and then inverting these tests to yield a
+1 - <code>alpha</code> confidence interval. For example, for <code>"AUC"</code> importance, the VIM takes
+values in (0,1), so a grid of values between 0 and 1
 would be a reasonable choice.</p></dd>
 
 
@@ -125,7 +133,9 @@ landmark times at which to estimate VIM (<code>"accuracy"</code>, <code>"AUC"</c
 
 
 <dt id="arg-restriction-time">restriction_time<a class="anchor" aria-label="anchor" href="#arg-restriction-time"></a></dt>
-<dd><p>Maximum follow-up time for calculation of <code>"C-index"</code> and <code>"survival_time_MSE"</code>.</p></dd>
+<dd><p>Maximum follow-up time for calculation of <code>"C-index"</code> and <code>"survival_time_MSE"</code>. Essentially, this time
+should be chosen such that the conditional survival function is identified at this time for all covariate values <code>X</code> present in the data.
+Choosing the restriction time such that roughly 10% of individuals remain at-risk at that time has been shown to work reasonably well in simulations.</p></dd>
 
 
 <dt id="arg-approx-times">approx_times<a class="anchor" aria-label="anchor" href="#arg-approx-times"></a></dt>
@@ -144,8 +154,9 @@ subset of <code>large_feature_vector</code>.</p></dd>
 
 <dt id="arg-conditional-surv-generator">conditional_surv_generator<a class="anchor" aria-label="anchor" href="#arg-conditional-surv-generator"></a></dt>
 <dd><p>A function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
-(<code>time</code>, <code>event</code>, <code>X</code>) (for training purposes) and (<code>X_holdout</code> and <code>newtimes</code>) (covariate values and times at which to generate predictions). Defaults to a
-pre-built generator function based on the <a href="stackG.html">stackG</a> function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to <code>conditional_surv_preds</code> in lieu of this argument.</p></dd>
+(<code>time</code>, <code>event</code>, <code>X</code>) (for training purposes) and (<code>X_holdout</code> and <code>newtimes</code>) (covariate values and times at which to generate predictions). Defaults to <a href="generate_nuisance_predictions_stackG.html">generate_nuisance_predictions_stackG</a>, a pre-built generator function based on the <a href="stackG.html">stackG</a> function.
+Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to
+<code>conditional_surv_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-conditional-surv-generator-control">conditional_surv_generator_control<a class="anchor" aria-label="anchor" href="#arg-conditional-surv-generator-control"></a></dt>
@@ -153,9 +164,12 @@ pre-built generator function based on the <a href="stackG.html">stackG</a> funct
 
 
 <dt id="arg-large-oracle-generator">large_oracle_generator<a class="anchor" aria-label="anchor" href="#arg-large-oracle-generator"></a></dt>
-<dd><p>A function to estimate the oracle prediction function using <code>large_feature_vector</code>. Must take arguments
-<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>large_oracle_preds</code> in lieu of this argument.</p></dd>
+<dd><p>A function to estimate the oracle prediction function using <code>large_feature_vector</code>.
+Must take arguments <code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>.
+For all VIM types except for <code>"C-index"</code>, defaults to <a href="generate_oracle_predictions_DR.html">generate_oracle_predictions_DR</a>, a pre-built generator
+function using doubly-robust pseudo-outcome regression. For <code>"C-index"</code>, defaults
+to <a href="generate_oracle_predictions_boost.html">generate_oracle_predictions_boost</a>, a pre-built generator function using doubly-robust gradient boosting.
+Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>large_oracle_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-large-oracle-generator-control">large_oracle_generator_control<a class="anchor" aria-label="anchor" href="#arg-large-oracle-generator-control"></a></dt>
@@ -164,8 +178,10 @@ doubly-robust pseudo-outcome regression, which we strongly recommend. Alternativ
 
 <dt id="arg-small-oracle-generator">small_oracle_generator<a class="anchor" aria-label="anchor" href="#arg-small-oracle-generator"></a></dt>
 <dd><p>A function to estimate the oracle prediction function using <code>small_feature_vector</code>. Must take arguments
-<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>small_oracle_preds</code> in lieu of this argument.</p></dd>
+<code>time</code>, <code>event</code>, <code>X</code>, <code>X_holdout</code>, and <code>nuisance_preds</code>. For all VIM types except for <code>"C-index"</code>, defaults to
+<a href="generate_oracle_predictions_SL.html">generate_oracle_predictions_SL</a>, a pre-built generator function based on regression the large oracle predictions on the small feature vector.
+For <code>"C-index"</code>, defaults to <a href="generate_oracle_predictions_boost.html">generate_oracle_predictions_boost</a>, a pre-built generator function using doubly-robust gradient boosting.
+Alternatively, the user can provide their own function, or provide pre-computed estimates to <code>small_oracle_preds</code> in lieu of this argument.</p></dd>
 
 
 <dt id="arg-small-oracle-generator-control">small_oracle_generator_control<a class="anchor" aria-label="anchor" href="#arg-small-oracle-generator-control"></a></dt>
@@ -215,7 +231,7 @@ doubly-robust pseudo-outcome regression, which we strongly recommend. Alternativ
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Vovk V. and Wang R. (2020). "Combining p-values via averaging."</p>
-<p>Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
+<p>Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2025).
 "Assessing variable importance in survival analysis using machine learning."</p>
     </div>
     <div class="section level2">

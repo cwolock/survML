@@ -303,18 +303,18 @@ estimated optimal <code>mstop</code> among the two provided values.</p>
 <span>                                                                           nu <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>                                                                           sigma <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>                                                                           learner <span class="op">=</span> <span class="st">"glm"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>              <span class="co"># approx_times = sort(unique(stats::quantile(time[event == 1 &amp; time &lt;= 2000],</span></span>
-<span>                                                         <span class="co"># probs = seq(0, 1, by = 0.025)))),</span></span>
+<span>              approx_times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">time</span> <span class="op">&lt;=</span> <span class="fl">2000</span><span class="op">]</span>,</span>
+<span>                                                         probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>              cf_fold_num <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>              sample_split <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>              scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="co">#&gt; Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt;   restriction_time       est  var_est       cil       ciu cil_1sided  p</span></span>
-<span><span class="co">#&gt; 1             2000 0.1255704 1.344574 0.0387987 0.2123422  0.0527493 NA</span></span>
+<span><span class="co">#&gt;   restriction_time       est  var_est        cil       ciu cil_1sided  p</span></span>
+<span><span class="co">#&gt; 1             2000 0.1238791 1.131292 0.04428633 0.2034718 0.05708274 NA</span></span>
 <span><span class="co">#&gt;   large_predictiveness small_predictiveness     vim large_feature_vector</span></span>
-<span><span class="co">#&gt; 1            0.6558075             0.530237 C-index    1,2,3,4,5,6,7,8,9</span></span>
+<span><span class="co">#&gt; 1            0.6537301            0.5298511 C-index    1,2,3,4,5,6,7,8,9</span></span>
 <span><span class="co">#&gt;   small_feature_vector</span></span>
 <span><span class="co">#&gt; 1                1,2,7</span></span></code></pre></div>
 </div>

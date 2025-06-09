@@ -310,8 +310,8 @@ versus the multiseed approach with 3 seeds.</p>
 <span>                                                           V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                     small_oracle_generator_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>SL.library <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.mean"</span>, <span class="st">"SL.glm"</span><span class="op">)</span>,</span>
 <span>                                                           V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
-<span>                     <span class="co"># approx_times = sort(unique(stats::quantile(time[event == 1 &amp; time &lt;= max(landmark_times)],</span></span>
-<span>                                                                <span class="co"># probs = seq(0, 1, by = 0.025)))),</span></span>
+<span>                     approx_times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">time</span><span class="op">[</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">time</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">landmark_times</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                                                                probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.025</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                     cf_fold_num <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>                     sample_split <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                     scale_est <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -322,11 +322,11 @@ versus the multiseed approach with 3 seeds.</p>
 <span></span>
 <span><span class="va">output_single</span><span class="op">$</span><span class="va">result</span></span>
 <span><span class="co">#&gt;   landmark_time       est   var_est        cil       ciu cil_1sided</span></span>
-<span><span class="co">#&gt; 1          1000 0.1362990 0.5691944 0.05645701 0.2161410 0.06929349</span></span>
-<span><span class="co">#&gt; 2          2000 0.1627628 7.5630270 0.00000000 0.4538002 0.00000000</span></span>
+<span><span class="co">#&gt; 1          1000 0.1359657 0.5664234 0.05631826 0.2156131 0.06912345</span></span>
+<span><span class="co">#&gt; 2          2000 0.1122529 4.3468465 0.00000000 0.3328949 0.00000000</span></span>
 <span><span class="co">#&gt;              p large_predictiveness small_predictiveness vim</span></span>
-<span><span class="co">#&gt; 1 0.0004101201            0.7065838            0.5702848 AUC</span></span>
-<span><span class="co">#&gt; 2 0.1365152189            0.6900935            0.5273308 AUC</span></span>
+<span><span class="co">#&gt; 1 0.0004101625            0.7058833            0.5699176 AUC</span></span>
+<span><span class="co">#&gt; 2 0.1593475111            0.6677483            0.5554954 AUC</span></span>
 <span><span class="co">#&gt;   large_feature_vector small_feature_vector</span></span>
 <span><span class="co">#&gt; 1    1,2,3,4,5,6,7,8,9                1,2,7</span></span>
 <span><span class="co">#&gt; 2    1,2,3,4,5,6,7,8,9                1,2,7</span></span>

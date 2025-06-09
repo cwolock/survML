@@ -12,10 +12,15 @@
 <url><loc>https://cwolock.github.io/survML/news/index.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/DR_pseudo_outcome_regression.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/aggregate_vim.html</loc></url>
+<url><loc>https://cwolock.github.io/survML/reference/boost_c_index.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/crossfit_oracle_preds.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/crossfit_surv_preds.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/currstatCIR.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/generate_folds.html</loc></url>
+<url><loc>https://cwolock.github.io/survML/reference/generate_nuisance_predictions_stackG.html</loc></url>
+<url><loc>https://cwolock.github.io/survML/reference/generate_oracle_predictions_DR.html</loc></url>
+<url><loc>https://cwolock.github.io/survML/reference/generate_oracle_predictions_SL.html</loc></url>
+<url><loc>https://cwolock.github.io/survML/reference/generate_oracle_predictions_boost.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/index.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/multiseed_vim.html</loc></url>
 <url><loc>https://cwolock.github.io/survML/reference/predict.stackG.html</loc></url>
