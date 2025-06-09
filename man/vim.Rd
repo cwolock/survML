@@ -49,7 +49,9 @@ whether an event was observed.}
 \item{landmark_times}{Numeric vector of length J1 giving
 landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).}
 
-\item{restriction_time}{Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}.}
+\item{restriction_time}{Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}. Essentially, this time
+should be chosen such that the conditional survival function is identified at this time for all covariate values \code{X} present in the data.
+Choosing the restriction time such that roughly 10\% of individuals remain at-risk at that time has been shown to work reasonably well in simulations.}
 
 \item{approx_times}{Numeric vector of length J2 giving times at which to
 approximate integrals. Defaults to a grid of 100 timepoints, evenly spaced on the quantile scale of the distribution of observed event times.}
@@ -60,20 +62,26 @@ approximate integrals. Defaults to a grid of 100 timepoints, evenly spaced on th
 subset of \code{large_feature_vector}.}
 
 \item{conditional_surv_generator}{A function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
-(\code{time}, \code{event}, \code{X}) (for training purposes) and (\code{X_holdout} and \code{newtimes}) (covariate values and times at which to generate predictions). Defaults to a
-pre-built generator function based on the \link{stackG} function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to \code{conditional_surv_preds} in lieu of this argument.}
+(\code{time}, \code{event}, \code{X}) (for training purposes) and (\code{X_holdout} and \code{newtimes}) (covariate values and times at which to generate predictions). Defaults to \link{generate_nuisance_predictions_stackG}, a pre-built generator function based on the \link{stackG} function.
+Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to
+\code{conditional_surv_preds} in lieu of this argument.}
 
 \item{conditional_surv_generator_control}{A list of arguments to pass to \code{conditional_surv_generator}.}
 
-\item{large_oracle_generator}{A function to estimate the oracle prediction function using \code{large_feature_vector}. Must take arguments
-\code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}. Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{large_oracle_preds} in lieu of this argument.}
+\item{large_oracle_generator}{A function to estimate the oracle prediction function using \code{large_feature_vector}.
+Must take arguments \code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}.
+For all VIM types except for \code{"C-index"}, defaults to \link{generate_oracle_predictions_DR}, a pre-built generator
+function using doubly-robust pseudo-outcome regression. For \code{"C-index"}, defaults
+to \link{generate_oracle_predictions_boost}, a pre-built generator function using doubly-robust gradient boosting.
+Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{large_oracle_preds} in lieu of this argument.}
 
 \item{large_oracle_generator_control}{A list of arguments to pass to \code{large_oracle_generator}.}
 
 \item{small_oracle_generator}{A function to estimate the oracle prediction function using \code{small_feature_vector}. Must take arguments
-\code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}. Defaults to a pre-built generator function using
-doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{small_oracle_preds} in lieu of this argument.}
+\code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}. For all VIM types except for \code{"C-index"}, defaults to
+\link{generate_oracle_predictions_SL}, a pre-built generator function based on regression the large oracle predictions on the small feature vector.
+For \code{"C-index"}, defaults to \link{generate_oracle_predictions_boost}, a pre-built generator function using doubly-robust gradient boosting.
+Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{small_oracle_preds} in lieu of this argument.}
 
 \item{small_oracle_generator_control}{A list of arguments to pass to \code{small_oracle_generator}.}
 
@@ -166,7 +174,7 @@ print(output$result)
 
 }
 \references{
-Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
+Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2025).
 "Assessing variable importance in survival analysis using machine learning."
 }
 \seealso{

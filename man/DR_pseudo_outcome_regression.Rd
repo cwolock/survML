@@ -2,7 +2,7 @@
 % Please edit documentation in R/DR_pseudo_outcome_regression.R
 \name{DR_pseudo_outcome_regression}
 \alias{DR_pseudo_outcome_regression}
-\title{Generate oracle prediction function estimates using doubly-robust pseudo-outcome regression with SuperLearner}
+\title{Doubly-robust pseudo-outcome regression}
 \usage{
 DR_pseudo_outcome_regression(
   time,
@@ -39,7 +39,9 @@ approximate integral appearing in the pseudo-outcomes}
 
 \item{G_hat}{\code{n x J2} matrix of conditional censoring time survival function estimates}
 
-\item{newtimes}{Numeric vector of times at which to generate oracle prediction function estimates}
+\item{newtimes}{Numeric vector of times at which to generate oracle prediction function estimates. For outcome \code{"survival_probability"},
+this is the times at which the survival function is to be estimated. For outcome \code{"restricted_survival_time"}, this is simply the restriction
+time.}
 
 \item{outcome}{Outcome type, either \code{"survival_probability"} or \code{"restricted_survival_time"}}
 
@@ -48,8 +50,57 @@ approximate integral appearing in the pseudo-outcomes}
 \item{V}{Number of cross-validation folds, to be passed to \code{SuperLearner}}
 }
 \value{
-Matrix of predictions.
+Matrix of predictions corresponding to \code{newX} and \code{newtimes}.
 }
 \description{
-Generate oracle prediction function estimates using doubly-robust pseudo-outcome regression with SuperLearner
+Generate estimates of conditional survival probability or conditional restrcited mean survival time
+using doubly-robust pseudo-outcome regression with SuperLearner
+}
+\examples{
+# This is a small simulation example
+set.seed(123)
+n <- 250
+X <- data.frame(X1 = rnorm(n), X2 = rbinom(n, size = 1, prob = 0.5))
+
+T <- rexp(n, rate = exp(-2 + X[,1] - X[,2] + .5 *  X[,1] * X[,2]))
+C <- rexp(n, exp(-2 -.5 * X[,1] - .25 * X[,2] + .5 * X[,1] * X[,2]))
+C[C > 15] <- 15
+
+time <- pmin(T, C)
+event <- as.numeric(T <= C)
+
+# Note that this a very small Super Learner library, for computational purposes.
+SL.library <- c("SL.mean", "SL.glm")
+
+approx_times <- c(0, sort(unique(time)))
+
+# estimate conditional survival functions at approx_times
+fit <- stackG(time = time,
+              event = event,
+              X = X,
+              newX = X,
+              newtimes = approx_times,
+              direction = "prospective",
+              bin_size = 0.1,
+              time_basis = "continuous",
+              surv_form = "PI",
+              learner = "SuperLearner",
+              time_grid_approx = approx_times,
+              SL_control = list(SL.library = SL.library,
+                                V = 3))
+
+# use DR pseudo-outcome regression to (robustly) estimate survival at t = 5
+DR_preds <- DR_pseudo_outcome_regression(time = time,
+                                        event = event,
+                                        X = X,
+                                        newX = X,
+                                        newtimes = 5,
+                                        approx_times = approx_times,
+                                        S_hat = fit$S_T_preds,
+                                        G_hat = fit$S_C_preds,
+                                        outcome = "survival_probability",
+                                        SL.library = SL.library,
+                                        V = 3)
+DR_preds
+
 }

@@ -1,6 +1,35 @@
-#' Estimate nuisances using stackG
+#' Estimate conditional survival function nuisance parameters using survival stacking
 #'
-#' @noRd
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times. If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' @param X_holdout \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param approx_times Numeric vector of times at which to
+#' approximate product integral or cumulative hazard interval. See [stackG] documentation.
+#' @param SL.library Super Learner library
+#' @param V Number of cross-validation folds, to be passed to \code{SuperLearner}
+#' @param newtimes \code{k x 1} numeric vector of times at which to obtain \code{k}
+#' predicted conditional survivals.
+#' @param bin_size Size of time bin on which to discretize for estimation
+#' of cumulative probability functions. Can be a number between 0 and 1,
+#' indicating the size of quantile grid (e.g. \code{0.1} estimates
+#' the cumulative probability functions on a grid based on deciles of
+#' observed \code{time}s). If \code{NULL}, creates a grid of
+#' all observed \code{time}s. See [stackG] documentation.
+#'
+#' @return A list containing elements \code{S_hat} (conditional event survival function, corresponding to \code{X_holdout} and \code{newtimes}),
+#' \code{S_hat_train} (conditional event survival function, corresponding to \code{X} and \code{newtimes}),
+#' \code{G_hat} (conditional censoring survival function, corresponding to \code{X_holdout} and \code{newtimes}),
+#' and \code{G_hat_train} (conditional censoring survival function, corresponding to \code{X} and \code{newtimes})
+#'
+#' @seealso [stackG]
+#'
+#' @export
 generate_nuisance_predictions_stackG <- function(time,
                                                  event,
                                                  X,
@@ -32,9 +61,39 @@ generate_nuisance_predictions_stackG <- function(time,
               G_hat_train = G_hat_train))
 }
 
-#' Estimate residual oracle prediction function using SL regression
+#' Estimate small oracle prediction function using Super Learner regression
 #'
-#' @noRd
+#' When the oracle prediction function is a conditional mean, the small oracle prediction function can be estimated by
+#' regressing the large oracle prediction function on the small feature vector. This function performs this regression using
+#' Super Learner.
+#'
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times. If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' @param X_holdout \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param approx_times Numeric vector of length J2 giving times at which to
+#' approximate integral appearing in the pseudo-outcomes
+#' @param landmark_times Numeric vector of length J1 giving
+#' landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).
+#' @param restriction_time Maximum follow-up time for calculation of \code{"survival_time_MSE"}. Essentially, this time
+#' should be chosen such that the conditional survival function is identified at this time for all covariate values \code{X} present in the data.
+#' Choosing the restriction time such that roughly 10% of individuals remain at-risk at that time has been shown to work reasonably well in simulations.
+#' @param nuisance_preds Named list of conditional survival function predictions with elements \code{"S_hat"}, \code{"S_hat_train"},
+#' \code{"G_hat"}, and \code{"G_hat_train"}. This should match the output of \code{conditional_surv_generator}.
+#' @param outcome Outcome type, either \code{"survival_probability"} or \code{"restricted_survival_time"}
+#' @param SL.library Super Learner library
+#' @param V Number of cross-validation folds, to be passed to \code{SuperLearner}
+#' @param indx Numeric index of column(s) of \code{X} to be removed, i.e., not used in the oracle prediction function.
+#'
+#' @return A list containing elements \code{f0_hat} and \code{f0_hat_train}, the estimated small oracle prediction functions for
+#' \code{X_holdout} and \code{X}, respectively.
+#'
+#' @export
 generate_oracle_predictions_SL <- function(time,
                                            event,
                                            X,
@@ -114,7 +173,35 @@ generate_oracle_predictions_SL <- function(time,
 
 #' Estimate full oracle prediction function using DR pseudo-outcome regression
 #'
-#' @noRd
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times. If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' @param X_holdout \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param approx_times Numeric vector of length J2 giving times at which to
+#' approximate integral appearing in the pseudo-outcomes
+#' @param landmark_times Numeric vector of length J1 giving
+#' landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).
+#' @param restriction_time Maximum follow-up time for calculation of \code{"survival_time_MSE"}. Essentially, this time
+#' should be chosen such that the conditional survival function is identified at this time for all covariate values \code{X} present in the data.
+#' Choosing the restriction time such that roughly 10% of individuals remain at-risk at that time has been shown to work reasonably well in simulations.
+#' @param nuisance_preds Named list of conditional survival function predictions with elements \code{"S_hat"}, \code{"S_hat_train"},
+#' \code{"G_hat"}, and \code{"G_hat_train"}. This should match the output of \code{conditional_surv_generator}.
+#' @param outcome Outcome type, either \code{"survival_probability"} or \code{"restricted_survival_time"}
+#' @param SL.library Super Learner library
+#' @param V Number of cross-validation folds, to be passed to \code{SuperLearner}
+#' @param indx Numeric index of column(s) of \code{X} to be removed, i.e., not used in the oracle prediction function.
+#'
+#' @return A list containing elements \code{f0_hat} and \code{f0_hat_train}, the estimated oracle prediction functions for
+#' \code{X_holdout} and \code{X}, respectively.
+#'
+#' @seealso [DR_pseudo_outcome_regression]
+#'
+#' @export
 generate_oracle_predictions_DR <- function(time,
                                            event,
                                            X,
@@ -175,7 +262,37 @@ generate_oracle_predictions_DR <- function(time,
 
 #' Estimate oracle prediction function using DR gradient boosting
 #'
-#' @noRd
+#' @param time \code{n x 1} numeric vector of observed
+#' follow-up times. If there is censoring, these are the minimum of the
+#' event and censoring times.
+#' @param event \code{n x 1} numeric vector of status indicators of
+#' whether an event was observed.
+#' @param X \code{n x p} data.frame of observed covariate values
+#' @param X_holdout \code{m x p} data.frame of new observed covariate
+#' values at which to obtain \code{m} predictions for the estimated algorithm.
+#' Must have the same names and structure as \code{X}.
+#' @param approx_times Numeric vector of length J2 giving times at which to
+#' approximate C-index integral.
+#' @param restriction_time Maximum follow-up time for calculation of the C-index.
+#' Essentially, this time should be chosen such that the conditional survival function is identified at
+#' this time for all covariate values \code{X} present in the data. Choosing the restriction time such that roughly 10% of individuals remain at-risk
+#' at that time has been shown to work reasonably well in simulations.
+#' @param nuisance_preds Named list of conditional survival function predictions with elements \code{"S_hat"}, \code{"S_hat_train"},
+#' \code{"G_hat"}, and \code{"G_hat_train"}. This should match the output of \code{conditional_surv_generator}.
+#' @param V Number of cross-validation folds for selection of tuning parameters
+#' @param tuning Logical, whether or not to use cross-validation to select tuning parameters
+#' @param subsample_n Number of samples to use for boosting procedure. Using a subsample of the full sample can greatly reduce runtime
+#' @param boosting_params Named list of parameter values for the boosting procedure. Elements of this list include \code{mstop} (number of
+#' boosting iterations), \code{nu} (learning rate), \code{sigma} (smoothness parameter for sigmoid approximation, with smaller meaning
+#' less smoothing), and \code{learner} (base learner, can take values \code{"glm"}, \code{"gam"}, or \code{"tree"})
+#' @param indx Numeric index of column(s) of \code{X} to be removed, i.e., not used in the oracle prediction function.
+#'
+#' @return A list containing elements \code{f0_hat} and \code{f0_hat_train}, the estimated oracle prediction functions for
+#' \code{X_holdout} and \code{X}, respectively.
+#'
+#' @seealso [boost_c_index]
+#'
+#' @export
 generate_oracle_predictions_boost <- function(time,
                                               event,
                                               X,
@@ -200,6 +317,7 @@ generate_oracle_predictions_boost <- function(time,
   boost_results <- boost_c_index(time = time,
                                  event = event,
                                  X = X,
+                                 newX = rbind(X_holdout, X),
                                  S_hat = nuisance_preds$S_hat_train,
                                  G_hat = nuisance_preds$G_hat_train,
                                  approx_times = approx_times[approx_times <= restriction_time],
@@ -209,10 +327,8 @@ generate_oracle_predictions_boost <- function(time,
                                  V = V,
                                  boosting_params = boosting_params)
 
-  dtest <- data.frame(X_holdout)
-  dtrain <- data.frame(X)
-  f0_hat <- -stats::predict(boost_results$opt_model, newdata = dtest)[,1]
-  f0_hat_train <- -stats::predict(boost_results$opt_model, newdata = dtrain)[,1]
+  f0_hat <- boost_results[1:nrow(X_holdout)]
+  f0_hat_train <- boost_results[(nrow(X_holdout) + 1):length(boost_results)]
 
   return(list(f0_hat = f0_hat,
               f0_hat_train = f0_hat_train))

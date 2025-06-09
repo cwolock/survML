@@ -4,14 +4,22 @@
 #' mitigating the additional randomness introduced by sample-splitting and cross-fitting.
 #'
 #' @inheritParams vim
-#' @param n_seed Number of iterations (seeds) to perform the VIM estimation procedure. These will be aggregated into a single result.
-#' @param agg_method P-value aggregation method use to combine results from different seeds. Current options are \code{"bonferroni"} (Bonferroni's method),
-#' \code{"hommel"} (Hommel's method), \code{"arithmetic"} (arithmetic mean), \code{"geometric"} (geometric mean), \code{"harmonic"} (harmonic mean),
-#' \code{"compound_bg"} (compound Bonferroni and geometric mean), and \code{"compound_ba"} (compound Bonferroni and arithmetic mean). These approaches
-#' are discussed at length in Vovk and Wang (2020). Defaults to \code{"compound_bg"}, which has been shown to work well in many settings.
-#' @param ci_grid Grid of VIM values over which to construct a confidence interval by inverting a hypothesis test. The aggregation works by constructing
-#' hypothesis tests (at level \code{alpha}) of the null corresponding to each value in \code{ci_grid}, and then inverting these tests to yield a
-#' 1 - \code{alpha} confidence interval. For example, for \code{"AUC"} importance, the VIM takes values in (0,1), so a grid of values between 0 and 1
+#' @param n_seed Number of iterations (seeds) to perform the VIM estimation procedure.
+#' These will be aggregated into a single result.
+#' @param agg_method P-value aggregation method use to combine results from different seeds.
+#' Current options are \code{"bonferroni"} (Bonferroni's method),
+#' \code{"hommel"} (Hommel's method), \code{"arithmetic"} (arithmetic mean), \code{"geometric"}
+#' (geometric mean), \code{"harmonic"} (harmonic mean),
+#' \code{"compound_bg"} (compound Bonferroni and geometric mean), and \code{"compound_ba"}
+#' (compound Bonferroni and arithmetic mean). These approaches
+#' are discussed at length in Vovk and Wang (2020). Defaults to \code{"compound_bg"},
+#' which has been shown to work well in many settings.
+#' @param ci_grid Grid of VIM values over which to construct a confidence interval by
+#' inverting a hypothesis test. The aggregation works by constructing
+#' hypothesis tests (at level \code{alpha}) of the null corresponding to each value in
+#' \code{ci_grid}, and then inverting these tests to yield a
+#' 1 - \code{alpha} confidence interval. For example, for \code{"AUC"} importance, the VIM takes
+#' values in (0,1), so a grid of values between 0 and 1
 #' would be a reasonable choice.
 #'
 #' @return Named list with the following elements:
@@ -63,7 +71,7 @@
 #' print(output$result)
 #'
 #' @references Vovk V. and Wang R. (2020). "Combining p-values via averaging."
-#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
+#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2025).
 #'   "Assessing variable importance in survival analysis using machine learning."
 multiseed_vim <- function(n_seed,
                           agg_method = "compound_bg",

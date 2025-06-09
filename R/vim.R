@@ -15,23 +15,31 @@
 #' @param X \code{n x p} data.frame of observed covariate values
 #' @param landmark_times Numeric vector of length J1 giving
 #' landmark times at which to estimate VIM (\code{"accuracy"}, \code{"AUC"}, \code{"Brier"}, \code{"R-squared"}).
-#' @param restriction_time Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}.
+#' @param restriction_time Maximum follow-up time for calculation of \code{"C-index"} and \code{"survival_time_MSE"}. Essentially, this time
+#' should be chosen such that the conditional survival function is identified at this time for all covariate values \code{X} present in the data.
+#' Choosing the restriction time such that roughly 10% of individuals remain at-risk at that time has been shown to work reasonably well in simulations.
 #' @param approx_times Numeric vector of length J2 giving times at which to
 #' approximate integrals. Defaults to a grid of 100 timepoints, evenly spaced on the quantile scale of the distribution of observed event times.
 #' @param large_feature_vector Numeric vector giving indices of features to include in the 'large' prediction model.
 #' @param small_feature_vector Numeric vector giving indices of features to include in the 'small' prediction model. Must be a
 #' subset of \code{large_feature_vector}.
 #' @param conditional_surv_generator A function to estimate the conditional survival functions of the event and censoring variables. Must take arguments
-#' (\code{time}, \code{event}, \code{X}) (for training purposes) and (\code{X_holdout} and \code{newtimes}) (covariate values and times at which to generate predictions). Defaults to a
-#' pre-built generator function based on the [stackG] function. Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to \code{conditional_surv_preds} in lieu of this argument.
+#' (\code{time}, \code{event}, \code{X}) (for training purposes) and (\code{X_holdout} and \code{newtimes}) (covariate values and times at which to generate predictions). Defaults to [generate_nuisance_predictions_stackG], a pre-built generator function based on the [stackG] function.
+#' Alternatively, the user can provide their own function for this argument, or provide pre-computed estimates to
+#' \code{conditional_surv_preds} in lieu of this argument.
 #' @param conditional_surv_generator_control A list of arguments to pass to \code{conditional_surv_generator}.
-#' @param large_oracle_generator A function to estimate the oracle prediction function using \code{large_feature_vector}. Must take arguments
-#' \code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}. Defaults to a pre-built generator function using
-#' doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{large_oracle_preds} in lieu of this argument.
+#' @param large_oracle_generator A function to estimate the oracle prediction function using \code{large_feature_vector}.
+#' Must take arguments \code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}.
+#' For all VIM types except for \code{"C-index"}, defaults to [generate_oracle_predictions_DR], a pre-built generator
+#' function using doubly-robust pseudo-outcome regression. For \code{"C-index"}, defaults
+#' to [generate_oracle_predictions_boost], a pre-built generator function using doubly-robust gradient boosting.
+#' Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{large_oracle_preds} in lieu of this argument.
 #' @param large_oracle_generator_control A list of arguments to pass to \code{large_oracle_generator}.
 #' @param small_oracle_generator  A function to estimate the oracle prediction function using \code{small_feature_vector}. Must take arguments
-#' \code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}. Defaults to a pre-built generator function using
-#' doubly-robust pseudo-outcome regression, which we strongly recommend. Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{small_oracle_preds} in lieu of this argument.
+#' \code{time}, \code{event}, \code{X}, \code{X_holdout}, and \code{nuisance_preds}. For all VIM types except for \code{"C-index"}, defaults to
+#' [generate_oracle_predictions_SL], a pre-built generator function based on regression the large oracle predictions on the small feature vector.
+#' For \code{"C-index"}, defaults to [generate_oracle_predictions_boost], a pre-built generator function using doubly-robust gradient boosting.
+#' Alternatively, the user can provide their own function, or provide pre-computed estimates to \code{small_oracle_preds} in lieu of this argument.
 #' @param small_oracle_generator_control A list of arguments to pass to \code{small_oracle_generator}.
 #' @param conditional_surv_preds User-provided estimates of the conditional survival functions of the event and censoring
 #' variables given the full covariate vector (if not using the \code{conditional_surv_generator} functionality to compute these nuisance estimates).
@@ -106,7 +114,7 @@
 #'
 #' print(output$result)
 #'
-#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2024).
+#' @references Wolock C.J., Gilbert P.B., Simon N., and Carone, M. (2025).
 #'   "Assessing variable importance in survival analysis using machine learning."
 
 vim <- function(type,
@@ -208,34 +216,6 @@ vim <- function(type,
   if (is.null(cf_folds_nuisance)){ # if not setting to all 1s in the no xfit + sample split case, then just set equal to cf_folds
     cf_folds_nuisance <- cf_folds
   }
-
-  # if (is.null(cf_folds)){
-  #   folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = sample_split)
-  #   if (cf_fold_num > 1){
-  #     if (verbose){
-  #       print("Setting up cross-fitting and sample-splitting folds...")
-  #       if (!is.null(ss_folds)){
-  #         print("Note that user-specified sample-splitting folds will be ignored because cross-fitting has been indicated but no cross-fitting folds provided.")
-  #       }
-  #     }
-  #   } else if (cf_fold_num == 1 & sample_split & is.null(ss_folds)){
-  #     if (verbose){print("No cross-fitting indicated; setting up sample-splitting folds only...")}
-  #   } else if (cf_fold_num == 1 & sample_split & !is.null(ss_folds)){
-  #     if (verbose){print("Using user-provided folds...")}
-  #   } else if (!sample_split & cf_fold_num == 1){
-  #     if (verbose){print("No cross-fitting and no sample-splitting indicated; no folds to set up...")}
-  #   }
-  #   ss_folds <- folds$ss_folds
-  #   cf_folds <- folds$cf_folds
-  # } else if (!is.null(cf_folds) & is.null(ss_folds) & sample_split){
-  #   if (verbose){print("Setting up sample-splitting folds to accompany user-specified cross-fitting folds...")}
-  #   folds <- generate_folds(n = length(time), V = length(unique(cf_folds))/2,
-  #                           sample_split = sample_split, cf_folds = cf_folds)
-  #   ss_folds <- folds$ss_folds
-  #   cf_folds <- folds$cf_folds
-  # } else{
-  #   if (verbose){print("Using user-provided folds...")}
-  # }
 
   if (!is.null(conditional_surv_preds$S_hat) & !is.null(conditional_surv_preds$G_hat) & !is.null(conditional_surv_preds$S_hat_train) & !is.null(conditional_surv_preds$G_hat_train) & is.null(approx_times)){
     stop("If using precomputed nuisance estimates, you must provide the grid of approx_times on which they were estimated.")
