@@ -147,7 +147,7 @@ vim <- function(type,
   precomputed_SG <- FALSE
   precomputed_f <- FALSE
   precomputed_fs <- FALSE
-  cf_folds_nuisance <- NULL # cf fold identifiers for nuisance estimation will not always be equal to this for VIM estimation
+  cf_folds_nuisance <- NULL # cf fold identifiers for nuisance estimation will not always be equal to those for VIM estimation
   # since with sample splitting + no cross-fitting, you use the whole sample to estimate nuisances
 
   # Deal with folds...
@@ -380,32 +380,32 @@ vim <- function(type,
     # if user has provided pre-computed estimates, don't do this splitting
     if (!precomputed_SG){
       conditional_surv_preds_temp$S_hat <- list(conditional_surv_preds$S_hat[[1]][cf_folds == 1,],
-                                           conditional_surv_preds$S_hat[[1]][cf_folds == 2,])
+                                                conditional_surv_preds$S_hat[[1]][cf_folds == 2,])
       conditional_surv_preds_temp$S_hat_train <- list(conditional_surv_preds$S_hat[[1]],
-                                                 conditional_surv_preds$S_hat[[1]])
+                                                      conditional_surv_preds$S_hat[[1]])
       conditional_surv_preds_temp$G_hat <- list(conditional_surv_preds$G_hat[[1]][cf_folds == 1,],
-                                           conditional_surv_preds$G_hat[[1]][cf_folds == 2,])
+                                                conditional_surv_preds$G_hat[[1]][cf_folds == 2,])
       conditional_surv_preds_temp$G_hat_train <- list(conditional_surv_preds$G_hat[[1]],
-                                                 conditional_surv_preds$G_hat[[1]])
+                                                      conditional_surv_preds$G_hat[[1]])
     }
     if (!precomputed_f){
       large_oracle_preds_temp$f_hat <- list(large_oracle_preds$f_hat[[1]][cf_folds == 1,],
-                                       large_oracle_preds$f_hat[[1]][cf_folds == 2,])
+                                            large_oracle_preds$f_hat[[1]][cf_folds == 2,])
       large_oracle_preds_temp$f_hat_train <- list(large_oracle_preds$f_hat[[1]],
-                                             large_oracle_preds$f_hat[[1]])
+                                                  large_oracle_preds$f_hat[[1]])
     }
     if (!precomputed_fs){
       small_oracle_preds_temp$f_hat <- list(small_oracle_preds$f_hat[[1]][cf_folds == 1,],
-                                       small_oracle_preds$f_hat[[1]][cf_folds == 2,])
+                                            small_oracle_preds$f_hat[[1]][cf_folds == 2,])
       small_oracle_preds_temp$f_hat_train <- list(small_oracle_preds$f_hat[[1]],
-                                             small_oracle_preds$f_hat[[1]])
+                                                  small_oracle_preds$f_hat[[1]])
     }
     conditional_surv_preds <- conditional_surv_preds_temp
     large_oracle_preds <- large_oracle_preds_temp
     small_oracle_preds <- small_oracle_preds_temp
   }
 
-    if (verbose){print("Estimating variable importance...")}
+  if (verbose){print("Estimating variable importance...")}
   if (type == "AUC"){
     res <- vim_AUC(time = time,
                    event = event,
