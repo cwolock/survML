@@ -88,7 +88,9 @@ Local survival stacking is described in:
 
 ## Citation
 
-After using the `survML` package for conditional survival estimation, please cite the following:
+Citations for the various methods implemented in `survML` are given below. 
+
+For conditional survival estimation using global survival stacking, please cite the following:
 
 ```
 @article{wolock2024framework,
@@ -104,7 +106,7 @@ After using the `survML` package for conditional survival estimation, please cit
 }
 ```
 
-After using the variable importance functions, please cite the following: 
+For variable importance, please cite the following: 
 
 ```
 @article{wolock2025assessing,
@@ -121,7 +123,7 @@ After using the variable importance functions, please cite the following:
 
 ```
 
-After using the functionality for current status data, please cite the following: 
+For covariate-adjusted survival curve estimation using current status data, please cite the following: 
 
 ```
 @article{wolock2025investigating,
