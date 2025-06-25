@@ -30,6 +30,7 @@ vim(
   robust = TRUE,
   scale_est = FALSE,
   alpha = 0.05,
+  cluster_ID = NULL,
   verbose = FALSE
 )
 }
@@ -118,6 +119,9 @@ is meant for illustration purposes only --- it should be left as \code{TRUE}.}
 \item{scale_est}{Logical, whether or not to force the VIM estimate to be nonnegative.}
 
 \item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05.}
+
+\item{cluster_ID}{\code{n x 1} numeric vector giving cluster membership IDs for each observation. If provided, cross-fitting and
+sample-splitting folds will respect cluster membership, so each member of a cluster is assigned to the same fold.}
 
 \item{verbose}{Whether to print progress messages.}
 }

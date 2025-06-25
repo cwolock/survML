@@ -4,7 +4,7 @@
 \alias{generate_folds}
 \title{Generate cross-fitting and sample-splitting folds}
 \usage{
-generate_folds(n, V, sample_split, cf_folds = NULL)
+generate_folds(n, V, sample_split, cf_folds = NULL, cluster_IDs = NULL)
 }
 \arguments{
 \item{n}{Total sample size}
@@ -14,6 +14,9 @@ generate_folds(n, V, sample_split, cf_folds = NULL)
 \item{sample_split}{Logical, whether or not sample-splitting is being used}
 
 \item{cf_folds}{Cross-fitting folds, if already provided by user.}
+
+\item{cluster_IDs}{Cluster membership IDs for each of the \code{n} observations. If provided, cross-fitting and
+sample-splitting folds will respect cluster membership, so each member of a cluster is assigned to the same fold.}
 }
 \value{
 Named list of cross-fitting and sample-splitting folds

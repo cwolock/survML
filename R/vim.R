@@ -65,6 +65,8 @@
 #' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05.
 #' @param robust Logical, whether or not to use the doubly-robust debiasing approach. This option
 #' is meant for illustration purposes only --- it should be left as \code{TRUE}.
+#' @param cluster_ID \code{n x 1} numeric vector giving cluster membership IDs for each observation. If provided, cross-fitting and
+#' sample-splitting folds will respect cluster membership, so each member of a cluster is assigned to the same fold.
 #' @param verbose Whether to print progress messages.
 #'
 #' @return Named list with the following elements:
@@ -142,6 +144,7 @@ vim <- function(type,
                 robust = TRUE,
                 scale_est = FALSE,
                 alpha = 0.05,
+                cluster_ID = NULL,
                 verbose = FALSE){
 
   precomputed_SG <- FALSE
@@ -159,12 +162,12 @@ vim <- function(type,
         }
         if (cf_fold_num == 1){ # sample-splitting, no cross-fitting
           cf_folds_nuisance <- rep(1, length(time)) # make cross-fitting folds just a vector of 1s for nuisance purposes
-          folds <- generate_folds(n = length(time), V = 1, sample_split = TRUE)
+          folds <- generate_folds(n = length(time), V = 1, sample_split = TRUE, cluster_IDs = cluster_ID)
           ss_folds <- folds$ss_folds
           cf_folds <- folds$cf_folds # cross-fitting folds for vim estimation are equal to sample-splitting folds
         } else if (cf_fold_num > 1){ # sample-splitting and cross-fitting, generate both
           if (verbose){print("Setting up cross-fitting and sample-splitting folds...")}
-          folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = TRUE)
+          folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = TRUE, cluster_IDs = cluster_ID)
           ss_folds <- folds$ss_folds
           cf_folds <- folds$cf_folds
         }
@@ -197,7 +200,7 @@ vim <- function(type,
         cf_folds = rep(1, length(time))
       } else if (cf_fold_num > 1){
         if (verbose){print("Setting up cross-fitting folds...")}
-        folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = FALSE)
+        folds <- generate_folds(n = length(time), V = cf_fold_num, sample_split = FALSE, cluster_IDs = cluster_ID)
         cf_folds <- folds$cf_folds
       }
     } else{ # if cross-fitting folds are provided, make sure they're valid below
