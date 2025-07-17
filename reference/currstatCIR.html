@@ -56,8 +56,9 @@
 <span>  deriv_method <span class="op">=</span> <span class="st">"m-spline"</span>,</span>
 <span>  sample_split <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  m <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  <span class="va">eval_region</span>,</span>
+<span>  eval_region <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_eval_pts <span class="op">=</span> <span class="fl">101</span>,</span>
+<span>  eval_grid <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
 <span>  sensitivity_analysis <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  copula_control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>taus <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.1</span>, <span class="op">-</span><span class="fl">0.05</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
@@ -110,12 +111,18 @@ fit a smoothing spline to the estimated function and differentiate the smooth ap
 
 
 <dt id="arg-eval-region">eval_region<a class="anchor" aria-label="anchor" href="#arg-eval-region"></a></dt>
-<dd><p>Region over which to estimate the survival function.</p></dd>
+<dd><p>Left and right endpoints of region over which to estimate the survival function. Alternatively, provide <code>eval_grid</code>
+to explicitly specify the grid of points on which to estimate the survival function.</p></dd>
 
 
 <dt id="arg-n-eval-pts">n_eval_pts<a class="anchor" aria-label="anchor" href="#arg-n-eval-pts"></a></dt>
 <dd><p>Number of points in grid on which to evaluate survival function.
 The points will be evenly spaced, on the quantile scale, between the endpoints of <code>eval_region</code>.</p></dd>
+
+
+<dt id="arg-eval-grid">eval_grid<a class="anchor" aria-label="anchor" href="#arg-eval-grid"></a></dt>
+<dd><p>Grid of time points at which to estimate the survival function. This is an alternative
+in place of specifying <code>eval_region</code>.</p></dd>
 
 
 <dt id="arg-alpha">alpha<a class="anchor" aria-label="anchor" href="#arg-alpha"></a></dt>
