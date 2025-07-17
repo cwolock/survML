@@ -17,9 +17,12 @@
 #' \code{"line"} (use the slope of the line connecting the endpoints of the estimated function).
 #' @param sample_split Logical indicating whether to perform inference using sample splitting
 #' @param m Number of sample-splitting folds, defaults to 5.
-#' @param eval_region Region over which to estimate the survival function.
+#' @param eval_region Left and right endpoints of region over which to estimate the survival function. Alternatively, provide \code{eval_grid}
+#' to explicitly specify the grid of points on which to estimate the survival function.
 #' @param n_eval_pts Number of points in grid on which to evaluate survival function.
 #' The points will be evenly spaced, on the quantile scale, between the endpoints of \code{eval_region}.
+#' @param eval_grid Grid of time points at which to estimate the survival function. This is an alternative
+#' in place of specifying \code{eval_region}.
 #' @param alpha The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05
 #' @param sensitivity_analysis Logical, whether to perform a copula-based sensitivity analysis. Defaults to \code{FALSE}
 #' @param copula_control A named list of control parameters for the copula-based sensitivity analysis.
@@ -89,11 +92,20 @@ currstatCIR <- function(time,
                         deriv_method = "m-spline",
                         sample_split = FALSE,
                         m = 5,
-                        eval_region,
+                        eval_region = NULL,
                         n_eval_pts = 101,
+                        eval_grid = NULL,
                         alpha = 0.05,
                         sensitivity_analysis = FALSE,
                         copula_control = list(taus = c(-0.1, -0.05, 0.05, 0.1))){
+
+  if (is.null(eval_region) & is.null(eval_grid)){
+    stop("You must specify either eval_region or eval_grid.")
+  }
+
+  if (!is.null(eval_grid)){
+    n_eval_pts <- length(eval_grid)
+  }
 
   s <- as.numeric(!is.na(event))
 
@@ -150,6 +162,9 @@ currstatCIR <- function(time,
 
     # only estimate in the evaluation region, which doesn't include the upper bound
     # gcm_x_vals <- sapply(y_vals[y_vals <= eval_region[2]], F_n)
+    if (is.null(eval_region)){
+      eval_region <- c(eval_grid[1], eval_grid[length(eval_grid)])
+    }
     gcm_x_vals <- sapply(y_vals[y_vals >= eval_region[1] & y_vals <= eval_region[2]], F_n)
     inds_to_keep <- !base::duplicated(gcm_x_vals)
     gcm_x_vals <- gcm_x_vals[inds_to_keep]
@@ -172,8 +187,14 @@ currstatCIR <- function(time,
     eval_cdf_upper <- mean(dat$y <= eval_region[2])
     eval_cdf_lower <- mean(dat$y <= eval_region[1])
 
+    if (is.null(eval_grid)){
+      eval_cdf_pts <- seq(eval_cdf_lower,eval_cdf_upper,length.out = n_eval_pts)
+    } else{
+      eval_cdf_pts <- sapply(eval_grid, F_n)
+    }
+
     # Compute estimates
-    ests <- sapply(seq(eval_cdf_lower,eval_cdf_upper,length.out = n_eval_pts), theta_n)
+    ests <- sapply(eval_cdf_pts, theta_n)
     est_matrix[,k] <- ests
   }
 
@@ -181,14 +202,12 @@ currstatCIR <- function(time,
     ests <- est_matrix[,1]
     theta_prime <- construct_deriv(r_Mn = theta_n,
                                    deriv_method = deriv_method,
-                                   # y = seq(0, eval_cdf_upper, length.out = n_eval_pts))
-                                   y = seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts))
+                                   y = eval_cdf_pts)
 
-    deriv_ests <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), theta_prime)
+    deriv_ests <- sapply(eval_cdf_pts, theta_prime)
     kappa_ests <- sapply(y_vals, kappa_n)
     # transform kappa to quantile scale
-    kappa_ests_rescaled <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), function(x){
-      # kappa_ests_rescaled <- sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), function(x){
+    kappa_ests_rescaled <- sapply(eval_cdf_pts, function(x){
       ind <- which(y_vals == F_n_inverse(x))
       kappa_ests[ind]
     })
@@ -222,9 +241,14 @@ currstatCIR <- function(time,
   cils <- Iso::pava(cils)
   cius <- Iso::pava(cius)
 
+  if (is.null(eval_grid)){
+    eval_pts <- sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse)
+  } else{
+    eval_pts <- eval_grid
+  }
+
   results <- data.frame(
-    t = sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse),
-    # t = sapply(seq(0, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse),
+    t = eval_pts,
     S_hat_est = 1-ests,
     S_hat_cil = 1-cils,
     S_hat_ciu = 1-cius
@@ -268,12 +292,12 @@ currstatCIR <- function(time,
         rule = 2,
         f = 0
       )
-      ests <- sapply(seq(eval_cdf_lower,eval_cdf_upper,length.out = n_eval_pts), theta_n)
+      ests <- sapply(eval_cdf_pts, theta_n)
       ests[ests < 0] <- 0
       ests[ests > 1] <- 1
       ests <- Iso::pava(ests)
       sensitivity_results[[k]] <- data.frame(
-        t = sapply(seq(eval_cdf_lower, eval_cdf_upper, length.out = n_eval_pts), F_n_inverse),
+        t = eval_pts,
         S_hat_est = 1-ests,
         tau = tau
       )

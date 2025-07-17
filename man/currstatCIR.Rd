@@ -13,8 +13,9 @@ currstatCIR(
   deriv_method = "m-spline",
   sample_split = FALSE,
   m = 5,
-  eval_region,
+  eval_region = NULL,
   n_eval_pts = 101,
+  eval_grid = NULL,
   alpha = 0.05,
   sensitivity_analysis = FALSE,
   copula_control = list(taus = c(-0.1, -0.05, 0.05, 0.1))
@@ -46,10 +47,14 @@ fit a smoothing spline to the estimated function and differentiate the smooth ap
 
 \item{m}{Number of sample-splitting folds, defaults to 5.}
 
-\item{eval_region}{Region over which to estimate the survival function.}
+\item{eval_region}{Left and right endpoints of region over which to estimate the survival function. Alternatively, provide \code{eval_grid}
+to explicitly specify the grid of points on which to estimate the survival function.}
 
 \item{n_eval_pts}{Number of points in grid on which to evaluate survival function.
 The points will be evenly spaced, on the quantile scale, between the endpoints of \code{eval_region}.}
+
+\item{eval_grid}{Grid of time points at which to estimate the survival function. This is an alternative
+in place of specifying \code{eval_region}.}
 
 \item{alpha}{The level at which to compute confidence intervals and hypothesis tests. Defaults to 0.05}
 
