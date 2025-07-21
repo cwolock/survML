@@ -318,7 +318,8 @@ currstatCIR <- function(time,
 #' @noRd
 construct_mu_n <- function(dat, SL_control, Riemann_grid) {
   # Construct newX (all distinct combinations of X and S)
-  w_distinct <- dplyr::distinct(dat$w)
+  w_rounded <- round(dat$w, digits = 5)
+  w_distinct <- dplyr::distinct(w_rounded)
   w_distinct <- cbind("w_index"=c(1:nrow(w_distinct)), w_distinct)
   y_distinct <- sort(unique(round(c(dat$y, Riemann_grid), digits = 5)))
   newW <- expand.grid(w_index=w_distinct$w_index, Yprime=y_distinct)
@@ -344,6 +345,7 @@ construct_mu_n <- function(dat, SL_control, Riemann_grid) {
     }
     index <- (dplyr::filter(newW, eval(parse(text=cond))))$index
     if (length(index)!=1) {
+      print(dplyr::filter(newW, eval(parse(text=cond))))
       stop(paste0("y=",y,", w=c(",paste(w, collapse=","),")"))
     }
     return(pred[index])
@@ -364,7 +366,9 @@ construct_f_sIx_n <- function(dat, HAL_control, SL_control){
                                            grid_type = HAL_control$grid_type,
                                            cv_folds = HAL_control$V)
 
-  w_distinct <- dplyr::distinct(dat$w)
+  w_rounded <- round(dat$w, digits = 5)
+  w_distinct <- dplyr::distinct(w_rounded)
+  # w_distinct <- dplyr::distinct(dat$w)
 
   if (all(dat$s == 1)){
     binary_pred <- rep(1, nrow(w_distinct))
