@@ -144,5 +144,8 @@ data, please cite the following:
       author={Wolock, Charles J and Jacob, Susan and Bennett, Julia C and Elias-Warren, Anna and O'Hanlon, Jessica and Kenny, Avi and Jewell, Nicholas P and Rotnitzky, Andrea and Cole, Stephen R and Weil, Ana A and Chu, Helen Y and Carone, Marco},
       journal={Epidemiology},
       year={2025},
+      volume = {36},
+      issue = {5}
+      pages = {650--659}
       doi={10.1097/EDE.0000000000001882}
     }
