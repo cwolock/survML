@@ -99,13 +99,13 @@ variables when each study participant’s event status is observed at only
 a single monitoring time. The current status sampling scheme represents
 a particular form of interval censoring: each participant’s event time
 is known to lie either between the event time support’s lower bound and
-the monitoring time, or between the monitoring time and the even time
+the monitoring time, or between the monitoring time and the event time
 support’s upper bound. Traditional nonparametric methods for estimating
 the event time distribution under current status sampling require
 independence between the event time and the monitoring time, which may
 be unrealistic. The function <code><a href="../reference/currstatCIR.html">currstatCIR()</a></code> implements a
 nonparametric estimation approach that requires only conditional
-independence between the event time and the monitoring times given
+independence between the event time and the monitoring time given
 measured baseline covariates.</p>
 <p>The method implemented in <code><a href="../reference/currstatCIR.html">currstatCIR()</a></code> is called
 <em>extended causal isotonic regression</em>, or extended CIR for short,
