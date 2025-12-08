@@ -1,0 +1,142 @@
+# `survML`: Tools for Flexible Survival Analysis Using Machine Learning
+
+The `survML` package contains a variety of functions for analyzing
+survival data using machine learning. These include:
+
+1.  *Global and local survival stacking*: Use off-the-shelf machine
+    learning tools to estimate conditional survival functions.
+
+2.  *Algorithm-agnostic variable importance*: Use debiased machine
+    learning to estimate and make inference on variable importance for
+    prediction of time-to-event outcomes. (1.2.0+)
+
+3.  *Current-status isotonic regression*: Use isotonic regression to
+    estimate the covariate-adjusted survival function of a time-to-event
+    outcome under current status sampling. (1.2.0+)
+
+See the package vignettes and function reference for more details.
+
+## Installing `survML`
+
+You can install a stable version of `survML` from CRAN using
+
+``` r
+install.packages("survML")
+```
+
+Alternatively, the development version of `survML` is available on
+GitHub. You can install it using the `devtools` package as follows:
+
+``` r
+## install.packages("devtools") # run only if necessary
+install_github(repo = "cwolock/survML")
+```
+
+## Integration with `CFsurvival`
+
+The `CFsurvival` package can be used to estimate a covariate-adjusted
+counterfactual survival curve from observational data. This approach
+requires estimating the conditional event and censoring distributions.
+In [this fork](https://github.com/cwolock/CFsurvival) of the
+`CFsurvival` package, we have added
+[`stackG()`](https://cwolock.github.io/survML/reference/stackG.md) from
+`survML` as an option for estimating these nuisance parameters.
+
+## Documentation
+
+Full documentation can be found on the `survML` website at
+<https://cwolock.github.io/survML/>.
+
+## Bugs reports and feature requests
+
+To submit a bug report or request a new feature, please submit a new
+[GitHub Issue](https://github.com/cwolock/survML/issues).
+
+## References
+
+For details of the methods implemented in this package, please see the
+following papers:
+
+- **Global survival stacking:** Charles J. Wolock, Peter B. Gilbert,
+  Noah Simon and Marco Carone. [“A framework for leveraging machine
+  learning tools to estimate personalized survival
+  curves.”](https://doi.org/10.1080/10618600.2024.2304070) *Journal of
+  Computational and Graphical Statistics* (2024).
+
+- **Survival variable importance:** Charles J. Wolock, Peter B. Gilbert,
+  Noah Simon and Marco Carone. [“Assessing variable importance in
+  survival analysis using machine
+  learning.”](https://doi.org/10.1093/biomet/asae061) *Biometrika*
+  (2025).
+
+- **Covariate-adjusted survival curves from current status data:**
+  Charles J. Wolock, Susan Jacob, Julia C. Bennett, Anna Elias-Warren,
+  Jessica O’Hanlon, Avi Kenny, Nicholas P. Jewell, Andrea Rotnitzky,
+  Stephen R. Cole, Ana A. Weil, Helen Y. Chu and Marco Carone.
+  [“Investigating symptom duration using current status data: a case
+  study of post-acute COVID-19
+  syndrome.”](https://doi.org/10.1097/EDE.0000000000001882)
+  *Epidemiology* (2025).
+
+Local survival stacking is described in:
+
+- Eric C. Polley and Mark J. van der Laan. “Super Learning for
+  Right-Censored Data” in *Targeted Learning* (2011).
+
+- Erin Craig, Chenyang Zhong, and Robert Tibshirani. “Survival stacking:
+  casting survival analysis as a classification problem.”
+  [arXiv:2107.13480.](https://arxiv.org/abs/2107.13480)
+
+## Citation
+
+Citations for the various methods implemented in `survML` are given
+below.
+
+For conditional survival estimation using global survival stacking,
+please cite the following:
+
+``` R
+@article{wolock2024framework,
+        title={A framework for leveraging machine learning tools to estimate personalized survival curves},
+        author={Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
+        journal={Journal of Computational and Graphical Statistics},
+        year={2024},
+        volume = {33},
+        number = {3},
+        pages = {1098--1108},
+        publisher={Taylor \& Francis},
+        doi={10.1080/10618600.2024.2304070}
+}
+```
+
+For variable importance, please cite the following:
+
+``` R
+@article{wolock2025assessing,
+    author = {Wolock, Charles J and Gilbert, Peter B and Simon, Noah and Carone, Marco},
+    title = {Assessing variable importance in survival analysis using machine learning},
+    journal = {Biometrika},
+    volume = {112},
+    number = {2}
+    pages = {asae061},
+    year = {2025},
+    doi = {10.1093/biomet/asae061},
+    publisher={Oxford University Press}
+}
+```
+
+For covariate-adjusted survival curve estimation using current status
+data, please cite the following:
+
+``` R
+@article{wolock2025investigating,
+  title={Investigating symptom duration using current status data: a case study of post-acute COVID-19 syndrome},
+  author={Wolock, Charles J and Jacob, Susan and Bennett, Julia C and Elias-Warren, Anna and O'Hanlon, Jessica and Kenny, Avi and Jewell, Nicholas P and Rotnitzky, Andrea and Cole, Stephen R and Weil, Ana A and Chu, Helen Y and Carone, Marco},
+  journal={Epidemiology},
+  year={2025},
+  volume = {36},
+  number = {5},
+  pages = {650--659},
+  doi={10.1097/EDE.0000000000001882}
+}
+```

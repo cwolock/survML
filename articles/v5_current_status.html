@@ -76,7 +76,7 @@
 <span><span class="co">#&gt; Loading required package: gam</span></span>
 <span><span class="co">#&gt; Loading required package: splines</span></span>
 <span><span class="co">#&gt; Loading required package: foreach</span></span>
-<span><span class="co">#&gt; Loaded gam 1.22-5</span></span>
+<span><span class="co">#&gt; Loaded gam 1.22-6</span></span>
 <span><span class="co">#&gt; Super Learner</span></span>
 <span><span class="co">#&gt; Version: 2.0-29</span></span>
 <span><span class="co">#&gt; Package created on 2024-02-06</span></span>
@@ -304,8 +304,6 @@ larger number of cross-validation folds and a larger
 <span>                                      V <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
 <span>                   eval_region <span class="op">=</span> <span class="va">eval_region</span>,</span>
 <span>                   n_eval_pts <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">$</span><span class="va">primary_results</span></span>
-<span><span class="co">#&gt; Warning in (function (X, Y, formula = NULL, X_unpenalized = NULL, max_degree = ifelse(ncol(X) &gt;= : Some fit_control arguments are neither default nor glmnet/cv.glmnet arguments: n_folds; </span></span>
-<span><span class="co">#&gt; They will be removed from fit_control</span></span>
 <span><span class="co">#&gt; 20% of observations outside training support...predictions trimmed.</span></span></code></pre></div>
 <p>We can plot the estimated survival function, along with a pointwise
 95% confidence band, and compare it to the true survival function, shown
@@ -339,7 +337,7 @@ below in red.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Covariate-adjusted survival curve"</span><span class="op">)</span></span>
 <span><span class="va">p1</span></span>
 <span><span class="co">#&gt; `geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'</span></span></code></pre></div>
-<p><img src="v5_current_status_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+<p><img src="v5_current_status_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -372,7 +370,7 @@ Journal of Open Source Software</em> (2022).</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

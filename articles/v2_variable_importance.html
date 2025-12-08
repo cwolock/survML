@@ -76,7 +76,7 @@
 <span><span class="co">#&gt; Loading required package: gam</span></span>
 <span><span class="co">#&gt; Loading required package: splines</span></span>
 <span><span class="co">#&gt; Loading required package: foreach</span></span>
-<span><span class="co">#&gt; Loaded gam 1.22-5</span></span>
+<span><span class="co">#&gt; Loaded gam 1.22-6</span></span>
 <span><span class="co">#&gt; Super Learner</span></span>
 <span><span class="co">#&gt; Version: 2.0-29</span></span>
 <span><span class="co">#&gt; Package created on 2024-02-06</span></span>
@@ -208,7 +208,7 @@ survival curve for this dataset is shown below.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">cancer</span><span class="op">)</span></span>
 <span><span class="va">km_fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/survfit.html" class="external-link">survfit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">rfstime</span>, <span class="va">status</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">gbsg</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">km_fit</span>, xlab <span class="op">=</span> <span class="st">"Time (days)"</span>, ylab <span class="op">=</span> <span class="st">"Recurrence-free survival probability"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="v2_variable_importance_files/figure-html/km-1.png" width="768"></p>
+<p><img src="v2_variable_importance_files/figure-html/km-1.png" class="r-plt" width="768"></p>
 <p>We will consider time-varying AUC importance using landmark times of
 1000 and 2000 days. The first step is to prepare the data. We use dummy
 coding for factors. This means that to assess the importance of tumor
@@ -441,7 +441,7 @@ feature groups.</p>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">landmark_time</span>, <span class="va">est</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Order <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="op">{</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">.</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">est</span>, y <span class="op">=</span> <span class="va">Order</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_errorbarh.html" class="external-link">geom_errorbarh</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>xmin <span class="op">=</span> <span class="va">cil</span>, xmax <span class="op">=</span> <span class="va">ciu</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_errorbarh</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>xmin <span class="op">=</span> <span class="va">cil</span>, xmax <span class="op">=</span> <span class="va">ciu</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">xlab</a></span><span class="op">(</span><span class="st">"Estimated importance"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -460,8 +460,13 @@ feature groups.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: `geom_errorbarh()` was deprecated in ggplot2 4.0.0.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use the `orientation` argument of `geom_errorbar()` instead.</span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span><span class="va">p_auc</span></span></code></pre></div>
-<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-3-1.png" width="700"></p>
+<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="700"></p>
 <p>We can also look at the importance of all tumor-level features and
 all person-level features relative to the full feature vector.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -502,7 +507,7 @@ all person-level features relative to the full feature vector.</p>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to full feature vector (groups)"</span><span class="op">)</span></span>
 <span><span class="va">p_auc</span></span></code></pre></div>
-<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-4-1.png" width="768"></p>
+<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" width="768"></p>
 </div>
 <div class="section level3">
 <h3 id="estimating-variable-importance-relative-to-base-model">Estimating variable importance relative to base model<a class="anchor" aria-label="anchor" href="#estimating-variable-importance-relative-to-base-model"></a>
@@ -597,7 +602,7 @@ the current set of predictors.)</p>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"AUC variable importance relative to person-level features"</span><span class="op">)</span></span>
 <span><span class="va">p_auc</span></span></code></pre></div>
-<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-5-1.png" width="768"></p>
+<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" width="768"></p>
 </div>
 <div class="section level3">
 <h3 id="adjustment-variables">Adjustment variables<a class="anchor" aria-label="anchor" href="#adjustment-variables"></a>
@@ -696,7 +701,7 @@ feature group VIM estimates.</p>
 <span></span>
 <span><span class="va">p_auc</span> <span class="op">&lt;-</span> <span class="fu">plot_results</span><span class="op">(</span><span class="va">pooled_output</span>, <span class="st">"Adjusted AUC variable importance relative to all tumor-level features"</span><span class="op">)</span></span>
 <span><span class="va">p_auc</span></span></code></pre></div>
-<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-6-1.png" width="768"></p>
+<p><img src="v2_variable_importance_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" width="768"></p>
 </div>
 </div>
 <div class="section level2">
@@ -935,7 +940,7 @@ Biostatistics</em> (2007).</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
