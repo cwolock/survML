@@ -129,7 +129,7 @@ For variable importance, please cite the following:
         title = {Assessing variable importance in survival analysis using machine learning},
         journal = {Biometrika},
         volume = {112},
-        issue = {2}
+        number = {2}
         pages = {asae061},
         year = {2025},
         doi = {10.1093/biomet/asae061},
@@ -145,7 +145,7 @@ data, please cite the following:
       journal={Epidemiology},
       year={2025},
       volume = {36},
-      issue = {5}
-      pages = {650--659}
+      number = {5},
+      pages = {650--659},
       doi={10.1097/EDE.0000000000001882}
     }
